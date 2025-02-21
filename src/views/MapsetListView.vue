@@ -17,6 +17,7 @@ import CloseBtn from '@/components/Common/Buttons/CloseBtn.vue'
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
   { field: 'name', title: 'Name' },
+  { field: 'public', title: 'Publiek', type: 'bool' },
 ]
 const rows: Ref<IMapset[]> = ref([])
 
@@ -67,7 +68,11 @@ const handleCloseModal = function () {
         :sortable="true"
         :columnFilter="true"
         @rowClick="handleRowClick"
-      />
+      >
+        <template #public="data">
+          {{ data.value.public ? 'Ja' : 'Nee' }}
+        </template>
+      </Vue3Datatable>
     </Card>
     <Card v-show="showCreate" class="Details col-span-1">
       <div class="flex items-center justify-between">
