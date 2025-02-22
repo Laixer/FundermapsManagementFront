@@ -69,7 +69,7 @@ const makeCall = async function makeCall({
   let responseBody = null
   let url: URL
 
-  console.log(endpoint, body, requireAuth)
+  // console.log(endpoint, body, requireAuth)
 
   try {
     passAuthCheckOrExit(requireAuth, autoredirect)
@@ -125,7 +125,7 @@ const makeCall = async function makeCall({
       body,
     }
 
-    console.log(fetchOptions)
+    // console.log(fetchOptions)
 
     const response = await fetch(url, fetchOptions)
 
