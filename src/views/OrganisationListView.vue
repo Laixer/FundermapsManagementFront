@@ -9,6 +9,7 @@ import '@bhplugin/vue3-datatable/dist/style.css'
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
+import OrganisationForm from '@/components/Organisation/OrganisationForm.vue'
 
 import {
   getAllOrganisations,
@@ -52,6 +53,22 @@ const handleCloseModal = function () {
   showCreate.value = false
   showDetails.value = null
 }
+
+const refreshOrganisations = async () => {
+  try {
+    loading.value = true
+    rows.value = await getAllOrganisations()
+  } catch (e) {
+    // TODO: Show error
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleSaveOrganisation = async () => {
+  await refreshOrganisations()
+  handleCloseModal()
+}
 </script>
 
 <template>
@@ -76,6 +93,12 @@ const handleCloseModal = function () {
         <h3 class="text-lg font-bold">Add organisation</h3>
         <CloseBtn label="close" @click="handleCloseModal" />
       </div>
+      <section class="content -mx-4 flex-auto space-y-10 rounded-t-lg bg-white px-4 py-6">
+        <OrganisationForm
+          @saved="handleSaveOrganisation"
+          @cancel="handleCloseModal"
+        />
+      </section>
     </Card>
     <Card v-show="showDetails" class="Details col-span-1">
       <div class="flex items-center justify-between">
