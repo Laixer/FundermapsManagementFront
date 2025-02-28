@@ -45,7 +45,7 @@ export const createAuthKey = async function createAuthKey(userId: string, Passwo
 
 export const getAllUsers = async function getAllUsers(): Promise<IUser[]> {
   return await get({
-    endpoint: 'v1/management/user',
+    endpoint: 'v1/management/user?limit=1000',
   })
 }
 
