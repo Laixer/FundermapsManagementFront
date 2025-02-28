@@ -279,7 +279,6 @@ const handleGeneratePassword = () => {
           type="email"
           v-model="newUser.email"
           placeholder="Enter email address"
-          :validationStatus="validationStatus.email"
           :validationMessage="validationMessages.email"
           :tabindex="1"
           required
@@ -302,7 +301,6 @@ const handleGeneratePassword = () => {
             type="text"
             v-model="newUser.password"
             placeholder="Enter password"
-            :validationStatus="validationStatus.password"
             :validationMessage="validationMessages.password"
             :tabindex="2"
             required
@@ -317,7 +315,6 @@ const handleGeneratePassword = () => {
             type="text"
             v-model="newUser.given_name"
             placeholder="Enter given name"
-            :validationStatus="validationStatus.given_name"
             :validationMessage="validationMessages.given_name"
             :tabindex="4"
           />
@@ -328,7 +325,6 @@ const handleGeneratePassword = () => {
             type="text"
             v-model="newUser.family_name"
             placeholder="Enter family name"
-            :validationStatus="validationStatus.family_name"
             :validationMessage="validationMessages.family_name"
             :tabindex="5"
           />
@@ -353,7 +349,6 @@ const handleGeneratePassword = () => {
           type="tel"
           v-model="newUser.phone_number"
           placeholder="Enter phone number"
-          :validationStatus="validationStatus.phone_number"
           :validationMessage="validationMessages.phone_number"
           :tabindex="6"
         />
@@ -364,7 +359,6 @@ const handleGeneratePassword = () => {
           type="text"
           v-model="newUser.job_title"
           placeholder="Enter job title"
-          :validationStatus="validationStatus.job_title"
           :validationMessage="validationMessages.job_title"
           :tabindex="7"
         />
