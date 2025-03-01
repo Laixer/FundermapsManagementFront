@@ -58,7 +58,7 @@ const handleCloseModal = function () {
     <Card class="List col-span-2">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-bold">Mapsets</h3>
-        <Button label="Add Mapset" @click="handleOpenModal" />
+        <!-- <Button label="Add Mapset" @click="handleOpenModal" /> -->
       </div>
       <Vue3Datatable
         :rows="rows"
