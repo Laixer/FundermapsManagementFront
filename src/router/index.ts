@@ -5,13 +5,9 @@ import { storeToRefs } from 'pinia'
 
 import HomeView from '@/views/HomeView.vue'
 import ApplicationListView from '@/views/ApplicationListView.vue'
-// import ApplicationView from '@/views/ApplicationView.vue'
-import OrganisationView from '@/views/OrganisationView.vue'
 import OrganisationListView from '@/views/OrganisationListView.vue'
 import MapsetListView from '@/views/MapsetListView.vue'
-import MapsetView from '@/views/MapsetView.vue'
 import UserListView from '@/views/UserListView.vue'
-import UserView from '@/views/UserView.vue'
 import Login from '@/views/auth/Login.vue'
 import NoAccess from '@/views/auth/403.vue'
 
@@ -48,11 +44,11 @@ const router = createRouter({
       path: '/application',
       component: ApplicationListView,
     },
-    // {
-    //   path: '/application/:applicationId',
-    //   name: 'application',
-    //   component: ApplicationView,
-    // },
+    {
+      path: '/application/:applicationId',
+      name: 'application',
+      component: ApplicationListView,
+    },
 
     {
       name: 'organisations',
@@ -62,7 +58,7 @@ const router = createRouter({
     {
       name: 'organisation',
       path: '/organisation/:orgId',
-      component: OrganisationView,
+      component: OrganisationListView,
     },
 
     {
@@ -73,7 +69,7 @@ const router = createRouter({
     {
       name: 'mapset',
       path: '/mapset/:mapsetId',
-      component: MapsetView,
+      component: MapsetListView,
     },
 
     {
@@ -84,7 +80,7 @@ const router = createRouter({
     {
       name: 'user',
       path: '/user/:userId',
-      component: UserView,
+      component: UserListView,
     },
   ],
 })
