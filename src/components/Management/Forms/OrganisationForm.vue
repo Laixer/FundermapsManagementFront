@@ -14,7 +14,7 @@ const handleSubmit = async () => {
     error.value = 'Organisation name is required'
     return
   }
-  
+
   try {
     loading.value = true
     await createOrganisation(name.value)
@@ -31,15 +31,15 @@ const handleSubmit = async () => {
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-4">
     <div class="form-group">
-      <label for="name" class="block text-sm font-medium text-gray-700">Organisation Name *</label>
+      <label for="name" class="text-gray-700 block text-sm font-medium">Organisation Name *</label>
       <input
         id="name"
         v-model="name"
         type="text"
-        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+        class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm"
         :class="{ 'border-red-500': error }"
       />
-      <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
+      <p v-if="error" class="text-red-600 mt-1 text-sm">{{ error }}</p>
     </div>
 
     <div class="mt-6 flex justify-end space-x-3">

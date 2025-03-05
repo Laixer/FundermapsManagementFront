@@ -9,13 +9,26 @@ import '@bhplugin/vue3-datatable/dist/style.css'
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
-import OrganisationForm from '@/components/Organisation/OrganisationForm.vue'
+import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
+import Tabs from '@/components/Management/OrganisationTabs.vue'
+import Alert from '@/components/Common/Alert.vue'
+import CreateOrganisationForm from '@/components/Management/Forms/CreateOrganisationForm.vue'
+import Icon from '@/components/Common/Icons/Icon.vue'
+import IconButton from '@/components/Common/Buttons/IconButton.vue'
 
 import {
   getAllOrganisations,
   type IOrg,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
-import CloseBtn from '@/components/Common/Buttons/CloseBtn.vue'
+import { getAllOrganisationUsers } from '@/services/fundermaps/endpoints/management/organisation.ts'
+import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
+
+const loading = ref(true)
+const error = ref(false)
+const showCreate = ref(false)
+
+const activeTab: Ref<'users' | 'mapsets'> = ref('users')
+const record: Ref<IOrg | null> = ref(null)
 
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
@@ -23,51 +36,72 @@ const cols = [
 ]
 const rows: Ref<IOrg[]> = ref([])
 
-const loading = ref(true)
+const userLoading = ref(false)
+const userCols = [
+  { field: 'given_name', title: 'Name' },
+  { field: 'email', title: 'Email' },
+  { field: 'delete', width: '2rem', filter: false, sort: false, search: false },
+]
+const userRows: Ref<IUser[]> = ref([])
 
-const showDetails: Ref<IOrg | null> = ref(null)
-const showCreate = ref(false)
-
-onBeforeMount(async () => {
-  try {
-    rows.value = await getAllOrganisations()
-
-    loading.value = false
-  } catch (e) {
-    // TODO: Show error
-  }
-})
-const handleRowClick = function (row: IOrg) {
-  console.log('Open details modal')
-  console.log(row)
-  showCreate.value = false
-  showDetails.value = row
-}
-const handleOpenModal = function () {
-  console.log('Open create modal')
-  showDetails.value = null
-  showCreate.value = true
-}
-const handleCloseModal = function () {
-  console.log('Close modal')
-  showCreate.value = false
-  showDetails.value = null
-}
-
-const refreshOrganisations = async () => {
+const refreshList = async function () {
   try {
     loading.value = true
+    error.value = false
     rows.value = await getAllOrganisations()
   } catch (e) {
-    // TODO: Show error
+    error.value = true
   } finally {
     loading.value = false
   }
 }
 
-const handleSaveOrganisation = async () => {
-  await refreshOrganisations()
-  handleCloseModal()
+onBeforeMount(refreshList)
+
+// TODO: Prep before display
+const renderName = function (data: IUser) {
+  if (data.given_name && data.family_name) {
+    return `${data.given_name} ${data.family_name}`
+  }
+  if (data.given_name) {
+    return data.given_name
+  }
+  if (data.family_name) {
+    return data.family_name
+  }
+  return ''
+}
+
+const handleRowClick = async function (row: IOrg) {
+  console.log(row)
+  showCreate.value = false
+
+  activeTab.value = 'users'
+  record.value = row
+
+  if (record) {
+    // TODO: load users
+    userLoading.value = true
+    userRows.value = await getAllOrganisationUsers(record.value.id)
+    console.log(userRows)
+    userLoading.value = false
+  }
+}
+
+const handleUserRowClick = function (row: IUser) {
+  console.log('open', row)
+}
+const handleRemoveUser = function (row: IUser) {
+  console.log('remove', row)
+}
+
+const handleOpenModal = function () {
+  record.value = null
+  showCreate.value = true
+}
+const handleCloseModal = function () {
+  showCreate.value = false
+  record.value = null
 }
 </script>
 
@@ -78,6 +112,9 @@ const handleSaveOrganisation = async () => {
         <h3 class="text-lg font-bold">Organisations</h3>
         <Button label="Add organisation" @click="handleOpenModal" />
       </div>
+      <Alert v-if="error" :closeable="true" @close="error = false">
+        An error occurred while trying to retrieve the list of records.
+      </Alert>
       <Vue3Datatable
         :rows="rows"
         :columns="cols"
@@ -88,40 +125,44 @@ const handleSaveOrganisation = async () => {
         @rowClick="handleRowClick"
       />
     </Card>
-    <Card v-show="showCreate" class="Details col-span-1">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Add organisation</h3>
-        <CloseBtn label="close" @click="handleCloseModal" />
-      </div>
-      <section class="content -mx-4 flex-auto space-y-10 rounded-t-lg bg-white px-4 py-6">
-        <OrganisationForm
-          @saved="handleSaveOrganisation"
-          @cancel="handleCloseModal"
-        />
-      </section>
-    </Card>
-    <Card v-show="showDetails" class="Details col-span-1">
-      <div class="flex items-center justify-between">
-        <Button outline label="edit" />
-        <CloseBtn label="close" @click="handleCloseModal" />
-      </div>
-      <section class="content -mx-4 flex-auto space-y-10 rounded-t-lg bg-white px-4 pb-6">
-        <div class="space-y-3">
-          <h6 class="font-bold leading-none">Organisation information</h6>
-          <dl class="space-y-3">
-            <div v-for="prop in Object.keys(showDetails || {})">
-              <dt>{{ prop }}</dt>
-              <dd class="text-grey-700">
-                {{ showDetails?.[prop as keyof typeof showDetails] || '-' }}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </section>
 
-      <br />
-      <strong>Organisation users ...</strong> <br />
-      <strong>Organisation mapsets ...</strong>
-    </Card>
+    <CreateOrganisationForm
+      v-if="showCreate"
+      @cancel="handleCloseModal"
+      @saved="refreshList"
+      @close="handleCloseModal"
+    />
+
+    <RecordDetailsCard title="Organisation information" :record="record" @close="handleCloseModal">
+      <Tabs v-model="activeTab" />
+      <div v-if="activeTab === 'users'">
+        <Vue3Datatable
+          :rows="userRows"
+          :columns="userCols"
+          :loading="userLoading"
+          sortColumn="name"
+          :sortable="true"
+          :columnFilter="true"
+        >
+          <template #given_name="data">
+            {{ renderName(data.value) }}
+          </template>
+          <template #delete="data">
+            <div class="flex gap-1">
+              <IconButton label="view" @click.stop="handleUserRowClick(data.value)">
+                <Icon class="aspect-square w-3" name="eye-solid" />
+              </IconButton>
+              <IconButton label="disconnect" @click.stop="handleRemoveUser(data.value)">
+                <Icon class="aspect-square w-3" name="minus" />
+              </IconButton>
+            </div>
+          </template>
+        </Vue3Datatable>
+      </div>
+      <div v-else>
+        <div>Add Mapset by id</div>
+        <div>Remove Mapset by id</div>
+      </div>
+    </RecordDetailsCard>
   </MainWrapper>
 </template>

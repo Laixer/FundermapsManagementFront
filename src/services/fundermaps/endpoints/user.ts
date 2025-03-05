@@ -8,6 +8,8 @@ export const me = async function me(): Promise<IUser> {
   })
 }
 
+// TODO: Profile update
+
 export default {
   me,
 }
