@@ -12,6 +12,7 @@ import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import CreateApplicationForm from '@/components/Management/Forms/CreateApplicationForm.vue'
 import Alert from '@/components/Common/Alert.vue'
+import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 
 import {
   getAllApplications,
@@ -77,7 +78,14 @@ const handleCloseModal = function () {
         :sortable="true"
         :columnFilter="true"
         @rowClick="handleRowClick"
-      />
+      >
+        <template #id="data">
+          <div class="flex justify-between">
+            <div>{{ data.value.id }}</div>
+            <CopyToClipboardIcon :value="data.value.id" />
+          </div>
+        </template>
+      </Vue3Datatable>
     </Card>
 
     <CreateApplicationForm

@@ -15,6 +15,7 @@ import Alert from '@/components/Common/Alert.vue'
 
 import type { IMapset } from '@/services/fundermaps/interfaces/IMapset.ts'
 import { getAllMapsets } from '@/services/fundermaps/endpoints/management/mapset.ts'
+import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 
 const loading = ref(true)
 const error = ref(false)
@@ -69,6 +70,12 @@ const handleCloseModal = function () {
         :columnFilter="true"
         @rowClick="handleRowClick"
       >
+        <template #id="data">
+          <div class="flex justify-between">
+            <div>{{ data.value.id }}</div>
+            <CopyToClipboardIcon :value="data.value.id" />
+          </div>
+        </template>
         <template #public="data">
           {{ data.value.public ? 'Ja' : 'Nee' }}
         </template>

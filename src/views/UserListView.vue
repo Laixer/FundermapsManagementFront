@@ -3,7 +3,6 @@ import { onBeforeMount, ref, type Ref } from 'vue'
 
 // @ts-ignore TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
-
 import '@bhplugin/vue3-datatable/dist/style.css'
 
 import Card from '@/components/Common/Card.vue'
@@ -11,11 +10,11 @@ import Button from '@/components/Common/Buttons/Button.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
+import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 
-import { getAllUsers } from '@/services/fundermaps/endpoints/management/user.ts'
+import { getAllUsers, getUser } from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
-import Icon from '@/components/Common/Icons/Icon.vue'
-import IconButton from '@/components/Common/Buttons/IconButton.vue'
+import UserResetPassword from '@/components/Management/Forms/UserResetPassword.vue'
 
 const loading = ref(true)
 const error = ref(false)
@@ -45,10 +44,13 @@ const refreshList = async function () {
 
 onBeforeMount(refreshList)
 
-const handleRowClick = function (row: IUser) {
+const handleRowClick = async function (row: IUser) {
   console.log(row)
   showCreate.value = false
-  record.value = row
+
+  record.value = await getUser(row.id)
+
+  console.log(record.value)
 }
 const handleOpenModal = function () {
   record.value = null
@@ -74,9 +76,6 @@ const renderName = function (data: IUser) {
   }
   return ''
 }
-const handleCopyId = function (id: string) {
-  navigator.clipboard.writeText(id)
-}
 </script>
 
 <template>
@@ -98,9 +97,7 @@ const handleCopyId = function (id: string) {
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
-            <IconButton label="view" @click.stop="handleCopyId(data.value.id)">
-              <Icon class="aspect-square w-3" name="clipboard-regular" />
-            </IconButton>
+            <CopyToClipboardIcon :value="data.value.id" />
           </div>
         </template>
         <template #given_name="data">
@@ -115,6 +112,8 @@ const handleCopyId = function (id: string) {
       @close="handleCloseModal"
     />
 
-    <RecordDetailsCard title="User information" :record="record" @close="handleCloseModal" />
+    <RecordDetailsCard title="User information" :record="record" @close="handleCloseModal">
+      <UserResetPassword :record="record" />
+    </RecordDetailsCard>
   </MainWrapper>
 </template>

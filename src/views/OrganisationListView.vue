@@ -13,15 +13,16 @@ import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import Tabs from '@/components/Management/OrganisationTabs.vue'
 import Alert from '@/components/Common/Alert.vue'
 import CreateOrganisationForm from '@/components/Management/Forms/CreateOrganisationForm.vue'
-import Icon from '@/components/Common/Icons/Icon.vue'
-import IconButton from '@/components/Common/Buttons/IconButton.vue'
+import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
+import OrganisationUsersList from '@/components/Management/OrganisationUsersList.vue'
 
 import {
   getAllOrganisations,
   type IOrg,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
-import { getAllOrganisationUsers } from '@/services/fundermaps/endpoints/management/organisation.ts'
-import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
+import OrganisationAddUser from '@/components/Management/Forms/OrganisationAddUser.vue'
+import OrganisationRemoveMapset from '@/components/Management/Forms/OrganisationRemoveMapset.vue'
+import OrganisationAddMapset from '@/components/Management/Forms/OrganisationAddMapset.vue'
 
 const loading = ref(true)
 const error = ref(false)
@@ -35,14 +36,6 @@ const cols = [
   { field: 'name', title: 'Name' },
 ]
 const rows: Ref<IOrg[]> = ref([])
-
-const userLoading = ref(false)
-const userCols = [
-  { field: 'given_name', title: 'Name' },
-  { field: 'email', title: 'Email' },
-  { field: 'delete', width: '2rem', filter: false, sort: false, search: false },
-]
-const userRows: Ref<IUser[]> = ref([])
 
 const refreshList = async function () {
   try {
@@ -58,41 +51,10 @@ const refreshList = async function () {
 
 onBeforeMount(refreshList)
 
-// TODO: Prep before display
-const renderName = function (data: IUser) {
-  if (data.given_name && data.family_name) {
-    return `${data.given_name} ${data.family_name}`
-  }
-  if (data.given_name) {
-    return data.given_name
-  }
-  if (data.family_name) {
-    return data.family_name
-  }
-  return ''
-}
-
 const handleRowClick = async function (row: IOrg) {
-  console.log(row)
   showCreate.value = false
-
   activeTab.value = 'users'
   record.value = row
-
-  if (record) {
-    // TODO: load users
-    userLoading.value = true
-    userRows.value = await getAllOrganisationUsers(record.value.id)
-    console.log(userRows)
-    userLoading.value = false
-  }
-}
-
-const handleUserRowClick = function (row: IUser) {
-  console.log('open', row)
-}
-const handleRemoveUser = function (row: IUser) {
-  console.log('remove', row)
 }
 
 const handleOpenModal = function () {
@@ -123,7 +85,14 @@ const handleCloseModal = function () {
         :sortable="true"
         :columnFilter="true"
         @rowClick="handleRowClick"
-      />
+      >
+        <template #id="data">
+          <div class="flex justify-between">
+            <div>{{ data.value.id }}</div>
+            <CopyToClipboardIcon :value="data.value.id" />
+          </div>
+        </template>
+      </Vue3Datatable>
     </Card>
 
     <CreateOrganisationForm
@@ -136,32 +105,12 @@ const handleCloseModal = function () {
     <RecordDetailsCard title="Organisation information" :record="record" @close="handleCloseModal">
       <Tabs v-model="activeTab" />
       <div v-if="activeTab === 'users'">
-        <Vue3Datatable
-          :rows="userRows"
-          :columns="userCols"
-          :loading="userLoading"
-          sortColumn="name"
-          :sortable="true"
-          :columnFilter="true"
-        >
-          <template #given_name="data">
-            {{ renderName(data.value) }}
-          </template>
-          <template #delete="data">
-            <div class="flex gap-1">
-              <IconButton label="view" @click.stop="handleUserRowClick(data.value)">
-                <Icon class="aspect-square w-3" name="eye-solid" />
-              </IconButton>
-              <IconButton label="disconnect" @click.stop="handleRemoveUser(data.value)">
-                <Icon class="aspect-square w-3" name="minus" />
-              </IconButton>
-            </div>
-          </template>
-        </Vue3Datatable>
+        <OrganisationUsersList :record="record" />
+        <OrganisationAddUser class="mt-4" :record="record" />
       </div>
       <div v-else>
-        <div>Add Mapset by id</div>
-        <div>Remove Mapset by id</div>
+        <OrganisationAddMapset :record="record" />
+        <OrganisationRemoveMapset class="mt-4" :record="record" />
       </div>
     </RecordDetailsCard>
   </MainWrapper>

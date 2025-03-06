@@ -15,7 +15,7 @@ export const createOrganisation = async function createOrganisation(Name: string
   return await post({
     endpoint: 'v1/management/org',
     body: {
-      Name,
+      name: Name,
     },
   })
 }
@@ -25,9 +25,9 @@ export const addMapsetToOrganisation = async function addMapsetToOrganisation(
   MapsetID: string,
 ) {
   return await post({
-    endpoint: `v1/management/org/${orgId}/mapset/add`,
+    endpoint: `v1/management/org/${orgId}/mapset`,
     body: {
-      MapsetID,
+      mapset_id: MapsetID,
     },
   })
 }
@@ -37,9 +37,9 @@ export const removeMapsetFromOrganisation = async function removeMapsetFromOrgan
   MapsetID: string,
 ) {
   return await del({
-    endpoint: `v1/management/org/${orgId}/mapset/remove`,
+    endpoint: `v1/management/org/${orgId}/mapset`,
     body: {
-      MapsetID,
+      mapset_id: MapsetID,
     },
   })
 }
@@ -56,10 +56,10 @@ export const addUserToOrganisation = async function addUserToOrganisation(
   Role: string,
 ) {
   return await post({
-    endpoint: `v1/management/org/${orgId}/user/add`,
+    endpoint: `v1/management/org/${orgId}/user`,
     body: {
-      UserID,
-      Role,
+      user_id: UserID,
+      role: Role,
     },
   })
 }
@@ -69,9 +69,9 @@ export const removeUserFromOrganisation = async function removeUserFromOrganisat
   UserID: string,
 ) {
   return await del({
-    endpoint: `v1/management/org/${orgId}/user/remove`,
+    endpoint: `v1/management/org/${orgId}/user`,
     body: {
-      UserID,
+      user_id: UserID,
     },
   })
 }

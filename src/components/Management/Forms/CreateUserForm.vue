@@ -5,9 +5,8 @@ import Input from '@/components/Common/Inputs/Input.vue'
 import FormCard from '@/components/Management/FormCard.vue'
 import { generateStrongPassword } from '@/utils/password.ts'
 
-import { createUser } from '@/services/fundermaps/endpoints/management/user.ts'
+import { createUser, updateUser } from '@/services/fundermaps/endpoints/management/user.ts'
 import Alert from '@/components/Common/Alert.vue'
-// import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 
 const formData = ref({
   email: '',
@@ -30,12 +29,28 @@ const validationSchema = z
   })
   .strict()
 
-const formHandler = async function (formData: { email: string; password: string }) {
+const formHandler = async function (formData: {
+  email: string
+  password: string
+  given_name: string
+  family_name: string
+  phone_number: string
+  job_title: string
+}) {
   console.log('save', formData)
 
-  await createUser(formData.email, formData.password)
+  const user = await createUser(formData.email, formData.password)
 
-  // TODO: update user profile
+  if (user) {
+    await updateUser(
+      user.id,
+      formData.given_name,
+      formData.family_name,
+      formData.job_title,
+      formData.phone_number,
+      '', // avatar
+    )
+  }
 }
 
 /**
@@ -54,7 +69,7 @@ const handleGeneratePassword = () => {
     :formDataHandler="formHandler"
     v-slot="{ formData, getStatus, getError, loading }"
   >
-    <Alert> WIP: Currently only e-mail & password are stored. </Alert>
+    <Alert> This form is connected to the database </Alert>
     <Input
       id="email"
       label="Email *"

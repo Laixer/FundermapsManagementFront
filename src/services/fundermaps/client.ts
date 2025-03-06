@@ -138,7 +138,8 @@ const makeCall = async function makeCall({
     } catch (e) {
       console.log(e)
 
-      if (response.ok && response.status !== 204) {
+      // Only make an issue out of a status code 200 failing
+      if (response.ok && response.status === 200) {
         throw new Error('Failed to process response body')
       }
     }
