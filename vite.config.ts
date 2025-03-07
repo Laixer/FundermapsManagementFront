@@ -9,7 +9,7 @@ import svgLoader from 'vite-svg-loader'
 // https://vite.dev/config/
 export default defineConfig(() => {
   // Pass latest commit has to process environment
-  process.env.VITE_GIT_COMMIT_HASH = '0' // execSync('git rev-parse --short HEAD').toString().trimEnd()
+  process.env.VITE_GIT_COMMIT_HASH = execSync('git rev-parse --short HEAD').toString().trimEnd()
 
   return {
     plugins: [vue(), vueDevTools(), svgLoader()],

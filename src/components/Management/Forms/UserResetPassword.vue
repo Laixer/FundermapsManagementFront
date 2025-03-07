@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import Input from '@/components/Common/Inputs/Input.vue'
-import InlineForm from '@/components/Management/InlineForm.vue'
+import Alert from '@/components/Common/Alert.vue'
+import Form from '@/components/Management/Form.vue'
+
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import { resetPassword } from '@/services/fundermaps/endpoints/management/user.ts'
-import Alert from '@/components/Common/Alert.vue'
 
 const props = defineProps<{
   record: IUser | null
@@ -29,10 +30,11 @@ const formHandler = async function (formData: { password: string }) {
 
 <template>
   <Alert> This form is connected to the database </Alert>
-  <InlineForm
+  <Form
     :form-data="formData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
+    :inline="true"
     v-slot="{ formData, getStatus, getError, loading }"
   >
     <Input
@@ -46,5 +48,5 @@ const formHandler = async function (formData: { password: string }) {
       :disabled="loading"
       :tabindex="1"
     />
-  </InlineForm>
+  </Form>
 </template>

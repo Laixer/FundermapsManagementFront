@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import Input from '@/components/Common/Inputs/Input.vue'
-import InlineForm from '@/components/Management/InlineForm.vue'
+import Alert from '@/components/Common/Alert.vue'
+import Form from '@/components/Management/Form.vue'
+
 import {
   addMapsetToOrganisation,
   type IOrg,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
-import Alert from '@/components/Common/Alert.vue'
 
 const props = defineProps<{
   record: IOrg | null
@@ -31,10 +32,11 @@ const formHandler = async function (formData: { mapsetid: string }) {
 
 <template>
   <Alert> This form is connected to the database </Alert>
-  <InlineForm
+  <Form
     :form-data="formData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
+    :inline="true"
     v-slot="{ formData, getStatus, getError, loading }"
   >
     <Input
@@ -48,5 +50,5 @@ const formHandler = async function (formData: { mapsetid: string }) {
       :disabled="loading"
       :tabindex="1"
     />
-  </InlineForm>
+  </Form>
 </template>
