@@ -4,10 +4,10 @@ import {
   APIConfigError,
   APIErrorResponse,
   APIInputError,
-  APITokenError
+  APITokenError,
 } from './errors'
 import { getAPIKeyAuthHeader, hasAPIKey, setAPIKey } from './api-key'
-import { getJwtAuthHeader, hasAccessToken, hasAccessTokenExpired } from './jwt'
+import { getAccessToken, hasAccessToken, hasValidAccessToken } from './session'
 import { trimLeadingChar, trimTrailingChar } from './utils'
 
 export interface IClientOptions {
@@ -60,7 +60,7 @@ let ClientOptions: IClientOptions = {
   basePath: import.meta.env.VITE_FUNDERMAPS_URL || undefined,
   apiKey: import.meta.env.VITE_AUTH_KEY || undefined,
   requireAuth: true,
-  authCheckCallback: undefined
+  authCheckCallback: undefined,
 }
 
 /******************************************************************************
@@ -91,7 +91,7 @@ const verifyAuthorization = function verifyAuthorization() {
     throw new APITokenError('Missing access token')
   }
 
-  if (hasAccessTokenExpired()) {
+  if (!hasValidAccessToken()) {
     throw new APITokenError('Access token has expired')
   }
 
@@ -112,7 +112,7 @@ const prepUrl = function prepUrl(endpoint: URL | string) {
   }
 
   return new URL(
-    `${trimTrailingChar(ClientOptions.basePath || '', '/')}/api/${trimLeadingChar(endpoint, '/')}`
+    `${trimTrailingChar(ClientOptions.basePath || '', '/')}/api/${trimLeadingChar(endpoint, '/')}`,
   )
 }
 
@@ -125,7 +125,7 @@ const prepQueryString = function prepQueryString(
   url: URL,
   method: 'GET' | 'POST' | 'PUT',
   queryString?: URLSearchParams | Record<string, string> | string,
-  body?: BodyInit | any
+  body?: BodyInit | any,
 ): URL {
   try {
     // If queryString is empty, and body either contains URLSearchParams, or is GET and contains a string
@@ -159,7 +159,7 @@ const prepQueryString = function prepQueryString(
  */
 const maybeStringifyBody = function maybeStringifyBody(
   body: BodyInit | any,
-  headers: Record<string, string>
+  headers: Record<string, string>,
 ) {
   if (body && typeof body !== 'string') {
     try {
@@ -171,7 +171,7 @@ const maybeStringifyBody = function maybeStringifyBody(
   }
   return {
     body,
-    headers
+    headers,
   }
 }
 
@@ -179,7 +179,10 @@ const maybeStringifyBody = function maybeStringifyBody(
  * Append an Auth header, if available
  */
 const setAuthHeader = function setAuthHeader(headers: Record<string, string>) {
-  return Object.assign(headers, getAPIKeyAuthHeader() || getJwtAuthHeader() || {})
+  return Object.assign(
+    headers,
+    getAPIKeyAuthHeader() || { Authorization: `Bearer ${getAccessToken()}` } || {},
+  )
 }
 
 /**
@@ -289,7 +292,7 @@ class Client {
       fetchOptions = {
         method: options.method,
         headers,
-        body
+        body,
       }
 
       // Make the call
