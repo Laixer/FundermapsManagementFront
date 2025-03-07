@@ -11,8 +11,8 @@ import { RouterLink } from 'vue-router'
     <GrayLogo />
 
     <div class="flex">
-      <RouterLink class="px-2 transition-colors hover:text-green-700" :to="{ name: 'applications' }"
-        >Applicaties</RouterLink
+      <RouterLink class="px-2 transition-colors hover:text-green-700" :to="{ name: 'users' }"
+        >Users</RouterLink
       >
       <RouterLink
         class="px-2 transition-colors hover:text-green-700"
@@ -22,8 +22,8 @@ import { RouterLink } from 'vue-router'
       <RouterLink class="px-2 transition-colors hover:text-green-700" :to="{ name: 'mapsets' }"
         >Mapsets</RouterLink
       >
-      <RouterLink class="px-2 transition-colors hover:text-green-700" :to="{ name: 'users' }"
-        >Users</RouterLink
+      <RouterLink class="px-2 transition-colors hover:text-green-700" :to="{ name: 'applications' }"
+        >Applications</RouterLink
       >
     </div>
 

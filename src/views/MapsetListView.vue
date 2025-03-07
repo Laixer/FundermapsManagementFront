@@ -26,7 +26,7 @@ const cols = [
   { field: 'icon', title: '', width: '2rem', filter: false, sort: false, search: false },
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
   { field: 'name', title: 'Name' },
-  { field: 'public', title: 'Publiek', type: 'bool' },
+  { field: 'public', title: 'Public', type: 'bool' },
 ]
 const rows: Ref<IMapset[]> = ref([])
 

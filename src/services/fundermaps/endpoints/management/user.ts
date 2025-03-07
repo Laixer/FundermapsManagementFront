@@ -22,11 +22,11 @@ export const updateUser = async function createUser(
   return await put({
     endpoint: `v1/management/user/${userId}`,
     body: {
-      GivenName,
-      LastName,
-      JobTitle,
-      PhoneNumber,
-      Avatar,
+      given_name: GivenName,
+      family_name: LastName,
+      job_title: JobTitle,
+      phone_number: PhoneNumber,
+      picture: Avatar,
     },
   })
 }
@@ -46,9 +46,9 @@ export const resetPassword = async function resetPassword(userId: string, Passwo
   })
 }
 
-export const createAuthKey = async function createAuthKey(userId: string, Password: string) {
+export const createAPIKey = async function createAPIKey(userId: string) {
   return await get({
-    endpoint: `v1/management/user/${userId}/auth-token`,
+    endpoint: `v1/management/user/${userId}/api-key`,
   })
 }
 

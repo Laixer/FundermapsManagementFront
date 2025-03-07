@@ -106,11 +106,11 @@ const handleCloseModal = function () {
       <Tabs v-model="activeTab" />
       <div v-if="activeTab === 'users'">
         <OrganisationUsersList :record="record" />
-        <OrganisationAddUser class="mt-4" :record="record" />
+        <OrganisationAddUser :record="record" />
       </div>
       <div v-else>
         <OrganisationAddMapset :record="record" />
-        <OrganisationRemoveMapset class="mt-4" :record="record" />
+        <OrganisationRemoveMapset :record="record" />
       </div>
     </RecordDetailsCard>
   </MainWrapper>

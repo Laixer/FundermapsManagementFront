@@ -71,13 +71,6 @@ export function hasRefreshToken(): boolean {
  */
 export function hasValidAccessToken(): boolean {
   const expires_at = getSessionTokens()?.expires_at
-  if (expires_at) {
-    console.log(
-      expires_at,
-      new Date(expires_at) > new Date(),
-      !!(expires_at && new Date(expires_at) > new Date()),
-    )
-  }
   return !!(expires_at && new Date(expires_at) > new Date())
 }
 

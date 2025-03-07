@@ -12,19 +12,25 @@ import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 
-import { getAllUsers, getUser } from '@/services/fundermaps/endpoints/management/user.ts'
+import {
+  createAPIKey,
+  getAllUsers,
+  getUser,
+} from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import UserResetPassword from '@/components/Management/Forms/UserResetPassword.vue'
+import EditUserForm from '@/components/Management/Forms/EditUserForm.vue'
 
 const loading = ref(true)
 const error = ref(false)
 const showCreate = ref(false)
+const showEdit = ref(false)
 
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
   { field: 'given_name', title: 'Name' },
   { field: 'email', title: 'Email' },
-  { field: 'role', title: 'Rol' },
+  { field: 'role', title: 'Role' },
 ]
 const rows: Ref<IUser[]> = ref([])
 
@@ -47,20 +53,34 @@ onBeforeMount(refreshList)
 const handleRowClick = async function (row: IUser) {
   console.log(row)
   showCreate.value = false
+  showEdit.value = false
 
   record.value = await getUser(row.id)
 
   console.log(record.value)
 }
 const handleOpenModal = function () {
+  showEdit.value = false
   record.value = null
   showCreate.value = true
+}
+const handleEdit = function () {
+  showCreate.value = false
+  showEdit.value = true
 }
 
 // Make sure to reset the form when closing the modal
 const handleCloseModal = function () {
   showCreate.value = false
+  showEdit.value = false
   record.value = null
+}
+
+const handleCreateAPIKey = async function () {
+  if (record.value) {
+    const response = await createAPIKey(record.value?.id)
+    alert(`API Key: ${response.key}`)
+  }
 }
 
 // TODO: Prep before display
@@ -112,8 +132,24 @@ const renderName = function (data: IUser) {
       @close="handleCloseModal"
     />
 
-    <RecordDetailsCard title="User information" :record="record" @close="handleCloseModal">
+    <EditUserForm
+      v-if="record && showEdit"
+      :record="record"
+      @cancel="handleCloseModal"
+      @saved="refreshList"
+      @close="handleCloseModal"
+    />
+
+    <RecordDetailsCard
+      v-if="!showEdit"
+      title="User information"
+      :record="record"
+      :editable="true"
+      @close="handleCloseModal"
+      @edit="handleEdit"
+    >
       <UserResetPassword :record="record" />
+      <Button label="Generate API Key" @click="handleCreateAPIKey" />
     </RecordDetailsCard>
   </MainWrapper>
 </template>
