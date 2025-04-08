@@ -65,7 +65,7 @@ const handleCloseModal = function () {
     <Card class="List col-span-2">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-bold">Applications</h3>
-        <Button label="Add application" @click="handleOpenModal" />
+        <!-- <Button label="Add application" @click="handleOpenModal" /> -->
       </div>
       <Alert v-if="error" :closeable="true" @close="error = false">
         An error occurred while trying to retrieve the list of records.
