@@ -67,18 +67,9 @@ const handleCloseModal = function () {
         <h3 class="text-lg font-bold">Applications</h3>
         <!-- <Button label="Add application" @click="handleOpenModal" /> -->
       </div>
-      <Alert v-if="error" :closeable="true" @close="error = false">
-        An error occurred while trying to retrieve the list of records.
-      </Alert>
-      <Vue3Datatable
-        :rows="rows"
-        :columns="cols"
-        :loading="loading"
-        sortColumn="name"
-        :sortable="true"
-        :columnFilter="true"
-        @rowClick="handleRowClick"
-      >
+
+      <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
+        :columnFilter="true" @rowClick="handleRowClick">
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
@@ -95,11 +86,6 @@ const handleCloseModal = function () {
       @close="handleCloseModal"
     /> -->
 
-    <RecordDetailsCard
-      title="Application information"
-      :record="record"
-      :editable="false"
-      @close="handleCloseModal"
-    />
+    <RecordDetailsCard title="Application information" :record="record" :editable="false" @close="handleCloseModal" />
   </MainWrapper>
 </template>

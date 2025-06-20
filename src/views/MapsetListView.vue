@@ -58,18 +58,9 @@ const handleCloseModal = function () {
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-bold">Mapsets</h3>
       </div>
-      <Alert v-if="error" :closeable="true" @close="error = false">
-        An error occurred while trying to retrieve the list of records.
-      </Alert>
-      <Vue3Datatable
-        :rows="rows"
-        :columns="cols"
-        :loading="loading"
-        sortColumn="name"
-        :sortable="true"
-        :columnFilter="true"
-        @rowClick="handleRowClick"
-      >
+
+      <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
+        :columnFilter="true" @rowClick="handleRowClick">
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
@@ -80,11 +71,7 @@ const handleCloseModal = function () {
           {{ data.value.public ? 'Ja' : 'Nee' }}
         </template>
         <template #icon="data">
-          <FundermapsIcon
-            v-if="data.value.icon"
-            class="aspect-square h-3.5"
-            :name="data.value.icon"
-          />
+          <FundermapsIcon v-if="data.value.icon" class="aspect-square h-3.5" :name="data.value.icon" />
         </template>
       </Vue3Datatable>
     </Card>
