@@ -73,14 +73,8 @@ const handleRemoveUser = async function (row: IUser) {
 </script>
 
 <template>
-  <Vue3Datatable
-    :rows="userRows"
-    :columns="userCols"
-    :loading="userLoading"
-    sortColumn="name"
-    :sortable="true"
-    :columnFilter="true"
-  >
+  <Vue3Datatable :rows="userRows" :columns="userCols" :loading="userLoading" sortColumn="name" :sortable="true"
+    :columnFilter="true">
     <template #given_name="data">
       {{ renderName(data.value) }}
     </template>

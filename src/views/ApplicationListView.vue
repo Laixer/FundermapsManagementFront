@@ -88,12 +88,12 @@ const handleCloseModal = function () {
       </Vue3Datatable>
     </Card>
 
-    <CreateApplicationForm
+    <!-- <CreateApplicationForm
       v-if="showCreate"
       @cancel="handleCloseModal"
       @saved="refreshList"
       @close="handleCloseModal"
-    />
+    /> -->
 
     <RecordDetailsCard
       title="Application information"

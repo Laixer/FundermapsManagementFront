@@ -22,24 +22,11 @@ const formHandler = async function (formData: { name: string }) {
 </script>
 
 <template>
-  <FormCard
-    title="Add application"
-    :form-data="formData"
-    :validation-schema="validationSchema"
-    :formDataHandler="formHandler"
-    v-slot="{ formData, getStatus, getError, loading }"
-  >
+  <FormCard title="Add application" :form-data="formData" :validation-schema="validationSchema"
+    :formDataHandler="formHandler" v-slot="{ formData, getStatus, getError, loading }">
     <Alert> This form is connected to the database </Alert>
-    <Input
-      id="name"
-      label="Application Name"
-      placeholder="Enter the application name"
-      type="text"
-      v-model="formData.name"
-      :validationStatus="getStatus('name')"
-      :validationMessage="getError('name')"
-      :disabled="loading"
-      :tabindex="1"
-    />
+    <Input id="name" label="Application Name" placeholder="Enter the application name" type="text"
+      v-model="formData.name" :validationStatus="getStatus('name')" :validationMessage="getError('name')"
+      :disabled="loading" :tabindex="1" />
   </FormCard>
 </template>

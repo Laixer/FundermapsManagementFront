@@ -77,15 +77,8 @@ const handleCloseModal = function () {
       <Alert v-if="error" :closeable="true" @close="error = false">
         An error occurred while trying to retrieve the list of records.
       </Alert>
-      <Vue3Datatable
-        :rows="rows"
-        :columns="cols"
-        :loading="loading"
-        sortColumn="name"
-        :sortable="true"
-        :columnFilter="true"
-        @rowClick="handleRowClick"
-      >
+      <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
+        :columnFilter="true" @rowClick="handleRowClick">
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
@@ -95,12 +88,8 @@ const handleCloseModal = function () {
       </Vue3Datatable>
     </Card>
 
-    <CreateOrganisationForm
-      v-if="showCreate"
-      @cancel="handleCloseModal"
-      @saved="refreshList"
-      @close="handleCloseModal"
-    />
+    <CreateOrganisationForm v-if="showCreate" @cancel="handleCloseModal" @saved="refreshList"
+      @close="handleCloseModal" />
 
     <RecordDetailsCard title="Organisation information" :record="record" @close="handleCloseModal">
       <Tabs v-model="activeTab" />
