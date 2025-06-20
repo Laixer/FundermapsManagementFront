@@ -20,6 +20,7 @@ import { RouterView } from 'vue-router'
   margin-right: auto;
   margin-bottom: auto; */
 }
+
 .Details {
   margin: 2rem;
   margin-left: 0;
@@ -30,11 +31,13 @@ import { RouterView } from 'vue-router'
 .v-leave-active {
   transition: opacity 0.5s ease;
 }
+
 /* This is for the Transitions named "short" */
 .short-enter-active,
 .short-leave-active {
   transition: opacity 0.25s ease;
 }
+
 .v-enter-from,
 .v-leave-to,
 .short-enter-from,

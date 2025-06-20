@@ -105,15 +105,8 @@ const renderName = function (data: IUser) {
         <h3 class="text-lg font-bold">Users</h3>
         <Button label="Add User" @click="handleOpenModal" />
       </div>
-      <Vue3Datatable
-        :rows="rows"
-        :columns="cols"
-        :loading="loading"
-        sortColumn="name"
-        :sortable="true"
-        :columnFilter="true"
-        @rowClick="handleRowClick"
-      >
+      <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
+        :columnFilter="true" @rowClick="handleRowClick">
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
@@ -125,29 +118,13 @@ const renderName = function (data: IUser) {
         </template>
       </Vue3Datatable>
     </Card>
-    <CreateUserForm
-      v-if="showCreate"
-      @cancel="handleCloseModal"
-      @saved="refreshList"
-      @close="handleCloseModal"
-    />
+    <CreateUserForm v-if="showCreate" @cancel="handleCloseModal" @saved="refreshList" @close="handleCloseModal" />
 
-    <EditUserForm
-      v-if="record && showEdit"
-      :record="record"
-      @cancel="handleCloseModal"
-      @saved="refreshList"
-      @close="handleCloseModal"
-    />
+    <EditUserForm v-if="record && showEdit" :record="record" @cancel="handleCloseModal" @saved="refreshList"
+      @close="handleCloseModal" />
 
-    <RecordDetailsCard
-      v-if="!showEdit"
-      title="User information"
-      :record="record"
-      :editable="true"
-      @close="handleCloseModal"
-      @edit="handleEdit"
-    >
+    <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
+      @close="handleCloseModal" @edit="handleEdit">
       <UserResetPassword :record="record" />
       <Button label="Generate API Key" @click="handleCreateAPIKey" />
     </RecordDetailsCard>

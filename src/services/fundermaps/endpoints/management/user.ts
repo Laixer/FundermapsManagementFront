@@ -18,16 +18,23 @@ export const updateUser = async function createUser(
   JobTitle: string,
   PhoneNumber: string,
   Avatar: string,
+  Email?: string,
 ): Promise<IUser> {
+  const body: any = {
+    given_name: GivenName,
+    family_name: LastName,
+    job_title: JobTitle,
+    phone_number: PhoneNumber,
+    picture: Avatar,
+  }
+
+  if (Email) {
+    body.email = Email
+  }
+
   return await put({
     endpoint: `v1/management/user/${userId}`,
-    body: {
-      given_name: GivenName,
-      family_name: LastName,
-      job_title: JobTitle,
-      phone_number: PhoneNumber,
-      picture: Avatar,
-    },
+    body,
   })
 }
 

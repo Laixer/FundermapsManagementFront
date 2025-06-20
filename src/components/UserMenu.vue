@@ -30,11 +30,8 @@ const handleLogout = async function () {
 <template>
   <div class="relative flex items-center">
     <div>{{ userName }}</div>
-    <a
-      href="#"
-      @click.prevent="handleLogout"
-      class="flex w-full items-center gap-2 px-8 py-4 transition-colors hover:text-red-500"
-    >
+    <a href="#" @click.prevent="handleLogout"
+      class="flex w-full items-center gap-2 px-8 py-4 transition-colors hover:text-red-500">
       <ExitIcon class="aspect-square h-3.5" aria-hidden="true" />
       <span>Log out</span>
     </a>
