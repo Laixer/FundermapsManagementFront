@@ -1,4 +1,4 @@
-import { del, get, post } from '../../client'
+import { del, get, post, put } from '../../client'
 
 export interface IOrg {
   id: string
@@ -75,3 +75,11 @@ export const removeUserFromOrganisation = async function removeUserFromOrganisat
     },
   })
 }
+
+export const updateOrganisation = async function updateOrganisation(orgId: string, name: string) {
+  return await put({
+    endpoint: `v1/management/org/${orgId}`,
+    body: { name },
+  })
+}
+

@@ -13,6 +13,7 @@ import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import Tabs from '@/components/Management/OrganisationTabs.vue'
 import Alert from '@/components/Common/Alert.vue'
 import CreateOrganisationForm from '@/components/Management/Forms/CreateOrganisationForm.vue'
+import OrganisationForm from '@/components/Management/Forms/OrganisationForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import OrganisationUsersList from '@/components/Management/OrganisationUsersList.vue'
 
@@ -27,6 +28,7 @@ import OrganisationAddMapset from '@/components/Management/Forms/OrganisationAdd
 const loading = ref(true)
 const error = ref(false)
 const showCreate = ref(false)
+const showEdit = ref(false)
 
 const activeTab: Ref<'users' | 'mapsets'> = ref('users')
 const record: Ref<IOrg | null> = ref(null)
@@ -54,6 +56,7 @@ onBeforeMount(refreshList)
 
 const handleRowClick = async function (row: IOrg) {
   showCreate.value = false
+  showEdit.value = false
   activeTab.value = 'users'
   record.value = row
 }
@@ -64,8 +67,15 @@ const handleOpenModal = function () {
 }
 const handleCloseModal = function () {
   showCreate.value = false
+  showEdit.value = false
   record.value = null
 }
+
+const handleEdit = function () {
+  showCreate.value = false
+  showEdit.value = true
+}
+
 </script>
 
 <template>
@@ -92,7 +102,11 @@ const handleCloseModal = function () {
     <CreateOrganisationForm v-if="showCreate" @cancel="handleCloseModal" @saved="refreshList"
       @close="handleCloseModal" />
 
-    <RecordDetailsCard title="Organisation information" :record="record" @close="handleCloseModal">
+    <OrganisationForm v-if="record && showEdit" :record="record" @cancel="handleCloseModal" @saved="refreshList"
+      @close="handleCloseModal" />
+
+    <RecordDetailsCard v-if="!showEdit" title="Organisation information" :record="record" :editable="true"
+      @edit="handleEdit" @close="handleCloseModal">
       <Tabs v-model="activeTab" />
       <div v-if="activeTab === 'users'">
         <OrganisationUsersList ref="orgUsersList" :record="record" />

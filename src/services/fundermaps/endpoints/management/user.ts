@@ -65,5 +65,4 @@ export const getAllUsers = async function getAllUsers(): Promise<IUser[]> {
   })
 }
 
-// TODO: Update user
 // TODO: Search users by (partial) email or name (for add to org)

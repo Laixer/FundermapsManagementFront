@@ -7,7 +7,10 @@ import Vue3Datatable from '@bhplugin/vue3-datatable'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 
-import { getAllOrganisationUsers } from '@/services/fundermaps/endpoints/management/organisation.ts'
+import {
+  getAllOrganisationUsers,
+  removeUserFromOrganisation,
+} from '@/services/fundermaps/endpoints/management/organisation.ts'
 import Icon from '@/components/Common/Icons/Icon.vue'
 
 const props = defineProps<{
@@ -62,13 +65,12 @@ const handleRemoveUser = async function (row: IUser) {
   }
 
   const confirmed = confirm(
-    // TODO: Remove end of string after enabling
-    `Confirm removing ${renderName(row) || row.email} from ${props.record.name} - currently disabled`,
+    `Confirm removing ${renderName(row) || row.email} from ${props.record.name}`,
   )
 
   if (confirmed) {
-    // TODO: Activate after endpoint for adding user is fixed
-    // await removeUserFromOrganisation(props.record.id, row.id)
+    await removeUserFromOrganisation(props.record.id, row.id)
+    await refresh()
   }
 }
 </script>
