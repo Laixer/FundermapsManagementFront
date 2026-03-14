@@ -47,6 +47,11 @@ interface IAuthKey {
   last_used: string | null
 }
 
+const apiKeyCols = [
+  { field: 'key', title: 'Key', isUnique: true },
+  { field: 'last_used', title: 'Last Used' },
+]
+
 const record: Ref<IUser | null> = ref(null)
 const apiKeys: Ref<IAuthKey[]> = ref([])
 
@@ -194,11 +199,14 @@ const renderName = function (data: IUser) {
             <h6 class="font-bold">API Keys</h6>
             <Button label="Generate" @click="handleCreateAPIKey" />
           </div>
-          <div v-if="apiKeys.length === 0" class="text-sm text-gray-500">No API keys</div>
-          <div v-for="key in apiKeys" :key="key.key" class="flex items-center justify-between rounded border p-2 text-sm">
-            <code class="truncate">{{ key.key }}</code>
-            <CopyToClipboardIcon :value="key.key" />
-          </div>
+          <Vue3Datatable :rows="apiKeys" :columns="apiKeyCols" :sortable="true">
+            <template #key="data">
+              <div class="flex items-center justify-between">
+                <code class="truncate">{{ data.value.key }}</code>
+                <CopyToClipboardIcon :value="data.value.key" />
+              </div>
+            </template>
+          </Vue3Datatable>
         </div>
 
         <!-- Danger Zone -->
