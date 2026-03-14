@@ -3,7 +3,6 @@ import { hasAccessToken, hasValidAccessToken } from '@/services/fundermaps/sessi
 import { useSessionStore } from '@/stores/session'
 import { storeToRefs } from 'pinia'
 
-import ApplicationListView from '@/views/ApplicationListView.vue'
 import OrganisationListView from '@/views/OrganisationListView.vue'
 import MapsetListView from '@/views/MapsetListView.vue'
 import UserListView from '@/views/UserListView.vue'
@@ -38,17 +37,6 @@ const router = createRouter({
       path: '/',
       redirect: { name: 'users' },
     },
-    {
-      name: 'applications',
-      path: '/application',
-      component: ApplicationListView,
-    },
-    {
-      path: '/application/:applicationId',
-      name: 'application',
-      component: ApplicationListView,
-    },
-
     {
       name: 'organisations',
       path: '/organisation',
@@ -97,7 +85,6 @@ router.beforeEach(async (to) => {
     hasValidAccessToken()
   ) {
     try {
-      // await sessionStore.authenticateFromAccessToken()
       await sessionStore.loginFromRefreshToken()
     } catch {
       // login from refresh token failed

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const model = defineModel()
 
-// TODO: Compare classlists & add missing colors from flowbite
 const selectedClassList =
   'text-green-600 border-green-600 active group inline-flex items-center justify-center rounded-t-lg border-b-2 p-4 dark:border-green-500 dark:text-green-500'
 const unselectedClassList =

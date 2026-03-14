@@ -31,7 +31,7 @@ const formHandler = async function (formData: { userid: string; role: string }) 
   await addUserToOrganisation(
     props.record.id,
     formData.userid,
-    formData.role, // TODO: Hardcoded to only allow 'user' role
+    formData.role,
   )
 }
 </script>

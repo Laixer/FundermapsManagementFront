@@ -1,6 +1,5 @@
 import { trimLeadingChar, trimTrailingChar } from '@/utils/string'
 
-// import { hasAccessTokenExpired } from './jwt'
 import { getAccessToken, hasAccessToken, hasValidAccessToken } from './session'
 
 import { useRouter, useRoute } from 'vue-router'
@@ -66,8 +65,6 @@ const makeCall = async function makeCall({
   let responseBody = null
   let url: URL
 
-  // console.log(endpoint, body, requireAuth)
-
   try {
     passAuthCheckOrExit(requireAuth, autoredirect)
 
@@ -121,8 +118,6 @@ const makeCall = async function makeCall({
       headers: Object.assign(authHeader, headers),
       body,
     }
-
-    // console.log(fetchOptions)
 
     const response = await fetch(url, fetchOptions)
 

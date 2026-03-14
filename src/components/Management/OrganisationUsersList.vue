@@ -42,7 +42,6 @@ watch(() => props.record, refresh, { immediate: true })
 
 defineExpose({ refresh })
 
-// TODO: Prep before display
 const renderName = function (data: IUser) {
   if (data.given_name && data.family_name) {
     return `${data.given_name} ${data.family_name}`
@@ -56,9 +55,6 @@ const renderName = function (data: IUser) {
   return ''
 }
 
-// const handleUserRowClick = function (row: IUser) {
-//   console.log('open', row)
-// }
 const handleRemoveUser = async function (row: IUser) {
   if (!props.record) {
     return
@@ -83,9 +79,6 @@ const handleRemoveUser = async function (row: IUser) {
     </template>
     <template #actions="data">
       <div class="flex gap-1">
-        <!-- <button label="view" @click.stop="handleUserRowClick(data.value)">
-          <Icon class="aspect-square w-3" name="eye-solid" />
-        </button> -->
         <button label="disconnect" @click.stop="handleRemoveUser(data.value)">
           <Icon class="aspect-square w-3" name="trash-solid" />
         </button>

@@ -84,7 +84,6 @@ const handleCreateAPIKey = async function () {
   }
 }
 
-// TODO: Prep before display
 const renderName = function (data: IUser) {
   if (data.given_name && data.family_name) {
     return `${data.given_name} ${data.family_name}`
