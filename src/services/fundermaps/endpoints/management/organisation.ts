@@ -95,3 +95,90 @@ export const deleteOrganisation = async function deleteOrganisation(orgId: strin
   })
 }
 
+// Geolock endpoints
+
+export interface IGeolock {
+  organization_id: string
+  district_id?: string
+  municipality_id?: string
+  neighborhood_id?: string
+}
+
+export const getGeolockDistricts = async function getGeolockDistricts(
+  orgId: string,
+): Promise<IGeolock[]> {
+  return await get({ endpoint: `v1/management/org/${orgId}/district` })
+}
+
+export const addGeolockDistrict = async function addGeolockDistrict(
+  orgId: string,
+  districtId: string,
+) {
+  return await post({
+    endpoint: `v1/management/org/${orgId}/district`,
+    body: { district_id: districtId },
+  })
+}
+
+export const removeGeolockDistrict = async function removeGeolockDistrict(
+  orgId: string,
+  districtId: string,
+) {
+  return await del({
+    endpoint: `v1/management/org/${orgId}/district`,
+    body: { district_id: districtId },
+  })
+}
+
+export const getGeolockMunicipalities = async function getGeolockMunicipalities(
+  orgId: string,
+): Promise<IGeolock[]> {
+  return await get({ endpoint: `v1/management/org/${orgId}/municipality` })
+}
+
+export const addGeolockMunicipality = async function addGeolockMunicipality(
+  orgId: string,
+  municipalityId: string,
+) {
+  return await post({
+    endpoint: `v1/management/org/${orgId}/municipality`,
+    body: { municipality_id: municipalityId },
+  })
+}
+
+export const removeGeolockMunicipality = async function removeGeolockMunicipality(
+  orgId: string,
+  municipalityId: string,
+) {
+  return await del({
+    endpoint: `v1/management/org/${orgId}/municipality`,
+    body: { municipality_id: municipalityId },
+  })
+}
+
+export const getGeolockNeighborhoods = async function getGeolockNeighborhoods(
+  orgId: string,
+): Promise<IGeolock[]> {
+  return await get({ endpoint: `v1/management/org/${orgId}/neighborhood` })
+}
+
+export const addGeolockNeighborhood = async function addGeolockNeighborhood(
+  orgId: string,
+  neighborhoodId: string,
+) {
+  return await post({
+    endpoint: `v1/management/org/${orgId}/neighborhood`,
+    body: { neighborhood_id: neighborhoodId },
+  })
+}
+
+export const removeGeolockNeighborhood = async function removeGeolockNeighborhood(
+  orgId: string,
+  neighborhoodId: string,
+) {
+  return await del({
+    endpoint: `v1/management/org/${orgId}/neighborhood`,
+    body: { neighborhood_id: neighborhoodId },
+  })
+}
+

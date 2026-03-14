@@ -17,6 +17,7 @@ import OrganisationForm from '@/components/Management/Forms/OrganisationForm.vue
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import OrganisationUsersList from '@/components/Management/OrganisationUsersList.vue'
 import OrganisationMapsetsList from '@/components/Management/OrganisationMapsetsList.vue'
+import OrganisationGeolockSection from '@/components/Management/OrganisationGeolockSection.vue'
 
 import {
   deleteOrganisation,
@@ -32,7 +33,7 @@ const error = ref(false)
 const showCreate = ref(false)
 const showEdit = ref(false)
 
-const activeTab: Ref<'users' | 'mapsets'> = ref('users')
+const activeTab: Ref<'users' | 'mapsets' | 'geolock'> = ref('users')
 const record: Ref<IOrg | null> = ref(null)
 const orgUsersList = ref<InstanceType<typeof OrganisationUsersList> | null>(null)
 const orgMapsetsList = ref<InstanceType<typeof OrganisationMapsetsList> | null>(null)
@@ -129,10 +130,13 @@ const handleDelete = async function () {
         <OrganisationUsersList ref="orgUsersList" :record="record" />
         <OrganisationAddUser :record="record" @saved="orgUsersList?.refresh()" />
       </div>
-      <div v-else>
+      <div v-else-if="activeTab === 'mapsets'">
         <OrganisationMapsetsList ref="orgMapsetsList" :record="record" />
         <OrganisationAddMapset :record="record" @saved="orgMapsetsList?.refresh()" />
         <OrganisationRemoveMapset :record="record" @saved="orgMapsetsList?.refresh()" />
+      </div>
+      <div v-else-if="activeTab === 'geolock'">
+        <OrganisationGeolockSection :record="record" />
       </div>
       <div class="mt-4 border-t pt-4">
         <Button label="Delete Organisation" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
