@@ -1,0 +1,1 @@
+- [project_context.md](project_context.md) - Legacy management portal context: half-finished, 2 users, will merge into maps app, talks to Go backend (FunderMapsTest)
