@@ -185,8 +185,28 @@ const renderName = function (data: IUser) {
     <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
       @close="handleCloseModal" @edit="handleEdit">
       <div class="space-y-6">
+        <!-- User Info -->
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <dt class="font-medium text-gray-500">Email</dt>
+          <dd>{{ record?.email }}</dd>
+          <dt class="font-medium text-gray-500">Name</dt>
+          <dd>{{ renderName(record!) || '-' }}</dd>
+          <dt class="font-medium text-gray-500">Phone</dt>
+          <dd>{{ record?.phone_number || '-' }}</dd>
+          <dt class="font-medium text-gray-500">Job Title</dt>
+          <dd>{{ record?.job_title || '-' }}</dd>
+        </dl>
+
+        <!-- Organisations -->
+        <div v-if="record?.organizations?.length" class="border-t pt-4">
+          <h6 class="mb-1 font-bold">Organisations</h6>
+          <ul class="text-sm text-gray-700">
+            <li v-for="org in record.organizations" :key="org.id">{{ org.name }}</li>
+          </ul>
+        </div>
+
         <!-- Role -->
-        <div>
+        <div class="border-t pt-4">
           <label class="mb-1 block text-sm font-medium text-gray-700">Role</label>
           <Select
             id="role"

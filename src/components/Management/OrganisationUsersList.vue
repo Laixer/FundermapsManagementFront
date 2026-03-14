@@ -21,7 +21,8 @@ const userLoading = ref(false)
 const userCols = [
   { field: 'given_name', title: 'Name' },
   { field: 'email', title: 'Email' },
-  { field: 'actions', width: '2rem', filter: false, sort: false, search: false },
+  { field: 'organization_role', title: 'Role' },
+  { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
 ]
 const userRows: Ref<IUser[]> = ref([])
 
