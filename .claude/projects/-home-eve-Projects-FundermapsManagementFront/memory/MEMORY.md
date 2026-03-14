@@ -1,1 +1,3 @@
-- [project_context.md](project_context.md) - Legacy management portal context: half-finished, 2 users, will merge into maps app, talks to Go backend (FunderMapsTest)
+- [project_context.md](project_context.md) - Management portal context: 2 users, Go backend, feature-complete state as of 2026-03-14
+- [feedback_style.md](feedback_style.md) - Use Vue3Datatable for all lists, keep UI consistent
+- [reference_backend.md](reference_backend.md) - Go backend (FunderMapsTest) location, file structure, and API patterns
