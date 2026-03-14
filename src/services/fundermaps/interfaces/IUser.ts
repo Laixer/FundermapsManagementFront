@@ -8,6 +8,7 @@ export interface IUser {
   picture: string | null
   job_title: string | null
   phone_number: string | null
-  role: string | 'user' | 'administrator'
+  role: string
+  last_login: string | null
   organizations: IOrganization[] | null
 }
