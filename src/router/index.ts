@@ -85,7 +85,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (to) => {
   const sessionStore = useSessionStore()
   const { isAuthenticated, isAdministrator } = storeToRefs(sessionStore)
 
@@ -101,7 +101,7 @@ router.beforeEach(async (to, from) => {
     try {
       // await sessionStore.authenticateFromAccessToken()
       await sessionStore.loginFromRefreshToken()
-    } catch (e) {
+    } catch {
       console.log('login from refresh token failed')
     }
   }

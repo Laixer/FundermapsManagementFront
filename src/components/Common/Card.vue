@@ -11,7 +11,7 @@ const { shadow, rounded, wide } = defineProps({
 
 const cardClasses = computed<string[]>(() => {
 
-  let classes = []
+  const classes = []
 
   // Link & outline & muted are mutually exclusive
   if (shadow) {

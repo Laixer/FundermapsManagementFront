@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, type Ref } from 'vue'
 
-// @ts-ignore TODO: PR to fix TS
+// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import '@bhplugin/vue3-datatable/dist/style.css'
@@ -11,8 +11,6 @@ import MainWrapper from '@/components/Layout/MainWrapper.vue'
 
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import FundermapsIcon from '@/components/Common/Icons/FundermapsIcon.vue'
-import Alert from '@/components/Common/Alert.vue'
-
 import type { IMapset } from '@/services/fundermaps/interfaces/IMapset.ts'
 import { getAllMapsets } from '@/services/fundermaps/endpoints/management/mapset.ts'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
@@ -35,7 +33,7 @@ const refreshList = async function () {
     loading.value = true
     error.value = false
     rows.value = await getAllMapsets()
-  } catch (e) {
+  } catch {
     error.value = true
   } finally {
     loading.value = false

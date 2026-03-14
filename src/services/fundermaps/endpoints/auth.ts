@@ -1,4 +1,4 @@
-import { get, post } from '../client'
+import { post } from '../client'
 
 export interface LoginResponse {
   access_token: string
@@ -8,7 +8,7 @@ export interface LoginResponse {
   refresh_token: string // currently set to expire in 365 days
 }
 
-export interface SessionTokens extends LoginResponse {}
+export type SessionTokens = LoginResponse
 
 export const login = async function login(email: string, password: string): Promise<LoginResponse> {
   return await post({

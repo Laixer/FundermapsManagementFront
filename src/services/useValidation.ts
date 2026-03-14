@@ -28,7 +28,7 @@ export default function <T extends ZodTypeAny>(
   }
 
   // Function to initiate validation watch
-  let unwatch = ref<null | (() => void)>(null)
+  const unwatch = ref<null | (() => void)>(null)
   const validationWatch = () => {
     if (unwatch.value !== null) {
       return

@@ -58,14 +58,14 @@ const makeCall = async function makeCall({
 }: {
   endpoint: string | URL
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  body?: BodyInit | any
+  body?: BodyInit | Record<string, unknown>
   queryString?: URLSearchParams | Record<string, string> | string
   requireAuth?: boolean
   autoredirect?: boolean
 }) {
   let fetchOptions = {}
-  let authHeader: AuthorizationHeader | {} = {}
-  let headers: Record<string, string> = {}
+  let authHeader: AuthorizationHeader | Record<string, never> = {}
+  const headers: Record<string, string> = {}
   let responseBody = null
   let url: URL
 
@@ -105,7 +105,7 @@ const makeCall = async function makeCall({
           url.searchParams.append(key, value)
         })
       }
-    } catch (e) {
+    } catch {
       throw new Error('Failed to process query string')
     }
 
@@ -113,7 +113,7 @@ const makeCall = async function makeCall({
       try {
         body = JSON.stringify(body)
         headers['Content-Type'] = 'application/json'
-      } catch (e) {
+      } catch {
         // Ignore failed JSON stringify attempts. Body may be a something fetch accepts directly
       }
     }
@@ -173,7 +173,7 @@ export const get = async function get({
   autoredirect,
 }: {
   endpoint: string
-  body?: BodyInit | any
+  body?: BodyInit | Record<string, unknown>
   queryString?: URLSearchParams | Record<string, string> | string
   requireAuth?: boolean
   autoredirect?: boolean
@@ -189,7 +189,7 @@ export const post = async function post({
   autoredirect,
 }: {
   endpoint: string
-  body?: BodyInit | any
+  body?: BodyInit | Record<string, unknown>
   queryString?: URLSearchParams | Record<string, string> | string
   requireAuth?: boolean
   autoredirect?: boolean
@@ -205,7 +205,7 @@ export const put = async function put({
   autoredirect,
 }: {
   endpoint: string
-  body?: BodyInit | any
+  body?: BodyInit | Record<string, unknown>
   queryString?: URLSearchParams | Record<string, string> | string
   requireAuth?: boolean
   autoredirect?: boolean
@@ -221,7 +221,7 @@ export const del = async function del({
   autoredirect,
 }: {
   endpoint: string
-  body?: BodyInit | any
+  body?: BodyInit | Record<string, unknown>
   queryString?: URLSearchParams | Record<string, string> | string
   requireAuth?: boolean
   autoredirect?: boolean

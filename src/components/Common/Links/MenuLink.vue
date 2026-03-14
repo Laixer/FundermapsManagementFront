@@ -10,7 +10,7 @@ const props = defineProps({
 })
 
 const classList = computed<string[]>(() => {
-  let list: string[] = []
+  const list: string[] = []
 
   if (props.disabled) {
     list.push('disabled')

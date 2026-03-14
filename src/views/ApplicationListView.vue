@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, type Ref } from 'vue'
 
-// @ts-ignore TODO: PR to fix TS
+// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import '@bhplugin/vue3-datatable/dist/style.css'
 
 import Card from '@/components/Common/Card.vue'
-import Button from '@/components/Common/Buttons/Button.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
-import CreateApplicationForm from '@/components/Management/Forms/CreateApplicationForm.vue'
-import Alert from '@/components/Common/Alert.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 
 import {
@@ -36,7 +33,7 @@ const refreshList = async function () {
     loading.value = true
     error.value = false
     rows.value = await getAllApplications()
-  } catch (e) {
+  } catch {
     error.value = true
   } finally {
     loading.value = false
@@ -49,10 +46,6 @@ const handleRowClick = function (row: IApplication) {
   console.log(row)
   showCreate.value = false
   record.value = row
-}
-const handleOpenModal = function () {
-  record.value = null
-  showCreate.value = true
 }
 const handleCloseModal = function () {
   showCreate.value = false

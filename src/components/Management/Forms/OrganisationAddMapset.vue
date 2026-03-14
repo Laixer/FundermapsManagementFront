@@ -13,7 +13,7 @@ const props = defineProps<{
   record: IOrg | null
 }>()
 
-const formData = {
+const initialFormData = {
   mapsetid: '',
 }
 const validationSchema = z
@@ -33,7 +33,7 @@ const formHandler = async function (formData: { mapsetid: string }) {
 <template>
   <Alert> This form is connected to the database </Alert>
   <Form
-    :form-data="formData"
+    :form-data="initialFormData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
     :inline="true"

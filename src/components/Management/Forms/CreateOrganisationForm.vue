@@ -6,7 +6,7 @@ import FormCard from '@/components/Management/FormCard.vue'
 import { createOrganisation } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import Alert from '@/components/Common/Alert.vue'
 
-const formData = {
+const initialFormData = {
   name: '',
 }
 const validationSchema = z
@@ -24,7 +24,7 @@ const formHandler = async function (formData: { name: string }) {
 <template>
   <FormCard
     title="Add organisation"
-    :form-data="formData"
+    :form-data="initialFormData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
     v-slot="{ formData, getStatus, getError, loading }"

@@ -23,7 +23,7 @@ export interface IClientOptions {
    * If set, this callback is called in case auth is required and the auth check failed
    *  if the callback returns a truthy value, the APITokenError exception is cancelled
    */
-  authCheckCallback?: Function | undefined
+  authCheckCallback?: ((...args: unknown[]) => unknown) | undefined
 }
 
 export interface IFetchOptions {
@@ -33,7 +33,7 @@ export interface IFetchOptions {
   endpoint: URL | string
 
   method: 'GET' | 'POST' | 'PUT'
-  body?: BodyInit | any
+  body?: BodyInit | Record<string, unknown>
   queryString?: URLSearchParams | Record<string, string> | string
 
   /**
@@ -46,7 +46,7 @@ export interface IFetchOptions {
    *  if the callback returns a truthy value, the APITokenError exception is cancelled
    * This overrides the client option
    */
-  authCheckCallback?: Function | undefined
+  authCheckCallback?: ((...args: unknown[]) => unknown) | undefined
 }
 
 export interface AuthorizationHeader {
@@ -56,7 +56,7 @@ export interface AuthorizationHeader {
 /******************************************************************************
  * The client options
  */
-let ClientOptions: IClientOptions = {
+const ClientOptions: IClientOptions = {
   basePath: import.meta.env.VITE_FUNDERMAPS_URL || undefined,
   apiKey: import.meta.env.VITE_AUTH_KEY || undefined,
   requireAuth: true,
@@ -125,7 +125,7 @@ const prepQueryString = function prepQueryString(
   url: URL,
   method: 'GET' | 'POST' | 'PUT',
   queryString?: URLSearchParams | Record<string, string> | string,
-  body?: BodyInit | any,
+  body?: BodyInit | Record<string, unknown>,
 ): URL {
   try {
     // If queryString is empty, and body either contains URLSearchParams, or is GET and contains a string
@@ -149,7 +149,7 @@ const prepQueryString = function prepQueryString(
     }
 
     return url
-  } catch (e) {
+  } catch {
     throw new Error('Failed to process query string')
   }
 }
@@ -158,14 +158,14 @@ const prepQueryString = function prepQueryString(
  * The body should typically be stringified, but not always
  */
 const maybeStringifyBody = function maybeStringifyBody(
-  body: BodyInit | any,
+  body: BodyInit | Record<string, unknown> | undefined,
   headers: Record<string, string>,
 ) {
   if (body && typeof body !== 'string') {
     try {
       body = JSON.stringify(body)
       headers['Content-Type'] = 'application/json'
-    } catch (e) {
+    } catch {
       // Ignore failed JSON stringify attempts. Body may be a something fetch accepts directly
     }
   }
@@ -220,7 +220,7 @@ class Client {
    * Constructor
    */
   constructor(options: IClientOptions | undefined = undefined) {
-    options && this.config(options)
+    if (options) this.config(options)
 
     if (ClientOptions.apiKey) {
       setAPIKey(ClientOptions.apiKey)
@@ -264,10 +264,10 @@ class Client {
    * The core fetch mechanism
    */
   async fetch(options: IFetchOptions) {
-    let endpoint = options.endpoint || undefined
+    const endpoint = options.endpoint || undefined
     let url: URL
     let fetchOptions = {}
-    let responseBody = null
+    const responseBody = null
 
     try {
       options = setDefaults(options)
@@ -279,7 +279,9 @@ class Client {
       url = prepUrl(options.endpoint)
       url = prepQueryString(url, options.method, options.queryString, options.body)
 
-      let { body, headers } = maybeStringifyBody(options.body, {})
+      const stringified = maybeStringifyBody(options.body, {})
+      const body = stringified.body
+      let headers = stringified.headers
 
       if (options.requireAuth) {
         headers = setAuthHeader(headers)

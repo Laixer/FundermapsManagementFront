@@ -20,7 +20,7 @@ export const updateUser = async function createUser(
   Avatar: string,
   Email?: string,
 ): Promise<IUser> {
-  const body: any = {
+  const body: Record<string, string> = {
     given_name: GivenName,
     family_name: LastName,
     job_title: JobTitle,

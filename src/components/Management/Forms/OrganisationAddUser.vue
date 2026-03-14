@@ -14,7 +14,7 @@ const props = defineProps<{
   record: IOrg | null
 }>()
 
-const formData = {
+const initialFormData = {
   userid: '',
   role: 'reader',
 }
@@ -42,7 +42,7 @@ const formHandler = async function (formData: { userid: string; role: string }) 
   <Form
     class="mt-4"
     title="Add an existing user to the organisation"
-    :form-data="formData"
+    :form-data="initialFormData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
     v-slot="{ formData, getStatus, getError, loading }"

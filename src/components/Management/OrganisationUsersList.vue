@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue'
 
-// @ts-ignore TODO: PR to fix TS
+// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 
-import {
-  getAllOrganisationUsers,
-  removeUserFromOrganisation,
-} from '@/services/fundermaps/endpoints/management/organisation.ts'
+import { getAllOrganisationUsers } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import Icon from '@/components/Common/Icons/Icon.vue'
 
 const props = defineProps<{

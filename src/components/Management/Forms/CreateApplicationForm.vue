@@ -6,7 +6,7 @@ import FormCard from '@/components/Management/FormCard.vue'
 import { createApplication } from '@/services/fundermaps/endpoints/management/applications.ts'
 import Alert from '@/components/Common/Alert.vue'
 
-const formData = {
+const initialFormData = {
   name: '',
 }
 const validationSchema = z
@@ -22,7 +22,7 @@ const formHandler = async function (formData: { name: string }) {
 </script>
 
 <template>
-  <FormCard title="Add application" :form-data="formData" :validation-schema="validationSchema"
+  <FormCard title="Add application" :form-data="initialFormData" :validation-schema="validationSchema"
     :formDataHandler="formHandler" v-slot="{ formData, getStatus, getError, loading }">
     <Alert> This form is connected to the database </Alert>
     <Input id="name" label="Application Name" placeholder="Enter the application name" type="text"

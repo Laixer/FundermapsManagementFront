@@ -18,7 +18,7 @@ function getSessionTokens(): SessionTokens | null {
     }
 
     return JSON.parse(token)
-  } catch (err) {
+  } catch {
     return null
   }
 }

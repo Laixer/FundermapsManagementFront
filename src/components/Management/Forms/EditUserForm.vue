@@ -5,7 +5,6 @@ import Input from '@/components/Common/Inputs/Input.vue'
 import FormCard from '@/components/Management/FormCard.vue'
 
 import { updateUser } from '@/services/fundermaps/endpoints/management/user.ts'
-import Alert from '@/components/Common/Alert.vue'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 
 const props = defineProps<{
@@ -72,7 +71,7 @@ const formHandler = async function (formData: {
 
 <template>
   <FormCard :title="`Edit ${record?.email}`" :form-data="formData" :validation-schema="validationSchema"
-    :formDataHandler="formHandler" v-slot="{ formData, getStatus, getError, loading }">
+    :formDataHandler="formHandler" v-slot="{ formData, getStatus, getError }">
     <!-- <Alert> This form is connected to the database </Alert> -->
 
     <Input id="email" label="Email Address" type="email" v-model="formData.email" placeholder="Enter email address"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, type Ref } from 'vue'
 
-// @ts-ignore TODO: PR to fix TS
+// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import '@bhplugin/vue3-datatable/dist/style.css'
@@ -42,7 +42,7 @@ const refreshList = async function () {
     loading.value = true
     error.value = false
     rows.value = await getAllOrganisations()
-  } catch (e) {
+  } catch {
     error.value = true
   } finally {
     loading.value = false

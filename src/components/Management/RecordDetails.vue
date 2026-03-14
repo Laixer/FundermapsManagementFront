@@ -9,7 +9,7 @@ defineProps({
   <div v-if="record" class="space-y-3">
     <h6 class="font-bold leading-none">{{ title }}</h6>
     <dl class="space-y-3">
-      <div v-for="prop in Object.keys(record || {})">
+      <div v-for="prop in Object.keys(record || {})" :key="prop">
         <dt>{{ prop }}</dt>
         <dd class="text-grey-700">
           {{ record?.[prop as keyof typeof record] || '-' }}

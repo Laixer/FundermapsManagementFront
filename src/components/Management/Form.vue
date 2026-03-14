@@ -11,7 +11,8 @@ const emit = defineEmits(['saved', 'cancel'])
 
 const props = withDefaults(
   defineProps<{
-    formDataHandler: Function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    formDataHandler: (formData: any) => void | Promise<void>
     title?: string
     formData?: Record<string, unknown>
     validationSchema?: ZodTypeAny

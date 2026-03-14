@@ -11,7 +11,7 @@ const props = defineProps<{
   record: IUser | null
 }>()
 
-const formData = {
+const initialFormData = {
   password: '',
 }
 const validationSchema = z
@@ -31,7 +31,7 @@ const formHandler = async function (formData: { password: string }) {
 <template>
   <Alert> This form is connected to the database </Alert>
   <Form
-    :form-data="formData"
+    :form-data="initialFormData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
     :inline="true"

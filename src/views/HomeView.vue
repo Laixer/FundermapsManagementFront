@@ -5,4 +5,4 @@ const router = useRouter()
 router.push({ name: 'users' })
 </script>
 
-<template></template>
+<template><div></div></template>

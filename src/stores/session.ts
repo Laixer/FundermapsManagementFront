@@ -51,7 +51,7 @@ async function login(email: string, password: string) {
     try {
       // clean up a partial success if need be
       logout()
-    } catch (e) {}
+    } catch {}
 
     throw e // pass on the unhappy news
   }
@@ -75,7 +75,7 @@ async function loginFromRefreshToken() {
     try {
       // clean up a partial success if need be
       logout()
-    } catch (e) {}
+    } catch {}
 
     throw e // pass on the unhappy news
   }
@@ -95,7 +95,7 @@ async function authenticateFromAccessToken() {
     try {
       // clean up a partial success if need be
       logout()
-    } catch (e) {}
+    } catch {}
 
     throw e // pass on the unhappy news
   }

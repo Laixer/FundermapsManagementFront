@@ -67,7 +67,7 @@ const handleGeneratePassword = () => {
     :form-data="formData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
-    v-slot="{ formData, getStatus, getError, loading }"
+    v-slot="{ formData, getStatus, getError }"
   >
     <Alert> This form is connected to the database </Alert>
     <Input

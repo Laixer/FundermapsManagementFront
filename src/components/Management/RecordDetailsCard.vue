@@ -4,7 +4,7 @@ import CloseBtn from '@/components/Common/Buttons/CloseBtn.vue'
 import Card from '@/components/Common/Card.vue'
 import RecordDetails from '@/components/Management/RecordDetails.vue'
 
-const emit = defineEmits(['close', 'edit'])
+defineEmits(['close', 'edit'])
 defineProps({
   title: { type: String, default: 'Record information' },
   record: { type: [Object, null] },
