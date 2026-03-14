@@ -15,7 +15,6 @@ const validationSchema = z
   .strict()
 
 const formHandler = async function (formData: { name: string }) {
-  console.log('save', formData)
   await createOrganisation(formData.name)
 }
 </script>

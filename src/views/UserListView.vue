@@ -11,6 +11,7 @@ import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
+import Alert from '@/components/Common/Alert.vue'
 
 import {
   createAPIKey,
@@ -51,13 +52,10 @@ const refreshList = async function () {
 onBeforeMount(refreshList)
 
 const handleRowClick = async function (row: IUser) {
-  console.log(row)
   showCreate.value = false
   showEdit.value = false
 
   record.value = await getUser(row.id)
-
-  console.log(record.value)
 }
 const handleOpenModal = function () {
   showEdit.value = false
@@ -78,8 +76,11 @@ const handleCloseModal = function () {
 
 const handleCreateAPIKey = async function () {
   if (record.value) {
+    if (!confirm('Generate a new API key for this user?')) return
+
     const response = await createAPIKey(record.value?.id)
-    alert(`API Key: ${response.key}`)
+    await navigator.clipboard.writeText(response.key)
+    alert('API key copied to clipboard: ' + response.key)
   }
 }
 
@@ -105,6 +106,9 @@ const renderName = function (data: IUser) {
         <h3 class="text-lg font-bold">Users</h3>
         <Button label="Add User" @click="handleOpenModal" />
       </div>
+      <Alert v-if="error" :closeable="true" @close="error = false">
+        An error occurred while trying to retrieve the list of records.
+      </Alert>
       <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
         :columnFilter="true" @rowClick="handleRowClick">
         <template #id="data">

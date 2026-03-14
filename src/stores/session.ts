@@ -46,7 +46,7 @@ async function login(email: string, password: string) {
 
     currentUser.value = await api.user.me()
   } catch (e) {
-    console.log(e)
+    console.error(e)
 
     try {
       // clean up a partial success if need be
@@ -70,7 +70,7 @@ async function loginFromRefreshToken() {
 
     currentUser.value = await api.user.me()
   } catch (e) {
-    console.log(e)
+    console.error(e)
 
     try {
       // clean up a partial success if need be
@@ -90,7 +90,7 @@ async function authenticateFromAccessToken() {
 
     currentUser.value = await api.user.me()
   } catch (e) {
-    console.log(e)
+    console.error(e)
 
     try {
       // clean up a partial success if need be
@@ -105,7 +105,6 @@ async function authenticateFromAccessToken() {
  * Clean up the session information
  */
 function logout() {
-  console.log('LOGOUT')
   removeSessionTokens()
   currentUser.value = null
 }

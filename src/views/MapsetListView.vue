@@ -14,6 +14,7 @@ import FundermapsIcon from '@/components/Common/Icons/FundermapsIcon.vue'
 import type { IMapset } from '@/services/fundermaps/interfaces/IMapset.ts'
 import { getAllMapsets } from '@/services/fundermaps/endpoints/management/mapset.ts'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
+import Alert from '@/components/Common/Alert.vue'
 
 const loading = ref(true)
 const error = ref(false)
@@ -57,6 +58,9 @@ const handleCloseModal = function () {
         <h3 class="text-lg font-bold">Mapsets</h3>
       </div>
 
+      <Alert v-if="error" :closeable="true" @close="error = false">
+        An error occurred while trying to retrieve the list of records.
+      </Alert>
       <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
         :columnFilter="true" @rowClick="handleRowClick">
         <template #id="data">
@@ -66,7 +70,7 @@ const handleCloseModal = function () {
           </div>
         </template>
         <template #public="data">
-          {{ data.value.public ? 'Ja' : 'Nee' }}
+          {{ data.value.public ? 'Yes' : 'No' }}
         </template>
         <template #icon="data">
           <FundermapsIcon v-if="data.value.icon" class="aspect-square h-3.5" :name="data.value.icon" />

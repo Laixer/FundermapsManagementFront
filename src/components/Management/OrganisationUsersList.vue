@@ -22,18 +22,22 @@ const userCols = [
 ]
 const userRows: Ref<IUser[]> = ref([])
 
-watch(
-  () => props.record,
-  async () => {
-    if (props.record) {
+const refresh = async function () {
+  if (props.record) {
+    try {
       userLoading.value = true
       userRows.value = await getAllOrganisationUsers(props.record.id)
-      console.log(userRows)
+    } catch (e) {
+      console.error(e)
+    } finally {
       userLoading.value = false
     }
-  },
-  { immediate: true },
-)
+  }
+}
+
+watch(() => props.record, refresh, { immediate: true })
+
+defineExpose({ refresh })
 
 // TODO: Prep before display
 const renderName = function (data: IUser) {

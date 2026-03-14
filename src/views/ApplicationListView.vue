@@ -43,7 +43,6 @@ const refreshList = async function () {
 onBeforeMount(refreshList)
 
 const handleRowClick = function (row: IApplication) {
-  console.log(row)
   showCreate.value = false
   record.value = row
 }

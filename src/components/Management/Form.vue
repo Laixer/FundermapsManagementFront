@@ -41,26 +41,21 @@ const completed = ref(false)
 const formData = ref(props.formData)
 
 // Activate validator
-const { validate, isValid, getError, getStatus, scrolltoError, errors, reset } = useValidation(
+const { validate, isValid, getError, getStatus, scrolltoError, reset } = useValidation(
   props.validationSchema,
   formData,
 )
 
 const handleSubmit = async function () {
   try {
-    console.log('Submit')
     loading.value = true
     error.value = false
 
     await validate()
 
     if (!isValid.value) {
-      console.log('is not valid')
-      console.log(formData.value, errors)
-
       scrolltoError('.validation__message', { offset: 200 })
     } else {
-      console.log('is valid')
       await props.formDataHandler(toValue(formData))
 
       completed.value = true

@@ -31,9 +31,6 @@ const passAuthCheckOrExit = function passAuthOrThrowException(
       }
     }
   } catch (e) {
-    console.log('failed to pass auth check')
-    console.log(e)
-
     // When auth is required & missing / expired => redirect to login
     if (autoredirect) {
       const route = useRoute()
@@ -135,9 +132,7 @@ const makeCall = async function makeCall({
       if (response.status !== 204) {
         responseBody = await response.json()
       }
-    } catch (e) {
-      console.log(e)
-
+    } catch {
       // Only make an issue out of a status code 200 failing
       if (response.ok && response.status === 200) {
         throw new Error('Failed to process response body')
@@ -152,8 +147,6 @@ const makeCall = async function makeCall({
 
     return responseBody
   } catch (err: unknown) {
-    console.log(err)
-
     if (err instanceof APIClientError) {
       throw err
     }

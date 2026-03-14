@@ -34,8 +34,8 @@ const formData = ref({
  */
 const validationSchema = z
   .object({
-    email: z.string().min(1, 'E-mail is vereist.'),
-    password: z.string().min(1, 'Wachtwoord is vereist.'),
+    email: z.string().min(1, 'Email is required.'),
+    password: z.string().min(1, 'Password is required.'),
   })
   .strict()
 
@@ -71,19 +71,19 @@ const handleSubmit = async function () {
 </script>
 
 <template>
-  <AuthWrapper title="Inlogpagina voor de Fundermaps Applicatie">
-    <Card title="Inloggen" shadow rounded wide>
+  <AuthWrapper title="Login page for the Fundermaps Application">
+    <Card title="Login" shadow rounded wide>
       <div v-if="loginFailed" class="flex justify-between">
-        <p class="text-red-500">De e-mail en wachtwoord combinatie is onjuist.</p>
+        <p class="text-red-500">The email and password combination is incorrect.</p>
       </div>
 
       <form class="space-y-6" @submit.prevent="handleSubmit">
         <Input
           id="email"
-          label="E-mail"
+          label="Email"
           type="email"
           v-model="formData.email"
-          placeholder="Voer je e-mail in"
+          placeholder="Enter your email"
           autocomplete="username"
           :validationStatus="getStatus('email')"
           :validationMessage="getError('email')"
@@ -93,10 +93,10 @@ const handleSubmit = async function () {
 
         <Input
           id="password"
-          label="Wachtwoord"
+          label="Password"
           :type="showPassword ? 'text' : 'password'"
           v-model="formData.password"
-          placeholder="Voer je wachtwoord in"
+          placeholder="Enter your password"
           autocomplete="current-password"
           :validationStatus="getStatus('password')"
           :validationMessage="getError('password')"
@@ -117,7 +117,7 @@ const handleSubmit = async function () {
                 aria-hidden="true"
                 @click="() => (showPassword = false)"
               />
-              <span class="sr-only"> Toggle wachtwoord zichtbaarheid </span>
+              <span class="sr-only"> Toggle password visibility </span>
             </button>
           </template>
         </Input>

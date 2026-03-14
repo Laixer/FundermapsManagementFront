@@ -30,6 +30,7 @@ const showCreate = ref(false)
 
 const activeTab: Ref<'users' | 'mapsets'> = ref('users')
 const record: Ref<IOrg | null> = ref(null)
+const orgUsersList = ref<InstanceType<typeof OrganisationUsersList> | null>(null)
 
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
@@ -94,8 +95,8 @@ const handleCloseModal = function () {
     <RecordDetailsCard title="Organisation information" :record="record" @close="handleCloseModal">
       <Tabs v-model="activeTab" />
       <div v-if="activeTab === 'users'">
-        <OrganisationUsersList :record="record" />
-        <OrganisationAddUser :record="record" />
+        <OrganisationUsersList ref="orgUsersList" :record="record" />
+        <OrganisationAddUser :record="record" @saved="orgUsersList?.refresh()" />
       </div>
       <div v-else>
         <OrganisationAddMapset :record="record" />

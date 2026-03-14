@@ -11,7 +11,7 @@ export const createUser = async function createUser(Email: string, Password: str
   })
 }
 
-export const updateUser = async function createUser(
+export const updateUser = async function updateUser(
   userId: string,
   GivenName: string,
   LastName: string,

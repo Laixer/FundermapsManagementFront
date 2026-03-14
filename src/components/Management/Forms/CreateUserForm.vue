@@ -36,8 +36,6 @@ const formHandler = async function (formData: {
   phone_number: string
   job_title: string
 }) {
-  console.log('save', formData)
-
   const user = await createUser(formData.email, formData.password)
 
   if (user) {

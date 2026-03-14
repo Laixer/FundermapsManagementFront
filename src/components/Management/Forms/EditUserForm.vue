@@ -52,7 +52,6 @@ const formHandler = async function (formData: {
   phone_number: string
   job_title: string
 }) {
-  console.log('save', formData)
   if (!props.record) {
     return
   }

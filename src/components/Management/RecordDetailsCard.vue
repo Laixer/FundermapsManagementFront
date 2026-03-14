@@ -13,7 +13,7 @@ defineProps({
 </script>
 
 <template>
-  <Card v-show="record" class="Details col-span-1">
+  <Card v-if="record" class="Details col-span-1">
     <div class="flex items-center justify-between">
       <Button v-if="editable" outline label="edit" @click="$emit('edit')" />
       <CloseBtn label="close" @click="$emit('close')" />
