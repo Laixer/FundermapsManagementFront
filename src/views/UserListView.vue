@@ -187,7 +187,7 @@ const formatDate = function (dateStr: string | null) {
       @close="handleCloseModal" />
 
     <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
-      @close="handleCloseModal" @edit="handleEdit">
+      :deletable="true" @close="handleCloseModal" @edit="handleEdit" @delete="handleDelete">
       <div class="space-y-6">
         <!-- User Info -->
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
@@ -251,11 +251,6 @@ const formatDate = function (dateStr: string | null) {
           </Vue3Datatable>
         </div>
 
-        <!-- Danger Zone -->
-        <div class="border-t border-red-200 pt-4">
-          <h6 class="mb-2 font-bold text-red-600">Danger Zone</h6>
-          <Button label="Delete User" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
-        </div>
       </div>
     </RecordDetailsCard>
   </MainWrapper>

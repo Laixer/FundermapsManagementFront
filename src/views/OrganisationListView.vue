@@ -123,7 +123,7 @@ const handleDelete = async function () {
       @close="handleCloseModal" />
 
     <RecordDetailsCard v-if="!showEdit" title="Organisation information" :record="record" :editable="true"
-      @edit="handleEdit" @close="handleCloseModal">
+      :deletable="true" @edit="handleEdit" @delete="handleDelete" @close="handleCloseModal">
       <Tabs v-model="activeTab" />
       <div v-if="activeTab === 'users'">
         <OrganisationUsersList ref="orgUsersList" :record="record" />
@@ -136,10 +136,6 @@ const handleDelete = async function () {
       </div>
       <div v-else-if="activeTab === 'geolock'">
         <OrganisationGeolockSection :record="record" />
-      </div>
-      <div class="mt-6 border-t border-red-200 pt-4">
-        <h6 class="mb-2 font-bold text-red-600">Danger Zone</h6>
-        <Button label="Delete Organisation" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
       </div>
     </RecordDetailsCard>
   </MainWrapper>
