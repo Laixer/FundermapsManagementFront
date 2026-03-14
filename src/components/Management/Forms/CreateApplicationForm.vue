@@ -4,7 +4,6 @@ import Input from '@/components/Common/Inputs/Input.vue'
 import FormCard from '@/components/Management/FormCard.vue'
 
 import { createApplication } from '@/services/fundermaps/endpoints/management/applications.ts'
-import Alert from '@/components/Common/Alert.vue'
 
 const initialFormData = {
   name: '',
@@ -24,7 +23,6 @@ const formHandler = async function (formData: { name: string }) {
 <template>
   <FormCard title="Add application" :form-data="initialFormData" :validation-schema="validationSchema"
     :formDataHandler="formHandler" v-slot="{ formData, getStatus, getError, loading }">
-    <Alert> This form is connected to the database </Alert>
     <Input id="name" label="Application Name" placeholder="Enter the application name" type="text"
       v-model="formData.name" :validationStatus="getStatus('name')" :validationMessage="getError('name')"
       :disabled="loading" :tabindex="1" />

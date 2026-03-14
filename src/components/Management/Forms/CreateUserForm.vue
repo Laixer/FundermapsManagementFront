@@ -6,7 +6,6 @@ import FormCard from '@/components/Management/FormCard.vue'
 import { generateStrongPassword } from '@/utils/password.ts'
 
 import { createUser, updateUser } from '@/services/fundermaps/endpoints/management/user.ts'
-import Alert from '@/components/Common/Alert.vue'
 
 const formData = ref({
   email: '',
@@ -69,7 +68,6 @@ const handleGeneratePassword = () => {
     :formDataHandler="formHandler"
     v-slot="{ formData, getStatus, getError }"
   >
-    <Alert> This form is connected to the database </Alert>
     <Input
       id="email"
       label="Email *"

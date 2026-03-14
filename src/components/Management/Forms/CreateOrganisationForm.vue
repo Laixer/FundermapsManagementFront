@@ -4,7 +4,6 @@ import Input from '@/components/Common/Inputs/Input.vue'
 import FormCard from '@/components/Management/FormCard.vue'
 
 import { createOrganisation } from '@/services/fundermaps/endpoints/management/organisation.ts'
-import Alert from '@/components/Common/Alert.vue'
 
 const initialFormData = {
   name: '',
@@ -29,7 +28,6 @@ const formHandler = async function (formData: { name: string }) {
     :formDataHandler="formHandler"
     v-slot="{ formData, getStatus, getError, loading }"
   >
-    <Alert> This form is connected to the database </Alert>
     <Input
       id="name"
       label="Organisation Name *"

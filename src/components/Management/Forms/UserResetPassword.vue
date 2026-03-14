@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import Input from '@/components/Common/Inputs/Input.vue'
-import Alert from '@/components/Common/Alert.vue'
 import Form from '@/components/Management/Form.vue'
 
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
@@ -29,7 +28,6 @@ const formHandler = async function (formData: { password: string }) {
 </script>
 
 <template>
-  <Alert> This form is connected to the database </Alert>
   <Form
     :form-data="initialFormData"
     :validation-schema="validationSchema"

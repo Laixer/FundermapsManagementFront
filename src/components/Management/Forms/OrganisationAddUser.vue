@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import Input from '@/components/Common/Inputs/Input.vue'
-import Alert from '@/components/Common/Alert.vue'
 import Select from '@/components/Common/Inputs/Select.vue'
 import Form from '@/components/Management/Form.vue'
 
@@ -38,7 +37,6 @@ const formHandler = async function (formData: { userid: string; role: string }) 
 </script>
 
 <template>
-  <Alert> This form is connected to the database </Alert>
   <Form
     class="mt-4"
     title="Add an existing user to the organisation"
