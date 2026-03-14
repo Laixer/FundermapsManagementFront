@@ -18,6 +18,7 @@ import Select from '@/components/Common/Inputs/Select.vue'
 import {
   createAPIKey,
   deleteUser,
+  getAPIKeys,
   getAllUsers,
   getUser,
   updateUserRole,
@@ -39,7 +40,15 @@ const cols = [
 ]
 const rows: Ref<IUser[]> = ref([])
 
+interface IAuthKey {
+  key: string
+  user_id: string
+  name: string | null
+  last_used: string | null
+}
+
 const record: Ref<IUser | null> = ref(null)
+const apiKeys: Ref<IAuthKey[]> = ref([])
 
 const refreshList = async function () {
   try {
@@ -60,6 +69,7 @@ const handleRowClick = async function (row: IUser) {
   showEdit.value = false
 
   record.value = await getUser(row.id)
+  apiKeys.value = await getAPIKeys(row.id)
 }
 const handleOpenModal = function () {
   showEdit.value = false
@@ -82,8 +92,9 @@ const handleCreateAPIKey = async function () {
   if (record.value) {
     if (!confirm('Generate a new API key for this user?')) return
 
-    const response = await createAPIKey(record.value?.id)
+    const response = await createAPIKey(record.value.id)
     await navigator.clipboard.writeText(response.key)
+    apiKeys.value = await getAPIKeys(record.value.id)
     alert('API key copied to clipboard: ' + response.key)
   }
 }
@@ -158,7 +169,17 @@ const renderName = function (data: IUser) {
     <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
       @close="handleCloseModal" @edit="handleEdit">
       <UserResetPassword :record="record" />
-      <Button label="Generate API Key" @click="handleCreateAPIKey" />
+      <div class="mt-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="block text-sm font-medium text-gray-700">API Keys</label>
+          <Button label="Generate" @click="handleCreateAPIKey" />
+        </div>
+        <div v-if="apiKeys.length === 0" class="text-sm text-gray-500">No API keys</div>
+        <div v-for="key in apiKeys" :key="key.key" class="flex items-center justify-between rounded border p-2 text-sm">
+          <code class="truncate">{{ key.key }}</code>
+          <CopyToClipboardIcon :value="key.key" />
+        </div>
+      </div>
       <div class="mt-4 space-y-2">
         <label class="block text-sm font-medium text-gray-700">Role</label>
         <Select

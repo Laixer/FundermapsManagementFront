@@ -20,6 +20,12 @@ export const createOrganisation = async function createOrganisation(Name: string
   })
 }
 
+export const getOrganisationMapsets = async function getOrganisationMapsets(orgId: string) {
+  return await get({
+    endpoint: `v1/management/org/${orgId}/mapset`,
+  })
+}
+
 export const addMapsetToOrganisation = async function addMapsetToOrganisation(
   orgId: string,
   MapsetID: string,

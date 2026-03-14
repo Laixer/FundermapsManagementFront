@@ -53,8 +53,14 @@ export const resetPassword = async function resetPassword(userId: string, Passwo
   })
 }
 
-export const createAPIKey = async function createAPIKey(userId: string) {
+export const getAPIKeys = async function getAPIKeys(userId: string) {
   return await get({
+    endpoint: `v1/management/user/${userId}/api-key`,
+  })
+}
+
+export const createAPIKey = async function createAPIKey(userId: string) {
+  return await post({
     endpoint: `v1/management/user/${userId}/api-key`,
   })
 }

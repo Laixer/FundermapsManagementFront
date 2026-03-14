@@ -16,6 +16,7 @@ import CreateOrganisationForm from '@/components/Management/Forms/CreateOrganisa
 import OrganisationForm from '@/components/Management/Forms/OrganisationForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import OrganisationUsersList from '@/components/Management/OrganisationUsersList.vue'
+import OrganisationMapsetsList from '@/components/Management/OrganisationMapsetsList.vue'
 
 import {
   deleteOrganisation,
@@ -34,6 +35,7 @@ const showEdit = ref(false)
 const activeTab: Ref<'users' | 'mapsets'> = ref('users')
 const record: Ref<IOrg | null> = ref(null)
 const orgUsersList = ref<InstanceType<typeof OrganisationUsersList> | null>(null)
+const orgMapsetsList = ref<InstanceType<typeof OrganisationMapsetsList> | null>(null)
 
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
@@ -128,8 +130,9 @@ const handleDelete = async function () {
         <OrganisationAddUser :record="record" @saved="orgUsersList?.refresh()" />
       </div>
       <div v-else>
-        <OrganisationAddMapset :record="record" />
-        <OrganisationRemoveMapset :record="record" />
+        <OrganisationMapsetsList ref="orgMapsetsList" :record="record" />
+        <OrganisationAddMapset :record="record" @saved="orgMapsetsList?.refresh()" />
+        <OrganisationRemoveMapset :record="record" @saved="orgMapsetsList?.refresh()" />
       </div>
       <div class="mt-4 border-t pt-4">
         <Button label="Delete Organisation" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
