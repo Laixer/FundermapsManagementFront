@@ -65,6 +65,13 @@ export const createAPIKey = async function createAPIKey(userId: string) {
   })
 }
 
+export const deleteAPIKey = async function deleteAPIKey(userId: string, key: string) {
+  return await del({
+    endpoint: `v1/management/user/${userId}/api-key`,
+    body: { key },
+  })
+}
+
 export const getAllUsers = async function getAllUsers(): Promise<IUser[]> {
   return await get({
     endpoint: 'v1/management/user?limit=1000',

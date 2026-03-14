@@ -11,12 +11,14 @@ import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
+import Icon from '@/components/Common/Icons/Icon.vue'
 import Alert from '@/components/Common/Alert.vue'
 
 import Select from '@/components/Common/Inputs/Select.vue'
 
 import {
   createAPIKey,
+  deleteAPIKey,
   deleteUser,
   getAPIKeys,
   getAllUsers,
@@ -50,6 +52,7 @@ interface IAuthKey {
 const apiKeyCols = [
   { field: 'key', title: 'Key', isUnique: true },
   { field: 'last_used', title: 'Last Used' },
+  { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
 ]
 
 const record: Ref<IUser | null> = ref(null)
@@ -102,6 +105,14 @@ const handleCreateAPIKey = async function () {
     apiKeys.value = await getAPIKeys(record.value.id)
     alert('API key copied to clipboard: ' + response.key)
   }
+}
+
+const handleDeleteAPIKey = async function (key: string) {
+  if (!record.value) return
+  if (!confirm('Delete this API key? This cannot be undone.')) return
+
+  await deleteAPIKey(record.value.id, key)
+  apiKeys.value = await getAPIKeys(record.value.id)
 }
 
 const handleDelete = async function () {
@@ -205,6 +216,11 @@ const renderName = function (data: IUser) {
                 <code class="truncate">{{ data.value.key }}</code>
                 <CopyToClipboardIcon :value="data.value.key" />
               </div>
+            </template>
+            <template #actions="data">
+              <button @click.stop="handleDeleteAPIKey(data.value.key)">
+                <Icon class="aspect-square w-3" name="trash-solid" />
+              </button>
             </template>
           </Vue3Datatable>
         </div>
