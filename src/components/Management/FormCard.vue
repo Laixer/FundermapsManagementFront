@@ -31,6 +31,8 @@ withDefaults(
       :formDataHandler="formDataHandler"
       :formData="formData"
       :validationSchema="validationSchema"
+      @saved="emit('saved')"
+      @cancel="emit('cancel')"
       v-slot="{ formData, getStatus, getError, loading }"
     >
       <slot :formData="formData" :getError="getError" :getStatus="getStatus" :loading="loading" />
