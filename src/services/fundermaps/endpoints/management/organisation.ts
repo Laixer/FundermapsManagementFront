@@ -83,3 +83,9 @@ export const updateOrganisation = async function updateOrganisation(orgId: strin
   })
 }
 
+export const deleteOrganisation = async function deleteOrganisation(orgId: string) {
+  return await del({
+    endpoint: `v1/management/org/${orgId}`,
+  })
+}
+

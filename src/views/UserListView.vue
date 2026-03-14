@@ -13,10 +13,14 @@ import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import Alert from '@/components/Common/Alert.vue'
 
+import Select from '@/components/Common/Inputs/Select.vue'
+
 import {
   createAPIKey,
+  deleteUser,
   getAllUsers,
   getUser,
+  updateUserRole,
 } from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import UserResetPassword from '@/components/Management/Forms/UserResetPassword.vue'
@@ -84,6 +88,31 @@ const handleCreateAPIKey = async function () {
   }
 }
 
+const handleDelete = async function () {
+  if (!record.value) return
+  if (!confirm(`Delete user "${record.value.email}"? This cannot be undone.`)) return
+
+  try {
+    await deleteUser(record.value.id)
+    record.value = null
+    showEdit.value = false
+    await refreshList()
+  } catch {
+    alert('Failed to delete user.')
+  }
+}
+
+const handleRoleChange = async function (newRole: string) {
+  if (!record.value) return
+  try {
+    await updateUserRole(record.value.id, newRole)
+    record.value = await getUser(record.value.id)
+    await refreshList()
+  } catch {
+    alert('Failed to update user role.')
+  }
+}
+
 const renderName = function (data: IUser) {
   if (data.given_name && data.family_name) {
     return `${data.given_name} ${data.family_name}`
@@ -130,6 +159,21 @@ const renderName = function (data: IUser) {
       @close="handleCloseModal" @edit="handleEdit">
       <UserResetPassword :record="record" />
       <Button label="Generate API Key" @click="handleCreateAPIKey" />
+      <div class="mt-4 space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Role</label>
+        <Select
+          id="role"
+          :options="[
+            { label: 'User', value: 'user' },
+            { label: 'Administrator', value: 'administrator' },
+          ]"
+          :modelValue="record?.role"
+          @update:modelValue="handleRoleChange"
+        />
+      </div>
+      <div class="mt-4 border-t pt-4">
+        <Button label="Delete User" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
+      </div>
     </RecordDetailsCard>
   </MainWrapper>
 </template>

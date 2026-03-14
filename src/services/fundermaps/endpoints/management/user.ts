@@ -1,4 +1,4 @@
-import { get, post, put } from '../../client'
+import { del, get, post, put } from '../../client'
 import type { IUser } from '../../interfaces/IUser'
 
 export const createUser = async function createUser(Email: string, Password: string) {
@@ -62,6 +62,19 @@ export const createAPIKey = async function createAPIKey(userId: string) {
 export const getAllUsers = async function getAllUsers(): Promise<IUser[]> {
   return await get({
     endpoint: 'v1/management/user?limit=1000',
+  })
+}
+
+export const deleteUser = async function deleteUser(userId: string) {
+  return await del({
+    endpoint: `v1/management/user/${userId}`,
+  })
+}
+
+export const updateUserRole = async function updateUserRole(userId: string, role: string) {
+  return await put({
+    endpoint: `v1/management/user/${userId}`,
+    body: { role },
   })
 }
 

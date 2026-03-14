@@ -18,6 +18,7 @@ import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.v
 import OrganisationUsersList from '@/components/Management/OrganisationUsersList.vue'
 
 import {
+  deleteOrganisation,
   getAllOrganisations,
   type IOrg,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
@@ -76,6 +77,20 @@ const handleEdit = function () {
   showEdit.value = true
 }
 
+const handleDelete = async function () {
+  if (!record.value) return
+  if (!confirm(`Delete organisation "${record.value.name}"? This cannot be undone.`)) return
+
+  try {
+    await deleteOrganisation(record.value.id)
+    record.value = null
+    showEdit.value = false
+    await refreshList()
+  } catch {
+    alert('Failed to delete organisation.')
+  }
+}
+
 </script>
 
 <template>
@@ -115,6 +130,9 @@ const handleEdit = function () {
       <div v-else>
         <OrganisationAddMapset :record="record" />
         <OrganisationRemoveMapset :record="record" />
+      </div>
+      <div class="mt-4 border-t pt-4">
+        <Button label="Delete Organisation" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
       </div>
     </RecordDetailsCard>
   </MainWrapper>
