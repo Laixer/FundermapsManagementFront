@@ -168,32 +168,44 @@ const renderName = function (data: IUser) {
 
     <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
       @close="handleCloseModal" @edit="handleEdit">
-      <UserResetPassword :record="record" />
-      <div class="mt-4 space-y-2">
-        <div class="flex items-center justify-between">
-          <label class="block text-sm font-medium text-gray-700">API Keys</label>
-          <Button label="Generate" @click="handleCreateAPIKey" />
+      <div class="space-y-6">
+        <!-- Role -->
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700">Role</label>
+          <Select
+            id="role"
+            :options="[
+              { label: 'User', value: 'user' },
+              { label: 'Administrator', value: 'administrator' },
+            ]"
+            :modelValue="record?.role"
+            @update:modelValue="handleRoleChange"
+          />
         </div>
-        <div v-if="apiKeys.length === 0" class="text-sm text-gray-500">No API keys</div>
-        <div v-for="key in apiKeys" :key="key.key" class="flex items-center justify-between rounded border p-2 text-sm">
-          <code class="truncate">{{ key.key }}</code>
-          <CopyToClipboardIcon :value="key.key" />
+
+        <!-- Password Reset -->
+        <div class="border-t pt-4">
+          <UserResetPassword :record="record" />
         </div>
-      </div>
-      <div class="mt-4 space-y-2">
-        <label class="block text-sm font-medium text-gray-700">Role</label>
-        <Select
-          id="role"
-          :options="[
-            { label: 'User', value: 'user' },
-            { label: 'Administrator', value: 'administrator' },
-          ]"
-          :modelValue="record?.role"
-          @update:modelValue="handleRoleChange"
-        />
-      </div>
-      <div class="mt-4 border-t pt-4">
-        <Button label="Delete User" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
+
+        <!-- API Keys -->
+        <div class="border-t pt-4">
+          <div class="mb-2 flex items-center justify-between">
+            <h6 class="font-bold">API Keys</h6>
+            <Button label="Generate" @click="handleCreateAPIKey" />
+          </div>
+          <div v-if="apiKeys.length === 0" class="text-sm text-gray-500">No API keys</div>
+          <div v-for="key in apiKeys" :key="key.key" class="flex items-center justify-between rounded border p-2 text-sm">
+            <code class="truncate">{{ key.key }}</code>
+            <CopyToClipboardIcon :value="key.key" />
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="border-t border-red-200 pt-4">
+          <h6 class="mb-2 font-bold text-red-600">Danger Zone</h6>
+          <Button label="Delete User" class="bg-red-600 hover:bg-red-700" @click="handleDelete" />
+        </div>
       </div>
     </RecordDetailsCard>
   </MainWrapper>

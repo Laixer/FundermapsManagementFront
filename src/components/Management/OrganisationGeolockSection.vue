@@ -16,6 +16,7 @@ import {
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import Icon from '@/components/Common/Icons/Icon.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
+import Input from '@/components/Common/Inputs/Input.vue'
 
 const props = defineProps<{
   record: IOrg | null
@@ -105,8 +106,10 @@ async function handleRemoveNeighborhood(id: string) {
           <Icon class="aspect-square w-3" name="trash-solid" />
         </button>
       </div>
-      <form class="mt-2 flex items-center gap-2" @submit.prevent="handleAddDistrict">
-        <input v-model="newDistrict" type="text" placeholder="District ID" class="grow rounded border px-2 py-1 text-sm" />
+      <form class="mt-2 flex items-end gap-2" @submit.prevent="handleAddDistrict">
+        <div class="grow">
+          <Input id="new-district" placeholder="Enter district ID" type="text" v-model="newDistrict" />
+        </div>
         <Button type="submit" label="Add" />
       </form>
     </div>
@@ -120,8 +123,10 @@ async function handleRemoveNeighborhood(id: string) {
           <Icon class="aspect-square w-3" name="trash-solid" />
         </button>
       </div>
-      <form class="mt-2 flex items-center gap-2" @submit.prevent="handleAddMunicipality">
-        <input v-model="newMunicipality" type="text" placeholder="Municipality ID" class="grow rounded border px-2 py-1 text-sm" />
+      <form class="mt-2 flex items-end gap-2" @submit.prevent="handleAddMunicipality">
+        <div class="grow">
+          <Input id="new-municipality" placeholder="Enter municipality ID" type="text" v-model="newMunicipality" />
+        </div>
         <Button type="submit" label="Add" />
       </form>
     </div>
@@ -135,8 +140,10 @@ async function handleRemoveNeighborhood(id: string) {
           <Icon class="aspect-square w-3" name="trash-solid" />
         </button>
       </div>
-      <form class="mt-2 flex items-center gap-2" @submit.prevent="handleAddNeighborhood">
-        <input v-model="newNeighborhood" type="text" placeholder="Neighborhood ID" class="grow rounded border px-2 py-1 text-sm" />
+      <form class="mt-2 flex items-end gap-2" @submit.prevent="handleAddNeighborhood">
+        <div class="grow">
+          <Input id="new-neighborhood" placeholder="Enter neighborhood ID" type="text" v-model="newNeighborhood" />
+        </div>
         <Button type="submit" label="Add" />
       </form>
     </div>

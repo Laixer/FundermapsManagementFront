@@ -13,12 +13,6 @@ import { RouterView } from 'vue-router'
 
 .List {
   margin: 2rem;
-
-  /* min-width: 60vw;
-  max-width: 70vw;
-
-  margin-right: auto;
-  margin-bottom: auto; */
 }
 
 .Details {

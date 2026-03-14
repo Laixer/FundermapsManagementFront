@@ -22,9 +22,6 @@ import { RouterLink } from 'vue-router'
       <RouterLink class="px-2 transition-colors hover:text-green-700" :to="{ name: 'mapsets' }"
         >Mapsets</RouterLink
       >
-      <!-- <RouterLink class="px-2 transition-colors hover:text-green-700" :to="{ name: 'applications' }"
-        >Applications</RouterLink
-      > -->
     </div>
 
     <div class="flex w-full flex-row-reverse items-center justify-between gap-8">
