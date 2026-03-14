@@ -29,9 +29,6 @@ const router = createRouter({
       component: NoAccess,
     },
 
-    /**************************************************************************
-     * Application
-     */
     {
       name: 'home',
       path: '/',
@@ -42,31 +39,16 @@ const router = createRouter({
       path: '/organisation',
       component: OrganisationListView,
     },
-    {
-      name: 'organisation',
-      path: '/organisation/:orgId',
-      component: OrganisationListView,
-    },
 
     {
       name: 'mapsets',
       path: '/mapset',
       component: MapsetListView,
     },
-    {
-      name: 'mapset',
-      path: '/mapset/:mapsetId',
-      component: MapsetListView,
-    },
 
     {
       name: 'users',
       path: '/user',
-      component: UserListView,
-    },
-    {
-      name: 'user',
-      path: '/user/:userId',
       component: UserListView,
     },
   ],
@@ -78,7 +60,6 @@ router.beforeEach(async (to) => {
 
   // Try to authenticate the user from the refresh token
   if (
-    // to.name !== 'login' &&
     to.name !== '403' &&
     !isAuthenticated.value &&
     hasAccessToken() &&
@@ -101,7 +82,7 @@ router.beforeEach(async (to) => {
     return { name: 'login' }
   }
 
-  // Only administorators are allowed access
+  // Only administrators are allowed access
   if (to.name !== '403' && to.name !== 'login') {
     if (!isAdministrator.value) {
       return { name: '403' }

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, type Ref } from 'vue'
 
-// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import '@bhplugin/vue3-datatable/dist/style.css'

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue'
 
-// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
+import { renderUserName } from '@/utils/user'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 
 import {
@@ -43,18 +43,6 @@ watch(() => props.record, refresh, { immediate: true })
 
 defineExpose({ refresh })
 
-const renderName = function (data: IUser) {
-  if (data.given_name && data.family_name) {
-    return `${data.given_name} ${data.family_name}`
-  }
-  if (data.given_name) {
-    return data.given_name
-  }
-  if (data.family_name) {
-    return data.family_name
-  }
-  return ''
-}
 
 const handleRemoveUser = async function (row: IUser) {
   if (!props.record) {
@@ -62,7 +50,7 @@ const handleRemoveUser = async function (row: IUser) {
   }
 
   const confirmed = confirm(
-    `Confirm removing ${renderName(row) || row.email} from ${props.record.name}`,
+    `Confirm removing ${renderUserName(row) || row.email} from ${props.record.name}`,
   )
 
   if (confirmed) {
@@ -76,7 +64,7 @@ const handleRemoveUser = async function (row: IUser) {
   <Vue3Datatable :rows="userRows" :columns="userCols" :loading="userLoading" sortColumn="name" :sortable="true"
     :columnFilter="true">
     <template #given_name="data">
-      {{ renderName(data.value) }}
+      {{ renderUserName(data.value) }}
     </template>
     <template #actions="data">
       <div class="flex gap-1">

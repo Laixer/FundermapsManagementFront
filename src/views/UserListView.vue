@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, type Ref } from 'vue'
 
-// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 import '@bhplugin/vue3-datatable/dist/style.css'
 
@@ -26,6 +25,7 @@ import {
   updateUserRole,
 } from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
+import { renderUserName } from '@/utils/user'
 import UserResetPassword from '@/components/Management/Forms/UserResetPassword.vue'
 import EditUserForm from '@/components/Management/Forms/EditUserForm.vue'
 
@@ -153,18 +153,6 @@ const formatDate = function (dateStr: string | null) {
   })
 }
 
-const renderName = function (data: IUser) {
-  if (data.given_name && data.family_name) {
-    return `${data.given_name} ${data.family_name}`
-  }
-  if (data.given_name) {
-    return data.given_name
-  }
-  if (data.family_name) {
-    return data.family_name
-  }
-  return ''
-}
 </script>
 
 <template>
@@ -186,7 +174,7 @@ const renderName = function (data: IUser) {
           </div>
         </template>
         <template #given_name="data">
-          {{ renderName(data.value) }}
+          {{ renderUserName(data.value) }}
         </template>
         <template #last_login="data">
           {{ formatDate(data.value.last_login) }}
@@ -206,7 +194,7 @@ const renderName = function (data: IUser) {
           <dt class="font-medium text-gray-500">Email</dt>
           <dd>{{ record?.email }}</dd>
           <dt class="font-medium text-gray-500">Name</dt>
-          <dd>{{ renderName(record!) || '-' }}</dd>
+          <dd>{{ renderUserName(record!) || '-' }}</dd>
           <dt class="font-medium text-gray-500">Phone</dt>
           <dd>{{ record?.phone_number || '-' }}</dd>
           <dt class="font-medium text-gray-500">Job Title</dt>

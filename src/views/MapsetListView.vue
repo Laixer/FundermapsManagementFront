@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onBeforeMount, ref, type Ref } from 'vue'
 
-// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import '@bhplugin/vue3-datatable/dist/style.css'
@@ -78,6 +77,26 @@ const handleCloseModal = function () {
       </Vue3Datatable>
     </Card>
 
-    <RecordDetailsCard title="Mapset information" :record="record" @close="handleCloseModal" />
+    <RecordDetailsCard title="Mapset information" :record="record" @close="handleCloseModal">
+      <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <dt class="font-medium text-gray-500">Name</dt>
+        <dd>{{ record?.name }}</dd>
+        <dt class="font-medium text-gray-500">Slug</dt>
+        <dd>{{ record?.slug }}</dd>
+        <dt class="font-medium text-gray-500">Public</dt>
+        <dd>{{ record?.public ? 'Yes' : 'No' }}</dd>
+        <dt class="font-medium text-gray-500">Note</dt>
+        <dd>{{ record?.note || '-' }}</dd>
+        <dt class="font-medium text-gray-500">Order</dt>
+        <dd>{{ record?.order }}</dd>
+      </dl>
+      <div class="mt-4 border-t pt-4">
+        <h6 class="mb-1 font-bold">ID</h6>
+        <div class="flex items-center gap-2 text-sm">
+          <code>{{ record?.id }}</code>
+          <CopyToClipboardIcon :value="record?.id ?? ''" />
+        </div>
+      </div>
+    </RecordDetailsCard>
   </MainWrapper>
 </template>

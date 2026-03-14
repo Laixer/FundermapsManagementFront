@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue'
 
-// @ts-expect-error TODO: PR to fix TS
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
