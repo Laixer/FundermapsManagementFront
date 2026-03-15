@@ -32,7 +32,9 @@ const refreshList = async function () {
   try {
     loading.value = true
     error.value = false
-    rows.value = await getAllJobs()
+    const jobs = await getAllJobs()
+    jobs.sort((a, b) => b.id - a.id)
+    rows.value = jobs
   } catch {
     error.value = true
   } finally {
