@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 
 import OrganisationListView from '@/views/OrganisationListView.vue'
 import MapsetListView from '@/views/MapsetListView.vue'
+import JobListView from '@/views/JobListView.vue'
 import UserListView from '@/views/UserListView.vue'
 import Login from '@/views/auth/Login.vue'
 import NoAccess from '@/views/auth/403.vue'
@@ -50,6 +51,12 @@ const router = createRouter({
       name: 'users',
       path: '/user',
       component: UserListView,
+    },
+
+    {
+      name: 'jobs',
+      path: '/job',
+      component: JobListView,
     },
   ],
 })
