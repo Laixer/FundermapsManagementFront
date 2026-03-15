@@ -20,7 +20,7 @@ const error = ref(false)
 const record: Ref<IJob | null> = ref(null)
 
 const cols = [
-  { field: 'id', title: 'ID', isUnique: true, width: '5rem' },
+  { field: 'id', title: 'ID', isUnique: true, width: '5rem', type: 'number' },
   { field: 'job_type', title: 'Type' },
   { field: 'status', title: 'Status', width: '7rem' },
   { field: 'priority', title: 'Priority', width: '5rem' },
