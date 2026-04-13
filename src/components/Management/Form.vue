@@ -26,7 +26,7 @@ const props = withDefaults(
      * Validation is optional. We can let the API decide what is valid
      */
     validationSchema: () => {
-      return z.strictObject({})
+      return z.any()
     },
     inline: false,
   },

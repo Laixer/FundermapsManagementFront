@@ -9,7 +9,6 @@ import Card from '@/components/Common/Card.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
-import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import Alert from '@/components/Common/Alert.vue'
 import type { IJob } from '@/services/fundermaps/interfaces/IJob'
 import { getAllJobs } from '@/services/fundermaps/endpoints/management/job'

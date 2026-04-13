@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue'
+import { z } from 'zod'
 
 import Vue3Datatable from '@bhplugin/vue3-datatable'
 
@@ -23,6 +24,10 @@ import Input from '@/components/Common/Inputs/Input.vue'
 const props = defineProps<{
   record: IOrg | null
 }>()
+
+const validationSchema = z.object({
+  id: z.string().min(1, 'ID is required'),
+})
 
 const districts: Ref<IGeolock[]> = ref([])
 const municipalities: Ref<IGeolock[]> = ref([])
@@ -116,10 +121,19 @@ async function handleRemoveNeighborhood(id: string) {
       <Form
         :form-data="{ id: '' }"
         :formDataHandler="handleAddDistrict"
+        :validation-schema="validationSchema"
         :inline="true"
-        v-slot="{ formData, loading: formLoading }"
+        v-slot="{ formData, getError, getStatus, loading: formLoading }"
       >
-        <Input id="add-district" placeholder="Enter district ID" type="text" v-model="formData.id" :disabled="formLoading" />
+        <Input
+          id="add-district"
+          placeholder="Enter district ID"
+          type="text"
+          v-model="formData.id"
+          :disabled="formLoading"
+          :validation-status="getStatus('id')"
+          :validation-message="getError('id')"
+        />
       </Form>
     </div>
 
@@ -135,10 +149,19 @@ async function handleRemoveNeighborhood(id: string) {
       <Form
         :form-data="{ id: '' }"
         :formDataHandler="handleAddMunicipality"
+        :validation-schema="validationSchema"
         :inline="true"
-        v-slot="{ formData, loading: formLoading }"
+        v-slot="{ formData, getError, getStatus, loading: formLoading }"
       >
-        <Input id="add-municipality" placeholder="Enter municipality ID" type="text" v-model="formData.id" :disabled="formLoading" />
+        <Input
+          id="add-municipality"
+          placeholder="Enter municipality ID"
+          type="text"
+          v-model="formData.id"
+          :disabled="formLoading"
+          :validation-status="getStatus('id')"
+          :validation-message="getError('id')"
+        />
       </Form>
     </div>
 
@@ -154,10 +177,19 @@ async function handleRemoveNeighborhood(id: string) {
       <Form
         :form-data="{ id: '' }"
         :formDataHandler="handleAddNeighborhood"
+        :validation-schema="validationSchema"
         :inline="true"
-        v-slot="{ formData, loading: formLoading }"
+        v-slot="{ formData, getError, getStatus, loading: formLoading }"
       >
-        <Input id="add-neighborhood" placeholder="Enter neighborhood ID" type="text" v-model="formData.id" :disabled="formLoading" />
+        <Input
+          id="add-neighborhood"
+          placeholder="Enter neighborhood ID"
+          type="text"
+          v-model="formData.id"
+          :disabled="formLoading"
+          :validation-status="getStatus('id')"
+          :validation-message="getError('id')"
+        />
       </Form>
     </div>
   </div>
