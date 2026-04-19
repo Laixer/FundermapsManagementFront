@@ -1,6 +1,22 @@
 @import url('../public/resources/styles/app.css');
 
+/* Soften the default card drop shadow from the shared stylesheet */
+.card {
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.04),
+    0 1px 3px 0 rgb(0 0 0 / 0.06);
+}
+
 /* Highlight the currently selected row in Vue3Datatable lists */
 tr.is-selected-row td {
+  background-color: theme(colors.green.100) !important;
+}
+
+/* Subtle hover on the main list tables only (List card contents) */
+.List .bh-table-responsive tbody tr:hover td {
+  background-color: theme(colors.grey.100);
+  cursor: pointer;
+}
+.List .bh-table-responsive tbody tr.is-selected-row:hover td {
   background-color: theme(colors.green.100) !important;
 }

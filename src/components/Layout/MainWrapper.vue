@@ -10,7 +10,7 @@ import Header from '@/components/Layout/Header.vue'
   <div class="page-dashboard">
     <Header />
 
-    <div class="app-view | grid grid-flow-row-dense grid-cols-3 gap-6 bg-grey-100 px-6 py-6">
+    <div class="app-view | grid grid-flow-row-dense grid-cols-3 gap-3 bg-grey-100 px-3 py-3">
       <slot />
     </div>
   </div>
