@@ -16,7 +16,7 @@ const navLinks = [
     class="app-header fixed inset-x-0 top-0 isolate z-50 flex items-center gap-8 bg-white/85 px-6 shadow-[0_1px_0_0_theme(colors.grey.200)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
   >
     <RouterLink :to="{ name: 'users' }" class="flex-shrink-0 outline-none" aria-label="Fundermaps">
-      <img :src="fundermapsLogo" alt="Fundermaps" class="h-5 w-auto" />
+      <img :src="fundermapsLogo" alt="Fundermaps" class="h-7 w-auto" />
     </RouterLink>
 
     <nav class="flex h-full items-stretch gap-1">
@@ -24,7 +24,7 @@ const navLinks = [
         v-for="link in navLinks"
         :key="link.name"
         :to="{ name: link.name }"
-        class="nav-link relative inline-flex items-center px-3 text-sm font-semibold text-grey-700 transition-colors hover:text-grey-800"
+        class="nav-link relative inline-flex items-center px-4 text-sm font-semibold text-grey-700 transition-colors hover:text-grey-800"
       >
         {{ link.label }}
       </RouterLink>
@@ -40,8 +40,8 @@ const navLinks = [
 .nav-link::after {
   content: '';
   position: absolute;
-  left: 0.75rem;
-  right: 0.75rem;
+  left: 1rem;
+  right: 1rem;
   bottom: -1px;
   height: 2px;
   border-radius: 2px 2px 0 0;

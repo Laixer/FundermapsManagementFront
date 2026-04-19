@@ -33,7 +33,7 @@ const handleLogout = async function () {
   <div class="flex items-center gap-3">
     <div class="flex items-center gap-2">
       <span
-        class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-800"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-800"
         aria-hidden="true"
       >
         {{ initials }}
