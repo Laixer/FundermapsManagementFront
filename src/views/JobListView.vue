@@ -83,7 +83,7 @@ const formatDate = function (date: string | null) {
   <MainWrapper>
     <Card class="List col-span-2">
       <header
-        class="-mx-8 -mt-8 flex items-center justify-between gap-4 border-b border-grey-200 px-8 pb-5 pt-6"
+        class="-mx-5 -mt-5 flex items-center justify-between gap-4 border-b border-grey-200 px-5 py-4"
       >
         <div>
           <h2 class="heading-3">Jobs</h2>

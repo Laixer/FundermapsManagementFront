@@ -33,7 +33,7 @@ const cardClasses = computed<string[]>(() => {
 
 <template>
   <div 
-    class="card bg-white | grid space-y-6 p-8"
+    class="card bg-white | grid space-y-5 p-5"
     :class="cardClasses">
     <header v-if="title" class="card__header">
       <h3 class="heading-3">{{ title }}</h3>

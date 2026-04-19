@@ -17,7 +17,7 @@ defineProps({
   <Card class="Details col-span-1">
     <template v-if="record">
       <header
-        class="-mx-8 -mt-8 flex items-center justify-between gap-2 border-b border-grey-200 px-8 pb-5 pt-6"
+        class="-mx-5 -mt-5 flex items-center justify-between gap-2 border-b border-grey-200 px-5 py-4"
       >
         <h3 class="heading-4">{{ title }}</h3>
         <div class="flex items-center gap-2">
