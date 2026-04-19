@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import GrayLogo from '@/components/Branding/GrayLogo.vue'
 import UserMenu from '@/components/UserMenu.vue'
 import { RouterLink } from 'vue-router'
+import fundermapsLogo from '@assets/svg/fundermaps.svg?url'
 
 const navLinks = [
   { name: 'users', label: 'Users' },
@@ -13,16 +13,18 @@ const navLinks = [
 
 <template>
   <header
-    class="app-header fixed inset-x-0 top-0 isolate z-50 flex items-center gap-6 border-b border-grey-200 bg-white px-6"
+    class="app-header fixed inset-x-0 top-0 isolate z-50 flex items-center gap-8 bg-white/85 px-6 shadow-[0_1px_0_0_theme(colors.grey.200)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
   >
-    <GrayLogo class="h-6 flex-shrink-0" />
+    <RouterLink :to="{ name: 'users' }" class="flex-shrink-0 outline-none" aria-label="Fundermaps">
+      <img :src="fundermapsLogo" alt="Fundermaps" class="h-5 w-auto" />
+    </RouterLink>
 
-    <nav class="flex items-center gap-1 text-sm font-semibold">
+    <nav class="flex h-full items-stretch gap-1">
       <RouterLink
         v-for="link in navLinks"
         :key="link.name"
         :to="{ name: link.name }"
-        class="nav-link rounded-md px-3 py-1.5 text-grey-800 transition-colors hover:bg-grey-100"
+        class="nav-link relative inline-flex items-center px-3 text-sm font-semibold text-grey-700 transition-colors hover:text-grey-800"
       >
         {{ link.label }}
       </RouterLink>
@@ -35,8 +37,33 @@ const navLinks = [
 </template>
 
 <style scoped>
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: theme(colors.green.500);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 180ms ease;
+}
+
 .nav-link.router-link-active {
-  background-color: theme(colors.green.100);
-  color: theme(colors.green.800);
+  color: theme(colors.grey.800);
+}
+
+.nav-link.router-link-active::after {
+  transform: scaleX(1);
+}
+
+.nav-link:hover::after {
+  transform: scaleX(0.4);
+}
+
+.nav-link.router-link-active:hover::after {
+  transform: scaleX(1);
 }
 </style>
