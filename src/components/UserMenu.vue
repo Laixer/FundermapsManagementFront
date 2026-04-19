@@ -9,9 +9,6 @@ import { useSessionStore } from '@/stores/session.ts'
 const sessionStore = useSessionStore()
 const { currentUser } = storeToRefs(sessionStore)
 
-/**
- * Component related data
- */
 const userName = computed(() => currentUser.value?.email || 'onbekend')
 
 /**
@@ -28,12 +25,16 @@ const handleLogout = async function () {
 </script>
 
 <template>
-  <div class="relative flex items-center">
-    <div>{{ userName }}</div>
-    <a href="#" @click.prevent="handleLogout"
-      class="flex w-full items-center gap-2 px-8 py-4 transition-colors hover:text-red-500">
+  <div class="flex items-center gap-3 text-sm">
+    <span class="text-grey-700">{{ userName }}</span>
+    <button
+      type="button"
+      class="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-grey-800 transition-colors hover:bg-red-50 hover:text-red-500"
+      title="Log out"
+      @click="handleLogout"
+    >
       <ExitIcon class="aspect-square h-3.5" aria-hidden="true" />
       <span>Log out</span>
-    </a>
+    </button>
   </div>
 </template>

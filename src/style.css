@@ -42,6 +42,11 @@ html {
   }
 }
 
+/* Shorter top navigation row — the shared stylesheet reserves 5rem. */
+.page-dashboard {
+  grid-template-rows: [header] theme(spacing.14) [main] auto;
+}
+
 /* Soften the default card drop shadow from the shared stylesheet */
 .card {
   box-shadow:
