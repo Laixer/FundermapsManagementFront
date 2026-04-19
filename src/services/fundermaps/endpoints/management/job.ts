@@ -8,3 +8,9 @@ export const getAllJobs = async function getAllJobs(): Promise<IJob[]> {
     endpoint: `v1/management/jobs?limit=${JOBS_LIST_LIMIT}`,
   })
 }
+
+export const getJob = async function getJob(jobId: number): Promise<IJob> {
+  return await get({
+    endpoint: `v1/management/jobs/${jobId}`,
+  })
+}

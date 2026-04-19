@@ -11,7 +11,7 @@ import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import Alert from '@/components/Common/Alert.vue'
 import type { IJob } from '@/services/fundermaps/interfaces/IJob'
-import { getAllJobs, JOBS_LIST_LIMIT } from '@/services/fundermaps/endpoints/management/job'
+import { getAllJobs, getJob, JOBS_LIST_LIMIT } from '@/services/fundermaps/endpoints/management/job'
 
 const loading = ref(true)
 const error = ref(false)
@@ -43,8 +43,13 @@ const refreshList = async function () {
 
 onBeforeMount(refreshList)
 
-const handleRowClick = function (row: IJob) {
+const handleRowClick = async function (row: IJob) {
   record.value = row
+  try {
+    record.value = await getJob(row.id)
+  } catch (e) {
+    console.error('Failed to refetch job, using row data', e)
+  }
 }
 const handleCloseModal = function () {
   record.value = null

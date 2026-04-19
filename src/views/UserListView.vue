@@ -36,7 +36,15 @@ const error = ref(false)
 const showCreate = ref(false)
 const showEdit = ref(false)
 const actionError = ref<string | null>(null)
+const actionSuccess = ref<string | null>(null)
 const newApiKey = ref<string | null>(null)
+
+const flashSuccess = function (message: string) {
+  actionSuccess.value = message
+  setTimeout(() => {
+    if (actionSuccess.value === message) actionSuccess.value = null
+  }, 3000)
+}
 
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
@@ -81,7 +89,9 @@ const handleRowClick = async function (row: IUser) {
   showCreate.value = false
   showEdit.value = false
   actionError.value = null
+  actionSuccess.value = null
   newApiKey.value = null
+  apiKeys.value = []
 
   record.value = await getUser(row.id)
   apiKeys.value = await getAPIKeys(row.id)
@@ -102,6 +112,7 @@ const handleCloseModal = function () {
   showEdit.value = false
   record.value = null
   actionError.value = null
+  actionSuccess.value = null
   newApiKey.value = null
 }
 
@@ -127,6 +138,7 @@ const handleDeleteAPIKey = async function (key: string) {
     actionError.value = null
     await deleteAPIKey(record.value.id, key)
     apiKeys.value = await getAPIKeys(record.value.id)
+    flashSuccess('API key deleted.')
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to delete API key.'
   }
@@ -154,6 +166,7 @@ const handleRoleChange = async function (newRole: string) {
     await updateUserRole(record.value.id, newRole)
     record.value = await getUser(record.value.id)
     await refreshList()
+    flashSuccess('Role updated.')
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to update user role.'
   }
@@ -211,6 +224,9 @@ const formatDate = function (dateStr: string | null) {
       :deletable="true" @close="handleCloseModal" @edit="handleEdit" @delete="handleDelete">
       <Alert v-if="actionError" :closeable="true" @close="actionError = null">
         {{ actionError }}
+      </Alert>
+      <Alert v-if="actionSuccess" type="success" :closeable="true" @close="actionSuccess = null">
+        {{ actionSuccess }}
       </Alert>
       <div class="space-y-6">
         <!-- User Info -->
