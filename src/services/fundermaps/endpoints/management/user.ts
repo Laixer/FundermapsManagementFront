@@ -72,9 +72,11 @@ export const deleteAPIKey = async function deleteAPIKey(userId: string, key: str
   })
 }
 
+export const USERS_LIST_LIMIT = 1000
+
 export const getAllUsers = async function getAllUsers(): Promise<IUser[]> {
   return await get({
-    endpoint: 'v1/management/user?limit=1000',
+    endpoint: `v1/management/user?limit=${USERS_LIST_LIMIT}`,
   })
 }
 

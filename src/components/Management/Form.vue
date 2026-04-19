@@ -6,6 +6,7 @@ import useValidation from '@/services/useValidation'
 import Button from '@/components/Common/Buttons/Button.vue'
 import AnimatedArrowIcon from '@/components/Common/Icons/AnimatedArrowIcon.vue'
 import Alert from '@/components/Common/Alert.vue'
+import { getErrorMessage } from '@/services/fundermaps/errors'
 
 const emit = defineEmits(['saved', 'cancel'])
 
@@ -36,6 +37,7 @@ const originalFormData = JSON.stringify(props.formData)
 
 const loading = ref(false)
 const error = ref(false)
+const errorMessage = ref<string | null>(null)
 const completed = ref(false)
 
 const formData = ref(props.formData)
@@ -50,6 +52,7 @@ const handleSubmit = async function () {
   try {
     loading.value = true
     error.value = false
+    errorMessage.value = null
 
     await validate()
 
@@ -63,6 +66,7 @@ const handleSubmit = async function () {
     }
   } catch (e) {
     error.value = true
+    errorMessage.value = getErrorMessage(e)
     console.error(e)
     scrolltoError('.general__error', { offset: 200 })
   } finally {
@@ -83,8 +87,11 @@ const handleReset = function handleReset() {
   <div>
     <h6 v-if="title" class="font-bold leading-none">{{ title }}</h6>
     <Alert v-if="error" :closeable="true" class="general__error" @close="error = false">
-      Something went wrong while trying to store the record.<br />
-      Please try again.
+      <template v-if="errorMessage">{{ errorMessage }}</template>
+      <template v-else>
+        Something went wrong while trying to store the record.<br />
+        Please try again.
+      </template>
     </Alert>
     <div v-if="completed">
       <Alert :closeable="inline" type="success" @close="handleReset">

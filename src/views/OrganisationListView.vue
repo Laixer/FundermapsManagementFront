@@ -23,6 +23,7 @@ import {
   getAllOrganisations,
   type IOrg,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
+import { getErrorMessage } from '@/services/fundermaps/errors'
 import OrganisationAddUser from '@/components/Management/Forms/OrganisationAddUser.vue'
 import OrganisationRemoveMapset from '@/components/Management/Forms/OrganisationRemoveMapset.vue'
 import OrganisationAddMapset from '@/components/Management/Forms/OrganisationAddMapset.vue'
@@ -31,6 +32,7 @@ const loading = ref(true)
 const error = ref(false)
 const showCreate = ref(false)
 const showEdit = ref(false)
+const actionError = ref<string | null>(null)
 
 const activeTab: Ref<'users' | 'mapsets' | 'geolock'> = ref('users')
 const record: Ref<IOrg | null> = ref(null)
@@ -60,7 +62,10 @@ onBeforeMount(refreshList)
 const handleRowClick = async function (row: IOrg) {
   showCreate.value = false
   showEdit.value = false
-  activeTab.value = 'users'
+  actionError.value = null
+  if (record.value?.id !== row.id) {
+    activeTab.value = 'users'
+  }
   record.value = row
 }
 
@@ -72,6 +77,7 @@ const handleCloseModal = function () {
   showCreate.value = false
   showEdit.value = false
   record.value = null
+  actionError.value = null
 }
 
 const handleEdit = function () {
@@ -84,12 +90,13 @@ const handleDelete = async function () {
   if (!confirm(`Delete organisation "${record.value.name}"? This cannot be undone.`)) return
 
   try {
+    actionError.value = null
     await deleteOrganisation(record.value.id)
     record.value = null
     showEdit.value = false
     await refreshList()
-  } catch {
-    alert('Failed to delete organisation.')
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? 'Failed to delete organisation.'
   }
 }
 
@@ -124,6 +131,9 @@ const handleDelete = async function () {
 
     <RecordDetailsCard v-if="!showEdit" title="Organisation information" :record="record" :editable="true"
       :deletable="true" @edit="handleEdit" @delete="handleDelete" @close="handleCloseModal">
+      <Alert v-if="actionError" :closeable="true" @close="actionError = null">
+        {{ actionError }}
+      </Alert>
       <Tabs v-model="activeTab" />
       <div v-if="activeTab === 'users'">
         <OrganisationUsersList ref="orgUsersList" :record="record" />

@@ -46,7 +46,9 @@ const refreshList = async function () {
 onBeforeMount(refreshList)
 
 const handleRowClick = function (row: IMapset) {
-  activeTab.value = 'info'
+  if (record.value?.id !== row.id) {
+    activeTab.value = 'info'
+  }
   record.value = row
 }
 const handleCloseModal = function () {

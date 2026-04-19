@@ -17,9 +17,11 @@ import {
   removeGeolockNeighborhood,
   type IGeolock,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
+import { getErrorMessage } from '@/services/fundermaps/errors'
 import Icon from '@/components/Common/Icons/Icon.vue'
 import Form from '@/components/Management/Form.vue'
 import Input from '@/components/Common/Inputs/Input.vue'
+import Alert from '@/components/Common/Alert.vue'
 
 const props = defineProps<{
   record: IOrg | null
@@ -33,6 +35,8 @@ const districts: Ref<IGeolock[]> = ref([])
 const municipalities: Ref<IGeolock[]> = ref([])
 const neighborhoods: Ref<IGeolock[]> = ref([])
 const loading = ref(false)
+const loadError = ref<string | null>(null)
+const actionError = ref<string | null>(null)
 
 const districtCols = [
   { field: 'district_id', title: 'District ID', isUnique: true },
@@ -51,6 +55,7 @@ async function refresh() {
   if (!props.record) return
   try {
     loading.value = true
+    loadError.value = null
     const [d, m, n] = await Promise.all([
       getGeolockDistricts(props.record.id),
       getGeolockMunicipalities(props.record.id),
@@ -60,6 +65,7 @@ async function refresh() {
     municipalities.value = m
     neighborhoods.value = n
   } catch (e) {
+    loadError.value = getErrorMessage(e) ?? 'Failed to load geolock records.'
     console.error(e)
   } finally {
     loading.value = false
@@ -76,10 +82,21 @@ async function handleAddDistrict(formData: { id: string }) {
   await refresh()
 }
 
+async function handleRemove(fn: () => Promise<unknown>, fallback: string) {
+  try {
+    actionError.value = null
+    await fn()
+    await refresh()
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? fallback
+    console.error(e)
+  }
+}
+
 async function handleRemoveDistrict(id: string) {
   if (!props.record) return
-  await removeGeolockDistrict(props.record.id, id)
-  await refresh()
+  const orgId = props.record.id
+  await handleRemove(() => removeGeolockDistrict(orgId, id), 'Failed to remove district.')
 }
 
 async function handleAddMunicipality(formData: { id: string }) {
@@ -90,8 +107,8 @@ async function handleAddMunicipality(formData: { id: string }) {
 
 async function handleRemoveMunicipality(id: string) {
   if (!props.record) return
-  await removeGeolockMunicipality(props.record.id, id)
-  await refresh()
+  const orgId = props.record.id
+  await handleRemove(() => removeGeolockMunicipality(orgId, id), 'Failed to remove municipality.')
 }
 
 async function handleAddNeighborhood(formData: { id: string }) {
@@ -102,13 +119,15 @@ async function handleAddNeighborhood(formData: { id: string }) {
 
 async function handleRemoveNeighborhood(id: string) {
   if (!props.record) return
-  await removeGeolockNeighborhood(props.record.id, id)
-  await refresh()
+  const orgId = props.record.id
+  await handleRemove(() => removeGeolockNeighborhood(orgId, id), 'Failed to remove neighborhood.')
 }
 </script>
 
 <template>
   <div class="space-y-6">
+    <Alert v-if="loadError" :closeable="true" @close="loadError = null">{{ loadError }}</Alert>
+    <Alert v-if="actionError" :closeable="true" @close="actionError = null">{{ actionError }}</Alert>
     <div>
       <h6 class="mb-2 font-bold">Districts</h6>
       <Vue3Datatable :rows="districts" :columns="districtCols" :loading="loading" :sortable="true">

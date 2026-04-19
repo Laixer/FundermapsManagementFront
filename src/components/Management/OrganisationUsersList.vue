@@ -11,13 +11,17 @@ import {
   getAllOrganisationUsers,
   removeUserFromOrganisation,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
+import { getErrorMessage } from '@/services/fundermaps/errors'
 import Icon from '@/components/Common/Icons/Icon.vue'
+import Alert from '@/components/Common/Alert.vue'
 
 const props = defineProps<{
   record: IOrg | null
 }>()
 
 const userLoading = ref(false)
+const loadError = ref<string | null>(null)
+const actionError = ref<string | null>(null)
 const userCols = [
   { field: 'given_name', title: 'Name' },
   { field: 'email', title: 'Email' },
@@ -30,8 +34,10 @@ const refresh = async function () {
   if (props.record) {
     try {
       userLoading.value = true
+      loadError.value = null
       userRows.value = await getAllOrganisationUsers(props.record.id)
     } catch (e) {
+      loadError.value = getErrorMessage(e) ?? 'Failed to load users.'
       console.error(e)
     } finally {
       userLoading.value = false
@@ -54,13 +60,20 @@ const handleRemoveUser = async function (row: IUser) {
   )
 
   if (confirmed) {
-    await removeUserFromOrganisation(props.record.id, row.id)
-    await refresh()
+    try {
+      actionError.value = null
+      await removeUserFromOrganisation(props.record.id, row.id)
+      await refresh()
+    } catch (e) {
+      actionError.value = getErrorMessage(e) ?? 'Failed to remove user.'
+    }
   }
 }
 </script>
 
 <template>
+  <Alert v-if="loadError" :closeable="true" @close="loadError = null">{{ loadError }}</Alert>
+  <Alert v-if="actionError" :closeable="true" @close="actionError = null">{{ actionError }}</Alert>
   <Vue3Datatable :rows="userRows" :columns="userCols" :loading="userLoading" sortColumn="name" :sortable="true"
     :columnFilter="true">
     <template #given_name="data">

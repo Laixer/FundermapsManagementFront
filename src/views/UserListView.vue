@@ -23,9 +23,11 @@ import {
   getAllUsers,
   getUser,
   updateUserRole,
+  USERS_LIST_LIMIT,
 } from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import { renderUserName } from '@/utils/user'
+import { getErrorMessage } from '@/services/fundermaps/errors'
 import UserResetPassword from '@/components/Management/Forms/UserResetPassword.vue'
 import EditUserForm from '@/components/Management/Forms/EditUserForm.vue'
 
@@ -33,6 +35,8 @@ const loading = ref(true)
 const error = ref(false)
 const showCreate = ref(false)
 const showEdit = ref(false)
+const actionError = ref<string | null>(null)
+const newApiKey = ref<string | null>(null)
 
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
@@ -76,6 +80,8 @@ onBeforeMount(refreshList)
 const handleRowClick = async function (row: IUser) {
   showCreate.value = false
   showEdit.value = false
+  actionError.value = null
+  newApiKey.value = null
 
   record.value = await getUser(row.id)
   apiKeys.value = await getAPIKeys(row.id)
@@ -95,16 +101,21 @@ const handleCloseModal = function () {
   showCreate.value = false
   showEdit.value = false
   record.value = null
+  actionError.value = null
+  newApiKey.value = null
 }
 
 const handleCreateAPIKey = async function () {
-  if (record.value) {
-    if (!confirm('Generate a new API key for this user?')) return
+  if (!record.value) return
+  if (!confirm('Generate a new API key for this user?')) return
 
+  try {
+    actionError.value = null
     const response = await createAPIKey(record.value.id)
-    await navigator.clipboard.writeText(response.key)
     apiKeys.value = await getAPIKeys(record.value.id)
-    alert('API key copied to clipboard: ' + response.key)
+    newApiKey.value = response.key
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? 'Failed to generate API key.'
   }
 }
 
@@ -112,8 +123,13 @@ const handleDeleteAPIKey = async function (key: string) {
   if (!record.value) return
   if (!confirm('Delete this API key? This cannot be undone.')) return
 
-  await deleteAPIKey(record.value.id, key)
-  apiKeys.value = await getAPIKeys(record.value.id)
+  try {
+    actionError.value = null
+    await deleteAPIKey(record.value.id, key)
+    apiKeys.value = await getAPIKeys(record.value.id)
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? 'Failed to delete API key.'
+  }
 }
 
 const handleDelete = async function () {
@@ -121,23 +137,25 @@ const handleDelete = async function () {
   if (!confirm(`Delete user "${record.value.email}"? This cannot be undone.`)) return
 
   try {
+    actionError.value = null
     await deleteUser(record.value.id)
     record.value = null
     showEdit.value = false
     await refreshList()
-  } catch {
-    alert('Failed to delete user.')
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? 'Failed to delete user.'
   }
 }
 
 const handleRoleChange = async function (newRole: string) {
   if (!record.value) return
   try {
+    actionError.value = null
     await updateUserRole(record.value.id, newRole)
     record.value = await getUser(record.value.id)
     await refreshList()
-  } catch {
-    alert('Failed to update user role.')
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? 'Failed to update user role.'
   }
 }
 
@@ -165,6 +183,9 @@ const formatDate = function (dateStr: string | null) {
       <Alert v-if="error" :closeable="true" @close="error = false">
         An error occurred while trying to retrieve the list of records.
       </Alert>
+      <Alert v-if="rows.length >= USERS_LIST_LIMIT" type="danger">
+        Showing the first {{ USERS_LIST_LIMIT }} users — additional users are not loaded.
+      </Alert>
       <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
         :columnFilter="true" @rowClick="handleRowClick">
         <template #id="data">
@@ -188,6 +209,9 @@ const formatDate = function (dateStr: string | null) {
 
     <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
       :deletable="true" @close="handleCloseModal" @edit="handleEdit" @delete="handleDelete">
+      <Alert v-if="actionError" :closeable="true" @close="actionError = null">
+        {{ actionError }}
+      </Alert>
       <div class="space-y-6">
         <!-- User Info -->
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
@@ -236,6 +260,15 @@ const formatDate = function (dateStr: string | null) {
             <h6 class="font-bold">API Keys</h6>
             <Button label="Generate" @click="handleCreateAPIKey" />
           </div>
+          <Alert v-if="newApiKey" type="success" :closeable="true" @close="newApiKey = null">
+            <div class="mb-2 font-medium">
+              New API key generated — copy it now, it won't be shown again.
+            </div>
+            <div class="flex items-center gap-2">
+              <code class="select-all break-all">{{ newApiKey }}</code>
+              <CopyToClipboardIcon :value="newApiKey" />
+            </div>
+          </Alert>
           <Vue3Datatable :rows="apiKeys" :columns="apiKeyCols" :sortable="true">
             <template #key="data">
               <div class="flex items-center justify-between">
