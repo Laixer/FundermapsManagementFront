@@ -9,6 +9,8 @@ import Card from '@/components/Common/Card.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
+import MapsetTabs from '@/components/Management/MapsetTabs.vue'
+import MapsetLayersSection from '@/components/Management/MapsetLayersSection.vue'
 import FundermapsIcon from '@/components/Common/Icons/FundermapsIcon.vue'
 import type { IMapset } from '@/services/fundermaps/interfaces/IMapset.ts'
 import { getAllMapsets } from '@/services/fundermaps/endpoints/management/mapset.ts'
@@ -19,6 +21,7 @@ const loading = ref(true)
 const error = ref(false)
 
 const record: Ref<IMapset | null> = ref(null)
+const activeTab: Ref<'info' | 'layers'> = ref('info')
 
 const cols = [
   { field: 'icon', title: '', width: '2rem', filter: false, sort: false, search: false },
@@ -43,10 +46,19 @@ const refreshList = async function () {
 onBeforeMount(refreshList)
 
 const handleRowClick = function (row: IMapset) {
+  activeTab.value = 'info'
   record.value = row
 }
 const handleCloseModal = function () {
   record.value = null
+}
+
+const handleLayersSaved = async function (updated: IMapset) {
+  record.value = updated
+  const idx = rows.value.findIndex((r) => r.id === updated.id)
+  if (idx !== -1) {
+    rows.value = [...rows.value.slice(0, idx), updated, ...rows.value.slice(idx + 1)]
+  }
 }
 </script>
 
@@ -78,24 +90,30 @@ const handleCloseModal = function () {
     </Card>
 
     <RecordDetailsCard title="Mapset information" :record="record" @close="handleCloseModal">
-      <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        <dt class="font-medium text-gray-500">Name</dt>
-        <dd>{{ record?.name }}</dd>
-        <dt class="font-medium text-gray-500">Slug</dt>
-        <dd>{{ record?.slug }}</dd>
-        <dt class="font-medium text-gray-500">Public</dt>
-        <dd>{{ record?.public ? 'Yes' : 'No' }}</dd>
-        <dt class="font-medium text-gray-500">Note</dt>
-        <dd>{{ record?.note || '-' }}</dd>
-        <dt class="font-medium text-gray-500">Order</dt>
-        <dd>{{ record?.order }}</dd>
-      </dl>
-      <div class="mt-4 border-t pt-4">
-        <h6 class="mb-1 font-bold">ID</h6>
-        <div class="flex items-center gap-2 text-sm">
-          <code>{{ record?.id }}</code>
-          <CopyToClipboardIcon :value="record?.id ?? ''" />
+      <MapsetTabs v-model="activeTab" />
+      <div v-if="activeTab === 'info'">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <dt class="font-medium text-gray-500">Name</dt>
+          <dd>{{ record?.name }}</dd>
+          <dt class="font-medium text-gray-500">Slug</dt>
+          <dd>{{ record?.slug }}</dd>
+          <dt class="font-medium text-gray-500">Public</dt>
+          <dd>{{ record?.public ? 'Yes' : 'No' }}</dd>
+          <dt class="font-medium text-gray-500">Note</dt>
+          <dd>{{ record?.note || '-' }}</dd>
+          <dt class="font-medium text-gray-500">Order</dt>
+          <dd>{{ record?.order }}</dd>
+        </dl>
+        <div class="mt-4 border-t pt-4">
+          <h6 class="mb-1 font-bold">ID</h6>
+          <div class="flex items-center gap-2 text-sm">
+            <code>{{ record?.id }}</code>
+            <CopyToClipboardIcon :value="record?.id ?? ''" />
+          </div>
         </div>
+      </div>
+      <div v-else-if="activeTab === 'layers'">
+        <MapsetLayersSection :record="record" @saved="handleLayersSaved" />
       </div>
     </RecordDetailsCard>
   </MainWrapper>
