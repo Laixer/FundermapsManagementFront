@@ -13,7 +13,7 @@ const navLinks = [
 
 <template>
   <header
-    class="app-header fixed inset-x-0 top-0 isolate z-50 flex h-20 items-center gap-8 bg-white/85 px-6 shadow-[0_1px_0_0_theme(colors.grey.200)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
+    class="app-header fixed inset-x-0 top-0 isolate z-50 flex h-16 items-center gap-8 bg-white/85 px-6 shadow-[0_1px_0_0_theme(colors.grey.200)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
   >
     <RouterLink :to="{ name: 'users' }" class="flex-shrink-0 outline-none" aria-label="Fundermaps">
       <img :src="fundermapsLogo" alt="Fundermaps" class="h-7 w-auto" />
