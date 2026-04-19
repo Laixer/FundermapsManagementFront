@@ -32,7 +32,7 @@ const btnClassList =
 
 <template>
   <div
-    class="dark:bg-gray-800 mb-4 flex items-center rounded-lg p-4 text-sm"
+    class="mb-4 flex items-center rounded-lg p-4 text-sm"
     role="alert"
     :class="classList"
   >
@@ -54,7 +54,7 @@ const btnClassList =
     <button
       v-if="closeable"
       type="button"
-      class="dark:bg-gray-800 dark:hover:bg-gray-700 -mx-1.5 -my-1.5 ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg p-1.5 focus:ring-2"
+      class="-mx-1.5 -my-1.5 ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg p-1.5 focus:ring-2"
       :class="btnClassList"
       data-dismiss-target="#alert-1"
       aria-label="Close"

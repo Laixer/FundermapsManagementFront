@@ -1,3 +1,6 @@
 @import url('../public/resources/styles/app.css');
 
-
+/* Highlight the currently selected row in Vue3Datatable lists */
+tr.is-selected-row td {
+  background-color: theme(colors.green.100) !important;
+}

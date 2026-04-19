@@ -197,7 +197,7 @@ const handleSave = async function () {
         <span v-if="dirty" class="text-xs text-amber-600">Unsaved changes</span>
       </div>
 
-      <div v-if="current.length === 0" class="rounded border border-dashed p-3 text-sm text-gray-500">
+      <div v-if="current.length === 0" class="rounded border border-dashed p-3 text-sm text-grey-700">
         No layers assigned.
       </div>
 
@@ -211,7 +211,7 @@ const handleSave = async function () {
             <div class="flex items-center gap-2">
               <span v-if="entry.layer" class="font-medium">{{ entry.layer.name }}</span>
               <span v-else class="font-medium text-red-600">Unknown layer</span>
-              <code class="text-xs text-gray-500">{{ entry.id }}</code>
+              <code class="text-xs text-grey-700">{{ entry.id }}</code>
             </div>
             <div
               v-if="entry.layer && entry.layer.fields.length"
@@ -220,10 +220,10 @@ const handleSave = async function () {
               <span
                 v-for="(field, i) in entry.layer.fields"
                 :key="i"
-                class="inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-xs"
+                class="inline-flex items-center gap-1 rounded bg-grey-100 px-1.5 py-0.5 text-xs"
               >
                 <span
-                  class="inline-block h-2.5 w-2.5 rounded-full border border-gray-300"
+                  class="inline-block h-2.5 w-2.5 rounded-full border border-grey-400"
                   :style="{ backgroundColor: normalizeColor(field.color) }"
                 />
                 {{ field.name }}
@@ -245,7 +245,7 @@ const handleSave = async function () {
 
     <div class="border-t pt-4">
       <h6 class="mb-2 font-bold">Add layer</h6>
-      <div v-if="availableOptions.length === 0" class="text-sm text-gray-500">
+      <div v-if="availableOptions.length === 0" class="text-sm text-grey-700">
         All catalog layers are already assigned.
       </div>
       <div v-else class="flex items-end gap-2">

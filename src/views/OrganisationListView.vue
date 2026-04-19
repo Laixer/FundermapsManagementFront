@@ -45,6 +45,8 @@ const cols = [
 ]
 const rows: Ref<IOrg[]> = ref([])
 
+const rowClass = (row: IOrg) => (record.value?.id === row.id ? 'is-selected-row' : '')
+
 const refreshList = async function () {
   try {
     loading.value = true
@@ -105,15 +107,22 @@ const handleDelete = async function () {
 <template>
   <MainWrapper>
     <Card class="List col-span-2">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Organisations</h3>
+      <header
+        class="-mx-8 -mt-8 flex items-center justify-between gap-4 border-b border-grey-200 px-8 pb-5 pt-6"
+      >
+        <div>
+          <h2 class="heading-3">Organisations</h2>
+          <p class="mt-1 text-sm text-grey-700">
+            Manage customer organisations, members and their assigned mapsets.
+          </p>
+        </div>
         <Button label="Add organisation" @click="handleOpenModal" />
-      </div>
+      </header>
       <Alert v-if="error" :closeable="true" @close="error = false">
         An error occurred while trying to retrieve the list of records.
       </Alert>
       <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
-        :columnFilter="true" @rowClick="handleRowClick">
+        :columnFilter="true" :rowClass="rowClass" @rowClick="handleRowClick">
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
@@ -130,7 +139,8 @@ const handleDelete = async function () {
       @close="handleCloseModal" />
 
     <RecordDetailsCard v-if="!showEdit" title="Organisation information" :record="record" :editable="true"
-      :deletable="true" @edit="handleEdit" @delete="handleDelete" @close="handleCloseModal">
+      :deletable="true" emptyMessage="Select an organisation to see details." @edit="handleEdit"
+      @delete="handleDelete" @close="handleCloseModal">
       <Alert v-if="actionError" :closeable="true" @close="actionError = null">
         {{ actionError }}
       </Alert>

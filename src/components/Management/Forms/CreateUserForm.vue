@@ -80,7 +80,7 @@ const handleGeneratePassword = () => {
 
     <div class="space-y-2">
       <div class="flex items-center justify-between">
-        <label for="password" class="text-gray-700 block text-sm font-medium">Password *</label>
+        <label for="password" class="text-grey-800 block text-sm font-medium">Password *</label>
         <button
           type="button"
           class="text-xs text-blue-600 hover:text-blue-800"

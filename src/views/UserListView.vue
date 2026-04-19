@@ -12,6 +12,7 @@ import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import Icon from '@/components/Common/Icons/Icon.vue'
 import Alert from '@/components/Common/Alert.vue'
+import Badge from '@/components/Common/Badge.vue'
 
 import Select from '@/components/Common/Inputs/Select.vue'
 
@@ -70,6 +71,8 @@ const apiKeyCols = [
 
 const record: Ref<IUser | null> = ref(null)
 const apiKeys: Ref<IAuthKey[]> = ref([])
+
+const rowClass = (row: IUser) => (record.value?.id === row.id ? 'is-selected-row' : '')
 
 const refreshList = async function () {
   try {
@@ -189,10 +192,15 @@ const formatDate = function (dateStr: string | null) {
 <template>
   <MainWrapper>
     <Card class="List col-span-2">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Users</h3>
+      <header
+        class="-mx-8 -mt-8 flex items-center justify-between gap-4 border-b border-grey-200 px-8 pb-5 pt-6"
+      >
+        <div>
+          <h2 class="heading-3">Users</h2>
+          <p class="mt-1 text-sm text-grey-700">Manage accounts, roles and API keys.</p>
+        </div>
         <Button label="Add User" @click="handleOpenModal" />
-      </div>
+      </header>
       <Alert v-if="error" :closeable="true" @close="error = false">
         An error occurred while trying to retrieve the list of records.
       </Alert>
@@ -200,7 +208,7 @@ const formatDate = function (dateStr: string | null) {
         Showing the first {{ USERS_LIST_LIMIT }} users — additional users are not loaded.
       </Alert>
       <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
-        :columnFilter="true" @rowClick="handleRowClick">
+        :columnFilter="true" :rowClass="rowClass" @rowClick="handleRowClick">
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
@@ -209,6 +217,11 @@ const formatDate = function (dateStr: string | null) {
         </template>
         <template #given_name="data">
           {{ renderUserName(data.value) }}
+        </template>
+        <template #role="data">
+          <Badge :variant="data.value.role === 'administrator' ? 'info' : 'default'">
+            {{ data.value.role }}
+          </Badge>
         </template>
         <template #last_login="data">
           {{ formatDate(data.value.last_login) }}
@@ -221,7 +234,8 @@ const formatDate = function (dateStr: string | null) {
       @close="handleCloseModal" />
 
     <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
-      :deletable="true" @close="handleCloseModal" @edit="handleEdit" @delete="handleDelete">
+      :deletable="true" emptyMessage="Select a user to see details." @close="handleCloseModal" @edit="handleEdit"
+      @delete="handleDelete">
       <Alert v-if="actionError" :closeable="true" @close="actionError = null">
         {{ actionError }}
       </Alert>
@@ -231,29 +245,29 @@ const formatDate = function (dateStr: string | null) {
       <div class="space-y-6">
         <!-- User Info -->
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <dt class="font-medium text-gray-500">Email</dt>
+          <dt class="font-medium text-grey-700">Email</dt>
           <dd>{{ record?.email }}</dd>
-          <dt class="font-medium text-gray-500">Name</dt>
+          <dt class="font-medium text-grey-700">Name</dt>
           <dd>{{ renderUserName(record!) || '-' }}</dd>
-          <dt class="font-medium text-gray-500">Phone</dt>
+          <dt class="font-medium text-grey-700">Phone</dt>
           <dd>{{ record?.phone_number || '-' }}</dd>
-          <dt class="font-medium text-gray-500">Job Title</dt>
+          <dt class="font-medium text-grey-700">Job Title</dt>
           <dd>{{ record?.job_title || '-' }}</dd>
-          <dt class="font-medium text-gray-500">Last Login</dt>
+          <dt class="font-medium text-grey-700">Last Login</dt>
           <dd>{{ formatDate(record?.last_login ?? null) }}</dd>
         </dl>
 
         <!-- Organisations -->
         <div v-if="record?.organizations?.length" class="border-t pt-4">
           <h6 class="mb-1 font-bold">Organisations</h6>
-          <ul class="text-sm text-gray-700">
+          <ul class="text-sm text-grey-800">
             <li v-for="org in record.organizations" :key="org.id">{{ org.name }}</li>
           </ul>
         </div>
 
         <!-- Role -->
         <div class="border-t pt-4">
-          <label class="mb-1 block text-sm font-medium text-gray-700">Role</label>
+          <label class="mb-1 block text-sm font-medium text-grey-800">Role</label>
           <Select
             id="role"
             :options="[

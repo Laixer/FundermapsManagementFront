@@ -2,9 +2,9 @@
 const model = defineModel()
 
 const selectedClassList =
-  'text-green-600 border-green-600 active group inline-flex items-center justify-center rounded-t-lg border-b-2 p-4 dark:border-green-500 dark:text-green-500'
+  'text-green-500 border-green-500 active group inline-flex items-center justify-center rounded-t-lg border-b-2 p-4'
 const unselectedClassList =
-  'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 group inline-flex items-center justify-center rounded-t-lg border-b-2 border-transparent p-4'
+  'text-grey-700 hover:text-grey-800 hover:border-grey-400 group inline-flex items-center justify-center rounded-t-lg border-b-2 border-transparent p-4'
 
 const handleSelectTab = function (tab: string) {
   model.value = tab
@@ -27,10 +27,8 @@ const tabs = [
 </script>
 
 <template>
-  <div class="border-gray-200 dark:border-gray-700 border-b">
-    <ul
-      class="text-gray-500 dark:text-gray-400 -mb-px flex flex-wrap text-center text-sm font-medium"
-    >
+  <div class="border-grey-200 border-b">
+    <ul class="-mb-px flex flex-wrap text-center text-sm font-medium text-grey-700">
       <li v-for="tab in tabs" class="me-2" :key="tab.slug">
         <a
           href="#"

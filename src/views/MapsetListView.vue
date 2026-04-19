@@ -16,6 +16,7 @@ import type { IMapset } from '@/services/fundermaps/interfaces/IMapset.ts'
 import { getAllMapsets } from '@/services/fundermaps/endpoints/management/mapset.ts'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import Alert from '@/components/Common/Alert.vue'
+import Badge from '@/components/Common/Badge.vue'
 
 const loading = ref(true)
 const error = ref(false)
@@ -30,6 +31,8 @@ const cols = [
   { field: 'public', title: 'Public', type: 'bool' },
 ]
 const rows: Ref<IMapset[]> = ref([])
+
+const rowClass = (row: IMapset) => (record.value?.id === row.id ? 'is-selected-row' : '')
 
 const refreshList = async function () {
   try {
@@ -67,15 +70,22 @@ const handleLayersSaved = async function (updated: IMapset) {
 <template>
   <MainWrapper>
     <Card class="List col-span-2">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Mapsets</h3>
-      </div>
+      <header
+        class="-mx-8 -mt-8 flex items-center justify-between gap-4 border-b border-grey-200 px-8 pb-5 pt-6"
+      >
+        <div>
+          <h2 class="heading-3">Mapsets</h2>
+          <p class="mt-1 text-sm text-grey-700">
+            Map collections and the layers they include.
+          </p>
+        </div>
+      </header>
 
       <Alert v-if="error" :closeable="true" @close="error = false">
         An error occurred while trying to retrieve the list of records.
       </Alert>
       <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
-        :columnFilter="true" @rowClick="handleRowClick">
+        :columnFilter="true" :rowClass="rowClass" @rowClick="handleRowClick">
         <template #id="data">
           <div class="flex justify-between">
             <div>{{ data.value.id }}</div>
@@ -83,7 +93,9 @@ const handleLayersSaved = async function (updated: IMapset) {
           </div>
         </template>
         <template #public="data">
-          {{ data.value.public ? 'Yes' : 'No' }}
+          <Badge :variant="data.value.public ? 'success' : 'default'">
+            {{ data.value.public ? 'Public' : 'Private' }}
+          </Badge>
         </template>
         <template #icon="data">
           <FundermapsIcon v-if="data.value.icon" class="aspect-square h-3.5" :name="data.value.icon" />
@@ -91,22 +103,27 @@ const handleLayersSaved = async function (updated: IMapset) {
       </Vue3Datatable>
     </Card>
 
-    <RecordDetailsCard title="Mapset information" :record="record" @close="handleCloseModal">
+    <RecordDetailsCard title="Mapset information" :record="record"
+      emptyMessage="Select a mapset to see its layers." @close="handleCloseModal">
       <MapsetTabs v-model="activeTab" />
-      <div v-if="activeTab === 'info'">
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <dt class="font-medium text-gray-500">Name</dt>
+      <div v-if="activeTab === 'info'" class="pt-4">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <dt class="font-medium text-grey-700">Name</dt>
           <dd>{{ record?.name }}</dd>
-          <dt class="font-medium text-gray-500">Slug</dt>
+          <dt class="font-medium text-grey-700">Slug</dt>
           <dd>{{ record?.slug }}</dd>
-          <dt class="font-medium text-gray-500">Public</dt>
-          <dd>{{ record?.public ? 'Yes' : 'No' }}</dd>
-          <dt class="font-medium text-gray-500">Note</dt>
+          <dt class="font-medium text-grey-700">Public</dt>
+          <dd>
+            <Badge :variant="record?.public ? 'success' : 'default'">
+              {{ record?.public ? 'Public' : 'Private' }}
+            </Badge>
+          </dd>
+          <dt class="font-medium text-grey-700">Note</dt>
           <dd>{{ record?.note || '-' }}</dd>
-          <dt class="font-medium text-gray-500">Order</dt>
+          <dt class="font-medium text-grey-700">Order</dt>
           <dd>{{ record?.order }}</dd>
         </dl>
-        <div class="mt-4 border-t pt-4">
+        <div class="mt-4 border-t border-grey-200 pt-4">
           <h6 class="mb-1 font-bold">ID</h6>
           <div class="flex items-center gap-2 text-sm">
             <code>{{ record?.id }}</code>
@@ -114,7 +131,7 @@ const handleLayersSaved = async function (updated: IMapset) {
           </div>
         </div>
       </div>
-      <div v-else-if="activeTab === 'layers'">
+      <div v-else-if="activeTab === 'layers'" class="pt-4">
         <MapsetLayersSection :record="record" @saved="handleLayersSaved" />
       </div>
     </RecordDetailsCard>
