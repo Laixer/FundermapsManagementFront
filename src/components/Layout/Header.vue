@@ -8,6 +8,7 @@ const navLinks = [
   { name: 'organisations', label: 'Organisations' },
   { name: 'mapsets', label: 'Mapsets' },
   { name: 'jobs', label: 'Jobs' },
+  { name: 'sessions', label: 'Sessions' },
 ]
 </script>
 
