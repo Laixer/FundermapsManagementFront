@@ -47,15 +47,18 @@ const flashSuccess = function (message: string) {
 }
 
 const districtCols = [
-  { field: 'district_id', title: 'District ID', isUnique: true },
+  { field: 'name', title: 'Name' },
+  { field: 'id', title: 'District ID', isUnique: true },
   { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
 ]
 const municipalityCols = [
-  { field: 'municipality_id', title: 'Municipality ID', isUnique: true },
+  { field: 'name', title: 'Name' },
+  { field: 'id', title: 'Municipality ID', isUnique: true },
   { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
 ]
 const neighborhoodCols = [
-  { field: 'neighborhood_id', title: 'Neighborhood ID', isUnique: true },
+  { field: 'name', title: 'Name' },
+  { field: 'id', title: 'Neighborhood ID', isUnique: true },
   { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
 ]
 
@@ -144,7 +147,7 @@ async function handleRemoveNeighborhood(id: string) {
       <h6 class="mb-2 font-bold">Districts</h6>
       <Vue3Datatable :rows="districts" :columns="districtCols" :loading="loading" :sortable="true">
         <template #actions="data">
-          <button @click.stop="handleRemoveDistrict(data.value.district_id)">
+          <button @click.stop="handleRemoveDistrict(data.value.id)">
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </template>
@@ -172,7 +175,7 @@ async function handleRemoveNeighborhood(id: string) {
       <h6 class="mb-2 font-bold">Municipalities</h6>
       <Vue3Datatable :rows="municipalities" :columns="municipalityCols" :loading="loading" :sortable="true">
         <template #actions="data">
-          <button @click.stop="handleRemoveMunicipality(data.value.municipality_id)">
+          <button @click.stop="handleRemoveMunicipality(data.value.id)">
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </template>
@@ -200,7 +203,7 @@ async function handleRemoveNeighborhood(id: string) {
       <h6 class="mb-2 font-bold">Neighborhoods</h6>
       <Vue3Datatable :rows="neighborhoods" :columns="neighborhoodCols" :loading="loading" :sortable="true">
         <template #actions="data">
-          <button @click.stop="handleRemoveNeighborhood(data.value.neighborhood_id)">
+          <button @click.stop="handleRemoveNeighborhood(data.value.id)">
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </template>

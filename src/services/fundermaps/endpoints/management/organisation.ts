@@ -97,11 +97,12 @@ export const deleteOrganisation = async function deleteOrganisation(orgId: strin
 
 // Geolock endpoints
 
+// API response shape for /api/management/org/:id/{district|municipality|neighborhood}
+// — the BAG code as `id`, plus the geocoder name (may be null if a
+// junction row references a code that no longer exists in geocoder).
 export interface IGeolock {
-  organization_id: string
-  district_id?: string
-  municipality_id?: string
-  neighborhood_id?: string
+  id: string
+  name: string | null
 }
 
 export const getGeolockDistricts = async function getGeolockDistricts(
