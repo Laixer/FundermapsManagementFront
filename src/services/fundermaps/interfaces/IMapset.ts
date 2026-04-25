@@ -4,7 +4,7 @@ export interface IMapset {
   slug: string
   style: string
   layers: string[]
-  options: object // JSON blob TODO: Mapbox options
+  metadata: object // JSON blob TODO: Mapbox options
   public: boolean
   consent: string | null
   note: string
