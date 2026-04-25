@@ -3,6 +3,6 @@ import type { ILayer } from '../../interfaces/ILayer'
 
 export const getAllLayers = async function getAllLayers(): Promise<ILayer[]> {
   return await get({
-    endpoint: 'v1/management/layer',
+    endpoint: 'management/layer',
   })
 }

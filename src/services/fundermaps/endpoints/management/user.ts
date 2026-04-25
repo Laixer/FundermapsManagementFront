@@ -1,12 +1,12 @@
 import { del, get, post, put } from '../../client'
 import type { IUser } from '../../interfaces/IUser'
 
-export const createUser = async function createUser(Email: string, Password: string) {
+export const createUser = async function createUser(email: string, password: string) {
   return await post({
-    endpoint: 'v1/management/user',
+    endpoint: 'management/user',
     body: {
-      Email,
-      Password,
+      email,
+      password,
     },
   })
 }
@@ -33,20 +33,20 @@ export const updateUser = async function updateUser(
   }
 
   return await put({
-    endpoint: `v1/management/user/${userId}`,
+    endpoint: `management/user/${userId}`,
     body,
   })
 }
 
 export const getUser = async function getUser(userId: string): Promise<IUser> {
   return await get({
-    endpoint: `v1/management/user/${userId}`,
+    endpoint: `management/user/${userId}`,
   })
 }
 
 export const resetPassword = async function resetPassword(userId: string, Password: string) {
   return await post({
-    endpoint: `v1/management/user/${userId}/reset-password`,
+    endpoint: `management/user/${userId}/reset-password`,
     body: {
       password: Password,
     },
@@ -55,19 +55,19 @@ export const resetPassword = async function resetPassword(userId: string, Passwo
 
 export const getAPIKeys = async function getAPIKeys(userId: string) {
   return await get({
-    endpoint: `v1/management/user/${userId}/api-key`,
+    endpoint: `management/user/${userId}/api-key`,
   })
 }
 
 export const createAPIKey = async function createAPIKey(userId: string) {
   return await post({
-    endpoint: `v1/management/user/${userId}/api-key`,
+    endpoint: `management/user/${userId}/api-key`,
   })
 }
 
 export const deleteAPIKey = async function deleteAPIKey(userId: string, key: string) {
   return await del({
-    endpoint: `v1/management/user/${userId}/api-key`,
+    endpoint: `management/user/${userId}/api-key`,
     body: { key },
   })
 }
@@ -76,19 +76,19 @@ export const USERS_LIST_LIMIT = 1000
 
 export const getAllUsers = async function getAllUsers(): Promise<IUser[]> {
   return await get({
-    endpoint: `v1/management/user?limit=${USERS_LIST_LIMIT}`,
+    endpoint: `management/user?limit=${USERS_LIST_LIMIT}`,
   })
 }
 
 export const deleteUser = async function deleteUser(userId: string) {
   return await del({
-    endpoint: `v1/management/user/${userId}`,
+    endpoint: `management/user/${userId}`,
   })
 }
 
 export const updateUserRole = async function updateUserRole(userId: string, role: string) {
   return await put({
-    endpoint: `v1/management/user/${userId}`,
+    endpoint: `management/user/${userId}`,
     body: { role },
   })
 }

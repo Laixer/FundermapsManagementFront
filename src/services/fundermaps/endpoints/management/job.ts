@@ -5,12 +5,12 @@ export const JOBS_LIST_LIMIT = 100
 
 export const getAllJobs = async function getAllJobs(): Promise<IJob[]> {
   return await get({
-    endpoint: `v1/management/jobs?limit=${JOBS_LIST_LIMIT}`,
+    endpoint: `management/jobs?limit=${JOBS_LIST_LIMIT}`,
   })
 }
 
 export const getJob = async function getJob(jobId: number): Promise<IJob> {
   return await get({
-    endpoint: `v1/management/jobs/${jobId}`,
+    endpoint: `management/jobs/${jobId}`,
   })
 }

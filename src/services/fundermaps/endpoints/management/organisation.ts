@@ -7,13 +7,13 @@ export interface IOrg {
 
 export const getAllOrganisations = async function getAllOrganisations(): Promise<IOrg[]> {
   return await get({
-    endpoint: 'v1/management/org',
+    endpoint: 'management/org',
   })
 }
 
 export const createOrganisation = async function createOrganisation(Name: string) {
   return await post({
-    endpoint: 'v1/management/org',
+    endpoint: 'management/org',
     body: {
       name: Name,
     },
@@ -22,7 +22,7 @@ export const createOrganisation = async function createOrganisation(Name: string
 
 export const getOrganisationMapsets = async function getOrganisationMapsets(orgId: string) {
   return await get({
-    endpoint: `v1/management/org/${orgId}/mapset`,
+    endpoint: `management/org/${orgId}/mapset`,
   })
 }
 
@@ -31,7 +31,7 @@ export const addMapsetToOrganisation = async function addMapsetToOrganisation(
   MapsetID: string,
 ) {
   return await post({
-    endpoint: `v1/management/org/${orgId}/mapset`,
+    endpoint: `management/org/${orgId}/mapset`,
     body: {
       mapset_id: MapsetID,
     },
@@ -43,7 +43,7 @@ export const removeMapsetFromOrganisation = async function removeMapsetFromOrgan
   MapsetID: string,
 ) {
   return await del({
-    endpoint: `v1/management/org/${orgId}/mapset`,
+    endpoint: `management/org/${orgId}/mapset`,
     body: {
       mapset_id: MapsetID,
     },
@@ -52,7 +52,7 @@ export const removeMapsetFromOrganisation = async function removeMapsetFromOrgan
 
 export const getAllOrganisationUsers = async function getAllOrganisationUsers(orgId: string) {
   return await get({
-    endpoint: `v1/management/org/${orgId}/user`,
+    endpoint: `management/org/${orgId}/user`,
   })
 }
 
@@ -62,7 +62,7 @@ export const addUserToOrganisation = async function addUserToOrganisation(
   Role: string,
 ) {
   return await post({
-    endpoint: `v1/management/org/${orgId}/user`,
+    endpoint: `management/org/${orgId}/user`,
     body: {
       user_id: UserID,
       role: Role,
@@ -75,7 +75,7 @@ export const removeUserFromOrganisation = async function removeUserFromOrganisat
   UserID: string,
 ) {
   return await del({
-    endpoint: `v1/management/org/${orgId}/user`,
+    endpoint: `management/org/${orgId}/user`,
     body: {
       user_id: UserID,
     },
@@ -84,14 +84,14 @@ export const removeUserFromOrganisation = async function removeUserFromOrganisat
 
 export const updateOrganisation = async function updateOrganisation(orgId: string, name: string) {
   return await put({
-    endpoint: `v1/management/org/${orgId}`,
+    endpoint: `management/org/${orgId}`,
     body: { name },
   })
 }
 
 export const deleteOrganisation = async function deleteOrganisation(orgId: string) {
   return await del({
-    endpoint: `v1/management/org/${orgId}`,
+    endpoint: `management/org/${orgId}`,
   })
 }
 
@@ -107,7 +107,7 @@ export interface IGeolock {
 export const getGeolockDistricts = async function getGeolockDistricts(
   orgId: string,
 ): Promise<IGeolock[]> {
-  return await get({ endpoint: `v1/management/org/${orgId}/district` })
+  return await get({ endpoint: `management/org/${orgId}/district` })
 }
 
 export const addGeolockDistrict = async function addGeolockDistrict(
@@ -115,7 +115,7 @@ export const addGeolockDistrict = async function addGeolockDistrict(
   districtId: string,
 ) {
   return await post({
-    endpoint: `v1/management/org/${orgId}/district`,
+    endpoint: `management/org/${orgId}/district`,
     body: { district_id: districtId },
   })
 }
@@ -125,7 +125,7 @@ export const removeGeolockDistrict = async function removeGeolockDistrict(
   districtId: string,
 ) {
   return await del({
-    endpoint: `v1/management/org/${orgId}/district`,
+    endpoint: `management/org/${orgId}/district`,
     body: { district_id: districtId },
   })
 }
@@ -133,7 +133,7 @@ export const removeGeolockDistrict = async function removeGeolockDistrict(
 export const getGeolockMunicipalities = async function getGeolockMunicipalities(
   orgId: string,
 ): Promise<IGeolock[]> {
-  return await get({ endpoint: `v1/management/org/${orgId}/municipality` })
+  return await get({ endpoint: `management/org/${orgId}/municipality` })
 }
 
 export const addGeolockMunicipality = async function addGeolockMunicipality(
@@ -141,7 +141,7 @@ export const addGeolockMunicipality = async function addGeolockMunicipality(
   municipalityId: string,
 ) {
   return await post({
-    endpoint: `v1/management/org/${orgId}/municipality`,
+    endpoint: `management/org/${orgId}/municipality`,
     body: { municipality_id: municipalityId },
   })
 }
@@ -151,7 +151,7 @@ export const removeGeolockMunicipality = async function removeGeolockMunicipalit
   municipalityId: string,
 ) {
   return await del({
-    endpoint: `v1/management/org/${orgId}/municipality`,
+    endpoint: `management/org/${orgId}/municipality`,
     body: { municipality_id: municipalityId },
   })
 }
@@ -159,7 +159,7 @@ export const removeGeolockMunicipality = async function removeGeolockMunicipalit
 export const getGeolockNeighborhoods = async function getGeolockNeighborhoods(
   orgId: string,
 ): Promise<IGeolock[]> {
-  return await get({ endpoint: `v1/management/org/${orgId}/neighborhood` })
+  return await get({ endpoint: `management/org/${orgId}/neighborhood` })
 }
 
 export const addGeolockNeighborhood = async function addGeolockNeighborhood(
@@ -167,7 +167,7 @@ export const addGeolockNeighborhood = async function addGeolockNeighborhood(
   neighborhoodId: string,
 ) {
   return await post({
-    endpoint: `v1/management/org/${orgId}/neighborhood`,
+    endpoint: `management/org/${orgId}/neighborhood`,
     body: { neighborhood_id: neighborhoodId },
   })
 }
@@ -177,7 +177,7 @@ export const removeGeolockNeighborhood = async function removeGeolockNeighborhoo
   neighborhoodId: string,
 ) {
   return await del({
-    endpoint: `v1/management/org/${orgId}/neighborhood`,
+    endpoint: `management/org/${orgId}/neighborhood`,
     body: { neighborhood_id: neighborhoodId },
   })
 }
