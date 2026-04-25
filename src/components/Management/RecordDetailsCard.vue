@@ -9,6 +9,7 @@ defineProps({
   record: { type: [Object, null] },
   editable: { type: Boolean },
   deletable: { type: Boolean },
+  deleteLabel: { type: String, default: 'Delete' },
   emptyMessage: { type: String, default: 'Select a record to view its details.' },
 })
 </script>
@@ -22,7 +23,7 @@ defineProps({
         <h3 class="heading-4">{{ title }}</h3>
         <div class="flex items-center gap-2">
           <Button v-if="editable" outline label="Edit" @click="$emit('edit')" />
-          <Button v-if="deletable" danger label="Delete" @click="$emit('delete')" />
+          <Button v-if="deletable" danger :label="deleteLabel" @click="$emit('delete')" />
           <CloseBtn @click="$emit('close')" />
         </div>
       </header>

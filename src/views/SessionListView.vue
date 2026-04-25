@@ -48,10 +48,9 @@ const userIdFilter = computed<string | null>(() => {
 const cols = [
   { field: 'id', title: 'ID', isUnique: true, width: '8rem' },
   { field: 'user_id', title: 'User' },
-  { field: 'ip_address', title: 'IP', width: '10rem' },
-  { field: 'user_agent', title: 'User Agent' },
-  { field: 'expires_at', title: 'Expires', width: '12rem' },
   { field: 'status', title: 'Status', width: '7rem', sort: false, search: false },
+  { field: 'created_at', title: 'Created', width: '12rem' },
+  { field: 'expires_at', title: 'Expires', width: '12rem' },
 ]
 
 const rows: Ref<ISession[]> = ref([])
@@ -129,7 +128,7 @@ const handleForceLogout = async function () {
   if (!record.value) return
   const owner = userMap.value.get(record.value.user_id)
   const label = owner ? owner.email : record.value.user_id
-  if (!confirm(`Force-logout session for "${label}"? They will need to sign in again.`)) return
+  if (!confirm(`Terminate session for "${label}"? They will need to sign in again.`)) return
 
   try {
     actionError.value = null
@@ -210,21 +209,16 @@ const renderUserCell = function (userId: string): string {
         <template #user_id="data">
           {{ renderUserCell(data.value.user_id) }}
         </template>
-        <template #ip_address="data">
-          {{ data.value.ip_address || '-' }}
-        </template>
-        <template #user_agent="data">
-          <span class="block truncate" :title="data.value.user_agent ?? ''">
-            {{ data.value.user_agent || '-' }}
-          </span>
-        </template>
-        <template #expires_at="data">
-          {{ formatDate(data.value.expires_at) }}
-        </template>
         <template #status="data">
           <Badge :variant="isExpired(data.value) ? 'default' : 'success'">
             {{ isExpired(data.value) ? 'expired' : 'active' }}
           </Badge>
+        </template>
+        <template #created_at="data">
+          {{ formatDate(data.value.created_at) }}
+        </template>
+        <template #expires_at="data">
+          {{ formatDate(data.value.expires_at) }}
         </template>
       </Vue3Datatable>
     </Card>
@@ -233,6 +227,7 @@ const renderUserCell = function (userId: string): string {
       title="Session information"
       :record="record"
       :deletable="!!record && !isExpired(record)"
+      deleteLabel="Terminate"
       emptyMessage="Select a session to see its details."
       @close="handleCloseModal"
       @delete="handleForceLogout"
