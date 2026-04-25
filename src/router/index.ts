@@ -65,7 +65,10 @@ router.beforeEach(async (to) => {
   const sessionStore = useSessionStore()
   const { isAuthenticated, isAdministrator } = storeToRefs(sessionStore)
 
-  // Try to authenticate the user from the refresh token
+  // Restore session on page load: Better Auth uses long-lived bearer
+  // tokens, not refresh tokens, so we just verify the stored access
+  // token by calling /user/me. (loginFromRefreshToken would always
+  // logout since refresh_token is always '' under BA.)
   if (
     to.name !== '403' &&
     !isAuthenticated.value &&
@@ -73,9 +76,9 @@ router.beforeEach(async (to) => {
     hasValidAccessToken()
   ) {
     try {
-      await sessionStore.loginFromRefreshToken()
+      await sessionStore.authenticateFromAccessToken()
     } catch {
-      // login from refresh token failed
+      // session validation failed — store has already cleaned up
     }
   }
 
