@@ -5,10 +5,10 @@ import fundermapsLogo from '@assets/svg/fundermaps.svg?url'
 
 const navLinks = [
   { name: 'users', label: 'Users' },
+  { name: 'sessions', label: 'Sessions' },
   { name: 'organisations', label: 'Organisations' },
   { name: 'mapsets', label: 'Mapsets' },
   { name: 'jobs', label: 'Jobs' },
-  { name: 'sessions', label: 'Sessions' },
 ]
 </script>
 
