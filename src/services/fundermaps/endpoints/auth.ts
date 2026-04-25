@@ -101,8 +101,21 @@ export const changePassword = async function changePassword(
   })
 }
 
+/**
+ * Invalidate the current Better Auth session server-side. Caller is
+ * responsible for clearing local tokens afterwards.
+ */
+export const signOut = async function signOut() {
+  return await post({
+    endpoint: '/auth/sign-out',
+    requireAuth: true,
+    autoredirect: false,
+  })
+}
+
 export default {
   login,
   refresh,
   changePassword,
+  signOut,
 }

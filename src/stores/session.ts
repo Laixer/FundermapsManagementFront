@@ -48,10 +48,8 @@ async function login(email: string, password: string) {
   } catch (e) {
     console.error(e)
 
-    try {
-      // clean up a partial success if need be
-      logout()
-    } catch {}
+    // clean up a partial success if need be
+    clearLocalSession()
 
     throw e // pass on the unhappy news
   }
@@ -61,7 +59,7 @@ async function loginFromRefreshToken() {
   try {
     const refreshToken = getRefreshToken()
     if (!refreshToken) {
-      logout()
+      clearLocalSession()
       return
     }
 
@@ -72,10 +70,8 @@ async function loginFromRefreshToken() {
   } catch (e) {
     console.error(e)
 
-    try {
-      // clean up a partial success if need be
-      logout()
-    } catch {}
+    // clean up a partial success if need be
+    clearLocalSession()
 
     throw e // pass on the unhappy news
   }
@@ -84,7 +80,7 @@ async function loginFromRefreshToken() {
 async function authenticateFromAccessToken() {
   try {
     if (!hasValidAccessToken()) {
-      logout()
+      clearLocalSession()
       return
     }
 
@@ -92,21 +88,33 @@ async function authenticateFromAccessToken() {
   } catch (e) {
     console.error(e)
 
-    try {
-      // clean up a partial success if need be
-      logout()
-    } catch {}
+    // clean up a partial success if need be
+    clearLocalSession()
 
     throw e // pass on the unhappy news
   }
 }
 
 /**
- * Clean up the session information
+ * Clear local session state without touching the server.
  */
-function logout() {
+function clearLocalSession() {
   removeSessionTokens()
   currentUser.value = null
+}
+
+/**
+ * Tell the server to invalidate the session, then clear local state.
+ * Server failure (dead network, already-expired bearer) is non-fatal — we
+ * still log out locally.
+ */
+async function logout() {
+  try {
+    await api.auth.signOut()
+  } catch (e) {
+    console.warn('signOut failed; clearing local session anyway', e)
+  }
+  clearLocalSession()
 }
 
 /**
@@ -118,8 +126,8 @@ function useSession() {
   /**
    * Clean up the session information and redirect to the login page
    */
-  function logoutAndRedirect() {
-    logout()
+  async function logoutAndRedirect() {
+    await logout()
 
     router.push({ name: 'login' })
   }
