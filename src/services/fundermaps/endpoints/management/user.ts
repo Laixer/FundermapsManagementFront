@@ -65,10 +65,10 @@ export const createAPIKey = async function createAPIKey(userId: string) {
   })
 }
 
-export const deleteAPIKey = async function deleteAPIKey(userId: string, key: string) {
+export const deleteAPIKey = async function deleteAPIKey(userId: string, id: string) {
   return await del({
     endpoint: `management/user/${userId}/api-key`,
-    body: { key },
+    body: { id },
   })
 }
 

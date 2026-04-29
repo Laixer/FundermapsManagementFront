@@ -57,14 +57,14 @@ const cols = [
 const rows: Ref<IUser[]> = ref([])
 
 interface IAuthKey {
-  key: string
+  id: string
   user_id: string
   name: string | null
   last_used: string | null
 }
 
 const apiKeyCols = [
-  { field: 'key', title: 'Key', isUnique: true },
+  { field: 'name', title: 'Name', isUnique: true },
   { field: 'last_used', title: 'Last Used' },
   { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
 ]
@@ -133,13 +133,13 @@ const handleCreateAPIKey = async function () {
   }
 }
 
-const handleDeleteAPIKey = async function (key: string) {
+const handleDeleteAPIKey = async function (id: string) {
   if (!record.value) return
   if (!confirm('Delete this API key? This cannot be undone.')) return
 
   try {
     actionError.value = null
-    await deleteAPIKey(record.value.id, key)
+    await deleteAPIKey(record.value.id, id)
     apiKeys.value = await getAPIKeys(record.value.id)
     flashSuccess('API key deleted.')
   } catch (e) {
@@ -300,14 +300,11 @@ const formatDate = function (dateStr: string | null) {
             </div>
           </Alert>
           <Vue3Datatable :rows="apiKeys" :columns="apiKeyCols" :sortable="true">
-            <template #key="data">
-              <div class="flex items-center justify-between">
-                <code class="truncate">{{ data.value.key }}</code>
-                <CopyToClipboardIcon :value="data.value.key" />
-              </div>
+            <template #name="data">
+              <span class="truncate">{{ data.value.name || data.value.id }}</span>
             </template>
             <template #actions="data">
-              <button @click.stop="handleDeleteAPIKey(data.value.key)">
+              <button @click.stop="handleDeleteAPIKey(data.value.id)">
                 <Icon class="aspect-square w-3" name="trash-solid" />
               </button>
             </template>
