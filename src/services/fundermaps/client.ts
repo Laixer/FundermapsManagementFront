@@ -113,10 +113,15 @@ const makeCall = async function makeCall({
     }
 
     // Options
+    // Better Auth's OIDC provider reads sessions from a cookie on the
+    // OAuth2 authorize navigation; send + accept cookies on /auth/* so the
+    // OIDC return flow (Grafana SSO) sees a logged-in session.
+    const isAuthRoute = typeof endpoint === 'string' && endpoint.replace(/^\/+/, '').startsWith('auth/')
     fetchOptions = {
       method,
       headers: Object.assign(authHeader, headers),
       body,
+      ...(isAuthRoute ? { credentials: 'include' as RequestCredentials } : {}),
     }
 
     const response = await fetch(url, fetchOptions)

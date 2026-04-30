@@ -46,6 +46,19 @@ const { validate, isValid, getError, getStatus, scrolltoError } = useValidation(
 )
 
 /**
+ * If we arrived here from Better Auth's OIDC `/api/auth/oauth2/authorize`
+ * redirect (Grafana SSO), the original OAuth params live in the URL. After
+ * a successful login the browser must be sent back to authorize so BA can
+ * read its now-valid session cookie and emit the auth code.
+ */
+function getOidcReturnUrl(): string | null {
+  const params = new URLSearchParams(window.location.search)
+  if (!params.has('client_id') || !params.has('redirect_uri')) return null
+  const base = (import.meta.env.VITE_FUNDERMAPS_URL || '').replace(/\/+$/, '')
+  return `${base}/api/auth/oauth2/authorize?${params.toString()}`
+}
+
+/**
  * Handle form submit
  *  TODO: Check for refresh token & Attempt automatic login using refresh token
  */
@@ -59,6 +72,12 @@ const handleSubmit = async function () {
       scrolltoError('.validation__message', { offset: 60 })
     } else {
       await sessionStore.login(formData.value.email, formData.value.password)
+
+      const oidcReturn = getOidcReturnUrl()
+      if (oidcReturn) {
+        window.location.href = oidcReturn
+        return
+      }
 
       // TODO: Get previous route before 'Login' & redirect back to that route
       router.push({ name: 'home' })
