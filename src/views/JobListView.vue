@@ -60,9 +60,9 @@ const handleCloseModal = function () {
 
 const statusVariant = function (status: string): 'success' | 'info' | 'danger' | 'warning' | 'default' {
   switch (status) {
-    case 'complete':
+    case 'completed':
       return 'success'
-    case 'running':
+    case 'processing':
       return 'info'
     case 'failed':
       return 'danger'

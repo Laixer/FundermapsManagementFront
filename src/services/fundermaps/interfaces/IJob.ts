@@ -1,4 +1,4 @@
-export type JobStatus = 'pending' | 'running' | 'complete' | 'failed' | 'retry'
+export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'retry'
 
 export interface IJob {
   id: number
