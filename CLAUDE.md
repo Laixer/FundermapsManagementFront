@@ -63,10 +63,6 @@ All routes are top-level. Home (`/`) redirects to `/user`. Router guards redirec
 - `password.ts` - `generateStrongPassword()` for user creation
 - `string.ts` - String trimming helpers used by the API client
 
-### Local Dev Proxy
-
-A `Caddyfile` proxies `/api/*` to `https://api.fundermaps.com` and other traffic to the Vite dev server at `localhost:5173`.
-
 ## Code Style
 
 - Prettier: no semicolons, single quotes, 100 char print width
