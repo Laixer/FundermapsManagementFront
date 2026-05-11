@@ -52,7 +52,6 @@ const cols = [
   { field: 'given_name', title: 'Name' },
   { field: 'email', title: 'Email' },
   { field: 'role', title: 'Role' },
-  { field: 'last_login', title: 'Last Login' },
 ]
 const rows: Ref<IUser[]> = ref([])
 
@@ -175,18 +174,6 @@ const handleRoleChange = async function (newRole: string) {
   }
 }
 
-const formatDate = function (dateStr: string | null) {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
 </script>
 
 <template>
@@ -223,9 +210,6 @@ const formatDate = function (dateStr: string | null) {
             {{ data.value.role }}
           </Badge>
         </template>
-        <template #last_login="data">
-          {{ formatDate(data.value.last_login) }}
-        </template>
       </Vue3Datatable>
     </Card>
     <CreateUserForm v-if="showCreate" @cancel="handleCloseModal" @saved="refreshList" @close="handleCloseModal" />
@@ -253,8 +237,6 @@ const formatDate = function (dateStr: string | null) {
           <dd>{{ record?.phone_number || '-' }}</dd>
           <dt class="font-medium text-grey-700">Job Title</dt>
           <dd>{{ record?.job_title || '-' }}</dd>
-          <dt class="font-medium text-grey-700">Last Login</dt>
-          <dd>{{ formatDate(record?.last_login ?? null) }}</dd>
         </dl>
 
         <!-- Organisations -->

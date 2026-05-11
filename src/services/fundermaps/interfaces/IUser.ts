@@ -9,6 +9,5 @@ export interface IUser {
   job_title: string | null
   phone_number: string | null
   role: string
-  last_login: string | null
   organizations: IOrganization[] | null
 }
