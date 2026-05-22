@@ -1,18 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { z } from 'zod'
 import Input from '@/components/Common/Inputs/Input.vue'
+import Select, { type SelectOption } from '@/components/Common/Inputs/Select.vue'
 import FormCard from '@/components/Management/FormCard.vue'
 import { generateStrongPassword } from '@/utils/password.ts'
 
 import { createUser, updateUser } from '@/services/fundermaps/endpoints/management/user.ts'
+import {
+  getAllOrganisations,
+  addUserToOrganisation,
+} from '@/services/fundermaps/endpoints/management/organisation.ts'
+
+// Org list for the dropdown. The leading empty option is the unselected
+// sentinel — it keeps the native <select> in sync with the empty default
+// and lets the required `organization_id` validation fire.
+const organisationOptions = ref<SelectOption[]>([{ value: '', label: 'Select an organisation…' }])
+
+const organisationRoleOptions: SelectOption[] = [
+  { value: 'reader', label: 'Reader' },
+  { value: 'writer', label: 'Writer' },
+  { value: 'verifier', label: 'Verifier' },
+  { value: 'superuser', label: 'Superuser' },
+]
+
+onMounted(async () => {
+  const organisations = await getAllOrganisations()
+  organisationOptions.value = [
+    { value: '', label: 'Select an organisation…' },
+    ...organisations.map((org) => ({ value: org.id, label: org.name })),
+  ]
+})
 
 const formData = ref({
   email: '',
   password: '',
   given_name: '',
   family_name: '',
-  role: 'User', // Default role
+  organization_id: '',
+  organization_role: 'reader',
   phone_number: '',
   job_title: '',
 })
@@ -22,7 +48,8 @@ const validationSchema = z
     password: z.string().min(1, 'Password is required.'),
     given_name: z.string(),
     family_name: z.string(),
-    role: z.string(),
+    organization_id: z.string().min(1, 'Organisation is required.'),
+    organization_role: z.enum(['reader', 'writer', 'verifier', 'superuser']),
     phone_number: z.string(),
     job_title: z.string(),
   })
@@ -33,12 +60,19 @@ const formHandler = async function (formData: {
   password: string
   given_name: string
   family_name: string
+  organization_id: string
+  organization_role: string
   phone_number: string
   job_title: string
 }) {
   const user = await createUser(formData.email, formData.password)
 
   if (user) {
+    // Attach the new user to the selected organisation before filling in
+    // profile details — a user without an org membership is rejected by
+    // every org-scoped API route.
+    await addUserToOrganisation(formData.organization_id, user.id, formData.organization_role)
+
     await updateUser(
       user.id,
       formData.given_name,
@@ -104,6 +138,29 @@ const handleGeneratePassword = () => {
     </div>
 
     <div class="grid grid-cols-2 gap-4">
+      <Select
+        id="organization_id"
+        label="Organisation *"
+        :options="organisationOptions"
+        v-model="formData.organization_id"
+        :validationStatus="getStatus('organization_id')"
+        :validationMessage="getError('organization_id')"
+        :tabindex="4"
+        required
+      />
+
+      <Select
+        id="organization_role"
+        label="Organisation role"
+        :options="organisationRoleOptions"
+        v-model="formData.organization_role"
+        :validationStatus="getStatus('organization_role')"
+        :validationMessage="getError('organization_role')"
+        :tabindex="5"
+      />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
       <Input
         id="given_name"
         label="Given Name"
@@ -112,7 +169,7 @@ const handleGeneratePassword = () => {
         placeholder="Enter given name"
         :validationStatus="getStatus('given_name')"
         :validationMessage="getError('given_name')"
-        :tabindex="4"
+        :tabindex="6"
       />
 
       <Input
@@ -123,7 +180,7 @@ const handleGeneratePassword = () => {
         placeholder="Enter family name"
         :validationStatus="getStatus('family_name')"
         :validationMessage="getError('family_name')"
-        :tabindex="5"
+        :tabindex="7"
       />
     </div>
 
@@ -135,7 +192,7 @@ const handleGeneratePassword = () => {
       placeholder="Enter phone number"
       :validationStatus="getStatus('phone_number')"
       :validationMessage="getError('phone_number')"
-      :tabindex="6"
+      :tabindex="8"
     />
 
     <Input
@@ -146,7 +203,7 @@ const handleGeneratePassword = () => {
       placeholder="Enter job title"
       :validationStatus="getStatus('job_title')"
       :validationMessage="getError('job_title')"
-      :tabindex="7"
+      :tabindex="9"
     />
   </FormCard>
 </template>
