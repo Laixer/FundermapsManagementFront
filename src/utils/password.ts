@@ -14,7 +14,7 @@ export const generateStrongPassword = (length = 12): string => {
   password += numbers.charAt(Math.floor(Math.random() * numbers.length))
 
   const allChars = lowercase + uppercase + numbers
-  for (let i = 4; i < length; i++) {
+  for (let i = 3; i < length; i++) {
     password += allChars.charAt(Math.floor(Math.random() * allChars.length))
   }
 

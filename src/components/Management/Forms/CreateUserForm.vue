@@ -34,7 +34,8 @@ onMounted(async () => {
 
 const formData = ref({
   email: '',
-  password: '',
+  // Pre-fill a strong password so the admin can copy it straight away.
+  password: generateStrongPassword(16),
   given_name: '',
   family_name: '',
   organization_id: '',
@@ -83,13 +84,6 @@ const formHandler = async function (formData: {
     )
   }
 }
-
-/**
- * Generates a password and sets it to the password field
- */
-const handleGeneratePassword = () => {
-  formData.value.password = generateStrongPassword()
-}
 </script>
 
 <template>
@@ -112,30 +106,17 @@ const handleGeneratePassword = () => {
       required
     />
 
-    <div class="space-y-2">
-      <div class="flex items-center justify-between">
-        <label for="password" class="text-grey-800 block text-sm font-medium">Password *</label>
-        <button
-          type="button"
-          class="text-xs text-blue-600 hover:text-blue-800"
-          @click="handleGeneratePassword"
-          tabindex="3"
-        >
-          Generate Strong Password
-        </button>
-      </div>
-      <Input
-        id="password"
-        type="text"
-        v-model="formData.password"
-        placeholder="Enter password"
-        :validationStatus="getStatus('password')"
-        :validationMessage="getError('password')"
-        :tabindex="2"
-        required
-        hideLabel
-      />
-    </div>
+    <Input
+      id="password"
+      label="Password *"
+      type="text"
+      v-model="formData.password"
+      placeholder="Enter password"
+      :validationStatus="getStatus('password')"
+      :validationMessage="getError('password')"
+      :tabindex="2"
+      required
+    />
 
     <div class="grid grid-cols-2 gap-4">
       <Select
@@ -145,7 +126,7 @@ const handleGeneratePassword = () => {
         v-model="formData.organization_id"
         :validationStatus="getStatus('organization_id')"
         :validationMessage="getError('organization_id')"
-        :tabindex="4"
+        :tabindex="3"
         required
       />
 
@@ -156,7 +137,7 @@ const handleGeneratePassword = () => {
         v-model="formData.organization_role"
         :validationStatus="getStatus('organization_role')"
         :validationMessage="getError('organization_role')"
-        :tabindex="5"
+        :tabindex="4"
       />
     </div>
 
@@ -169,7 +150,7 @@ const handleGeneratePassword = () => {
         placeholder="Enter given name"
         :validationStatus="getStatus('given_name')"
         :validationMessage="getError('given_name')"
-        :tabindex="6"
+        :tabindex="5"
       />
 
       <Input
@@ -180,7 +161,7 @@ const handleGeneratePassword = () => {
         placeholder="Enter family name"
         :validationStatus="getStatus('family_name')"
         :validationMessage="getError('family_name')"
-        :tabindex="7"
+        :tabindex="6"
       />
     </div>
 
@@ -192,7 +173,7 @@ const handleGeneratePassword = () => {
       placeholder="Enter phone number"
       :validationStatus="getStatus('phone_number')"
       :validationMessage="getError('phone_number')"
-      :tabindex="8"
+      :tabindex="7"
     />
 
     <Input
@@ -203,7 +184,7 @@ const handleGeneratePassword = () => {
       placeholder="Enter job title"
       :validationStatus="getStatus('job_title')"
       :validationMessage="getError('job_title')"
-      :tabindex="9"
+      :tabindex="8"
     />
   </FormCard>
 </template>
