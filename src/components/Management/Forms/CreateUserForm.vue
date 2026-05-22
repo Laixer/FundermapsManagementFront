@@ -4,6 +4,7 @@ import { z } from 'zod'
 import Input from '@/components/Common/Inputs/Input.vue'
 import Select, { type SelectOption } from '@/components/Common/Inputs/Select.vue'
 import FormCard from '@/components/Management/FormCard.vue'
+import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import { generateStrongPassword } from '@/utils/password.ts'
 
 import { createUser, updateUser } from '@/services/fundermaps/endpoints/management/user.ts'
@@ -11,6 +12,12 @@ import {
   getAllOrganisations,
   addUserToOrganisation,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
+
+// Surface the created credentials to the parent so it can reveal them once
+// (the generated password is never retrievable after this).
+const emit = defineEmits<{
+  created: [credentials: { email: string; password: string; organisation: string; role: string }]
+}>()
 
 // Org list for the dropdown. The leading empty option is the unselected
 // sentinel — it keeps the native <select> in sync with the empty default
@@ -32,7 +39,7 @@ onMounted(async () => {
   ]
 })
 
-const formData = ref({
+const initialFormData = ref({
   email: '',
   // Pre-fill a strong password so the admin can copy it straight away.
   password: generateStrongPassword(16),
@@ -82,6 +89,15 @@ const formHandler = async function (formData: {
       formData.phone_number,
       '', // avatar
     )
+
+    const organisation =
+      organisationOptions.value.find((o) => o.value === formData.organization_id)?.label ?? ''
+    emit('created', {
+      email: formData.email,
+      password: formData.password,
+      organisation,
+      role: formData.organization_role,
+    })
   }
 }
 </script>
@@ -89,7 +105,7 @@ const formHandler = async function (formData: {
 <template>
   <FormCard
     title="Add User"
-    :form-data="formData"
+    :form-data="initialFormData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"
     v-slot="{ formData, getStatus, getError }"
@@ -104,7 +120,11 @@ const formHandler = async function (formData: {
       :validationMessage="getError('email')"
       :tabindex="1"
       required
-    />
+    >
+      <template #after>
+        <CopyToClipboardIcon :value="String(formData.email)" />
+      </template>
+    </Input>
 
     <Input
       id="password"
@@ -116,7 +136,11 @@ const formHandler = async function (formData: {
       :validationMessage="getError('password')"
       :tabindex="2"
       required
-    />
+    >
+      <template #after>
+        <CopyToClipboardIcon :value="String(formData.password)" />
+      </template>
+    </Input>
 
     <div class="grid grid-cols-2 gap-4">
       <Select
