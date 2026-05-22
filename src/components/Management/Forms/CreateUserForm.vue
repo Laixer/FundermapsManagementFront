@@ -4,7 +4,6 @@ import { z } from 'zod'
 import Input from '@/components/Common/Inputs/Input.vue'
 import Select, { type SelectOption } from '@/components/Common/Inputs/Select.vue'
 import FormCard from '@/components/Management/FormCard.vue'
-import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import { generateStrongPassword } from '@/utils/password.ts'
 
 import { createUser, updateUser } from '@/services/fundermaps/endpoints/management/user.ts'
@@ -120,11 +119,7 @@ const formHandler = async function (formData: {
       :validationMessage="getError('email')"
       :tabindex="1"
       required
-    >
-      <template #after>
-        <CopyToClipboardIcon :value="String(formData.email)" />
-      </template>
-    </Input>
+    />
 
     <Input
       id="password"
@@ -136,11 +131,7 @@ const formHandler = async function (formData: {
       :validationMessage="getError('password')"
       :tabindex="2"
       required
-    >
-      <template #after>
-        <CopyToClipboardIcon :value="String(formData.password)" />
-      </template>
-    </Input>
+    />
 
     <div class="grid grid-cols-2 gap-4">
       <Select
