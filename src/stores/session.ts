@@ -6,11 +6,11 @@ import type { IUser } from '@/services/fundermaps/interfaces/IUser'
 import api from '@/services/fundermaps'
 import {
   getExpiresIn,
-  getRefreshToken,
+  hasRefreshToken,
   hasValidAccessToken,
   removeSessionTokens,
-  storeSessionTokens,
 } from '@/services/fundermaps/session'
+import { refresh as oidcRefresh, logoutRedirect as oidcLogoutRedirect } from '@/services/oidc'
 
 /**
  * Holds the information of the logged in user
@@ -37,35 +37,16 @@ const isAdministrator = computed<boolean>(() => {
 let refreshInterval: ReturnType<typeof setInterval> | null = null
 
 /**
- * Login, store the tokens and obtain the user information
+ * Restore the user from a still-valid access token (page load within the
+ * token's 1h lifetime). Used by the router guard and the OIDC callback.
  */
-async function login(email: string, password: string) {
+async function authenticateFromAccessToken() {
   try {
-    const response = await api.auth.login(email, password)
-    storeSessionTokens(response)
-
-    currentUser.value = await api.user.me()
-  } catch (e) {
-    console.error(e)
-
-    // clean up a partial success if need be
-    clearLocalSession()
-
-    throw e // pass on the unhappy news
-  }
-}
-
-async function loginFromRefreshToken() {
-  try {
-    const refreshToken = getRefreshToken()
-    if (!refreshToken) {
+    if (!hasValidAccessToken()) {
       clearLocalSession()
       return
     }
 
-    const response = await api.auth.refresh(refreshToken)
-    storeSessionTokens(response)
-
     currentUser.value = await api.user.me()
   } catch (e) {
     console.error(e)
@@ -77,9 +58,20 @@ async function loginFromRefreshToken() {
   }
 }
 
-async function authenticateFromAccessToken() {
+/**
+ * Cold start with an expired access token but a live refresh token
+ * (offline_access): swap the refresh token for a fresh access token, then
+ * load the user. Lets a returning admin skip the login round-trip.
+ */
+async function loginFromRefreshToken() {
   try {
-    if (!hasValidAccessToken()) {
+    if (!hasRefreshToken()) {
+      clearLocalSession()
+      return
+    }
+
+    const ok = await oidcRefresh()
+    if (!ok) {
       clearLocalSession()
       return
     }
@@ -104,16 +96,10 @@ function clearLocalSession() {
 }
 
 /**
- * Tell the server to invalidate the session, then clear local state.
- * Server failure (dead network, already-expired bearer) is non-fatal — we
- * still log out locally.
+ * Local logout: drop the session client-side without ending the SSO session
+ * at the provider. Used when the component is already navigating away.
  */
-async function logout() {
-  try {
-    await api.auth.signOut()
-  } catch (e) {
-    console.warn('signOut failed; clearing local session anyway', e)
-  }
+function logout() {
   clearLocalSession()
 }
 
@@ -124,35 +110,39 @@ function useSession() {
   const router = useRouter()
 
   /**
-   * Clean up the session information and redirect to the login page
+   * User-initiated logout: end the SSO session at the provider
+   * (RP-initiated, via /oauth2/end-session), which returns to /login. Null
+   * the user first so the authed shell doesn't flash before the browser
+   * navigates away. No router.push — `oidcLogoutRedirect` does a full-page
+   * navigation.
    */
-  async function logoutAndRedirect() {
-    await logout()
-
-    router.push({ name: 'login' })
+  function logoutAndRedirect() {
+    currentUser.value = null
+    oidcLogoutRedirect()
   }
+
   /**
-   * Refresh the access token. Logout and redirect whenever something is wrong
+   * Session lapsed (refresh rejected): drop local state and bounce to
+   * /login, whose guard re-runs the OIDC flow — a live SSO session re-auths
+   * silently, a dead one lands on the auth app's login form. Distinct from
+   * logoutAndRedirect, which deliberately ends the SSO session.
+   */
+  function sessionExpiredRedirect() {
+    clearLocalSession()
+    if (router.currentRoute.value.name !== 'login') {
+      router.push({ name: 'login' })
+    }
+  }
+
+  /**
+   * Refresh the access token via the OIDC refresh grant. On failure the
+   * session has lapsed — bounce to login to re-auth.
    */
   async function refreshSessionToken() {
-    const refreshToken = getRefreshToken()
-    if (!refreshToken) {
-      logoutAndRedirect()
-      return
+    const ok = await oidcRefresh()
+    if (!ok) {
+      sessionExpiredRedirect()
     }
-
-    await api.auth
-      .refresh(refreshToken)
-      .then((response) => {
-        // Make sure we're still authenticated
-        if (!isAuthenticated.value) {
-          logoutAndRedirect()
-          return
-        }
-
-        storeSessionTokens(response)
-      })
-      .catch(logoutAndRedirect)
   }
 
   /**
@@ -165,11 +155,11 @@ function useSession() {
         const expiresIn = getExpiresIn()
 
         if (expiresIn === null) {
-          logoutAndRedirect()
+          sessionExpiredRedirect()
           return
         }
 
-        refreshInterval = setInterval(refreshSessionToken, (expiresIn - 60) * 1000)
+        refreshInterval = setInterval(refreshSessionToken, Math.max(30, expiresIn - 60) * 1000)
       } else if (refreshInterval !== null) {
         clearInterval(refreshInterval)
         refreshInterval = null
@@ -182,7 +172,6 @@ function useSession() {
     isAuthenticated,
     isAdministrator,
     authenticateFromAccessToken,
-    login,
     loginFromRefreshToken,
     logout,
     logoutAndRedirect,

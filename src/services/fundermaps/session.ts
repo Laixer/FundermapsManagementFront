@@ -1,4 +1,16 @@
-import type { SessionTokens } from './endpoints/auth'
+/**
+ * The OIDC token set, stored as one JSON blob. `expires_at` is derived from
+ * `expires_in` at store time so the refresh timer + validity checks can read
+ * it back without re-decoding anything.
+ */
+export interface SessionTokens {
+  access_token: string
+  token_type: string // e.g. Bearer
+  expires_in: number // seconds
+  expires_at: string // ISO date (e.g. 2026-05-22T15:46:03.000Z)
+  refresh_token: string // OIDC refresh token (offline_access); rotates each refresh grant
+  id_token?: string // OIDC id_token, kept only for end-session's id_token_hint
+}
 
 // ****************************************************************************
 //  Private
@@ -50,6 +62,13 @@ export function getAccessToken(): string | null {
  */
 export function getRefreshToken(): string | null {
   return getSessionTokens()?.refresh_token || null
+}
+
+/**
+ * Gets the stored OIDC id_token (used only as id_token_hint on RP-logout).
+ */
+export function getIdToken(): string | null {
+  return getSessionTokens()?.id_token || null
 }
 
 /**
