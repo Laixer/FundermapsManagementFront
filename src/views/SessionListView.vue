@@ -152,6 +152,20 @@ const formatDate = function (dateStr: string | null) {
   })
 }
 
+// Canonicalise an IP for display. IPv6 from the proxy arrives fully expanded
+// (e.g. 2a02:a473:7505:0000:0000:0000:0000:0000); the WHATWG URL parser
+// compresses it to RFC 5952 form (2a02:a473:7505::). IPv4 and anything
+// unparseable pass through unchanged.
+const formatIpAddress = function (ip: string | null): string {
+  if (!ip) return '-'
+  if (!ip.includes(':')) return ip
+  try {
+    return new URL(`http://[${ip}]`).hostname.replace(/^\[|\]$/g, '')
+  } catch {
+    return ip
+  }
+}
+
 const renderUserCell = function (userId: string): string {
   const u = userMap.value.get(userId)
   if (!u) return userId
@@ -250,7 +264,7 @@ const renderUserCell = function (userId: string): string {
           </Badge>
         </dd>
         <dt class="font-medium text-grey-700">IP Address</dt>
-        <dd>{{ record.ip_address || '-' }}</dd>
+        <dd>{{ formatIpAddress(record.ip_address) }}</dd>
         <dt class="font-medium text-grey-700">Created</dt>
         <dd>{{ formatDate(record.created_at) }}</dd>
         <dt class="font-medium text-grey-700">Updated</dt>
