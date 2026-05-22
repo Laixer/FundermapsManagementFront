@@ -12,7 +12,7 @@ import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import Alert from '@/components/Common/Alert.vue'
 import Badge from '@/components/Common/Badge.vue'
 import type { IJob } from '@/services/fundermaps/interfaces/IJob'
-import { getAllJobs, getJob, JOBS_LIST_LIMIT } from '@/services/fundermaps/endpoints/management/job'
+import { getAllJobs, getJob } from '@/services/fundermaps/endpoints/management/job'
 
 const loading = ref(true)
 const error = ref(false)
@@ -93,9 +93,6 @@ const formatDate = function (date: string | null) {
 
       <Alert v-if="error" :closeable="true" @close="error = false">
         An error occurred while trying to retrieve the list of jobs.
-      </Alert>
-      <Alert v-if="rows.length >= JOBS_LIST_LIMIT" type="danger">
-        Showing the most recent {{ JOBS_LIST_LIMIT }} jobs — older jobs are not loaded.
       </Alert>
       <Vue3Datatable
         :rows="rows"
