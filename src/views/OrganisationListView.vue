@@ -138,7 +138,7 @@ const handleDelete = async function () {
     <OrganisationForm v-if="record && showEdit" :record="record" @cancel="handleCloseModal" @saved="refreshList"
       @close="handleCloseModal" />
 
-    <RecordDetailsCard v-if="!showEdit" title="Organisation information" :record="record" :editable="true"
+    <RecordDetailsCard v-if="!showEdit && !showCreate" title="Organisation information" :record="record" :editable="true"
       :deletable="true" emptyMessage="Select an organisation to see details." @edit="handleEdit"
       @delete="handleDelete" @close="handleCloseModal">
       <Alert v-if="actionError" :closeable="true" @close="actionError = null">

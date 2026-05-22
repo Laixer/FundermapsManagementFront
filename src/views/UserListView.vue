@@ -217,7 +217,7 @@ const handleRoleChange = async function (newRole: string) {
     <EditUserForm v-if="record && showEdit" :record="record" @cancel="handleCloseModal" @saved="refreshList"
       @close="handleCloseModal" />
 
-    <RecordDetailsCard v-if="!showEdit" title="User information" :record="record" :editable="true"
+    <RecordDetailsCard v-if="!showEdit && !showCreate" title="User information" :record="record" :editable="true"
       :deletable="true" emptyMessage="Select a user to see details." @close="handleCloseModal" @edit="handleEdit"
       @delete="handleDelete">
       <Alert v-if="actionError" :closeable="true" @close="actionError = null">
