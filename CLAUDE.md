@@ -8,17 +8,19 @@ Fundermaps Management Front is an **admin-only** Vue 3 management portal for the
 
 ## Commands
 
-- `npm run dev` - Start Vite dev server (port 5173)
-- `npm run build` - Type-check + production build (runs `vue-tsc --build` and `vite build` in parallel)
-- `npm run type-check` - TypeScript checking only (`vue-tsc --build`)
-- `npm run lint` - ESLint with auto-fix
-- `npm run format` - Prettier formatting for `src/`
+The package manager is **pnpm** (`packageManager: pnpm@10.28.0`).
+
+- `pnpm dev` - Start Vite dev server (port 5173)
+- `pnpm build` - Type-check + production build (runs `vue-tsc --build` and `vite build` in parallel)
+- `pnpm type-check` - TypeScript checking only (`vue-tsc --build`)
+- `pnpm lint` - ESLint with auto-fix
+- `pnpm format` - Prettier formatting for `src/`
 
 No test framework is configured.
 
 ## Architecture
 
-**Stack:** Vue 3 (Composition API, `<script setup>`), TypeScript, Pinia, Vue Router, Tailwind CSS 3, Vite, Zod.
+**Stack:** Vue 3 (Composition API, `<script setup>`), TypeScript, Pinia, Vue Router, Tailwind CSS 4 (CSS-first, via `@tailwindcss/vite`), Vite, Zod.
 
 **Path aliases:** `@` = `src/`, `@assets` = `src/assets/`.
 
@@ -28,24 +30,25 @@ No test framework is configured.
 - `endpoints/management/user.ts` - User CRUD, password reset, API key management, role updates.
 - `endpoints/management/organisation.ts` - Org CRUD, user/mapset membership, geolock management (districts, municipalities, neighborhoods).
 - `endpoints/management/mapset.ts` - Mapset listing (read-only).
-- `session.ts` - Token storage in `localStorage`. Manages access/refresh tokens and expiry.
-- `api-key.ts` - Alternative API key auth mechanism.
+- `oidc.ts` - OIDC authorization-code + PKCE client (`client_id=managementfront`). Handles the login redirect, code exchange at `/auth/callback`, single-flight silent refresh, and RP-initiated logout (end-session with `id_token_hint`).
+- `session.ts` - Stores the OIDC token set (access/refresh/id tokens + expiry) in `localStorage`.
+- `api-key.ts` - Optional API key auth via `VITE_AUTH_KEY`; when set, overrides the Bearer token in `client.ts`.
 - `errors.ts` - Custom error classes (`APICallError`, `APITokenError`, `APIErrorResponse`).
 
 ### State (`src/stores/`)
 
-Single store: `session.ts` - Pinia store managing authentication state, current user, and token refresh interval.
+Single store: `session.ts` - Pinia store managing authentication state, current user, and timer-based token refresh. Login/logout go through the OIDC redirects in `services/oidc.ts`.
 
 ### Routing (`src/router/`)
 
-All routes are top-level. Home (`/`) redirects to `/user`. Router guards redirect unauthenticated users to `/login` and non-admins to `/403`.
+All routes are top-level. Home (`/`) redirects to `/user`. The `/login` route kicks off the OIDC redirect and `/auth/callback` completes the code exchange. Router guards redirect unauthenticated users to `/login` and non-admins to `/403`.
 
 ### Views (`src/views/`)
 
 - `UserListView` - User list + detail panel with role change, password reset, API key management, delete
 - `OrganisationListView` - Org list + detail panel with tabs (Users, Mapsets, Geolock), edit name, delete
 - `MapsetListView` - Read-only mapset list + detail panel
-- Auth views: `Login`, `403`
+- Auth views: `Login` (OIDC redirect shim), `Callback` (OIDC code exchange), `403`
 
 ### Components (`src/components/`)
 
@@ -55,7 +58,7 @@ All routes are top-level. Home (`/`) redirects to `/user`. Router guards redirec
   - `RecordDetailsCard.vue` - Detail panel with edit/delete/close header buttons
   - `OrganisationUsersList.vue` / `OrganisationMapsetsList.vue` / `OrganisationGeolockSection.vue` - Org sub-lists
 - `Layout/` - Page wrappers (`AuthWrapper`, `MainWrapper`, `Header`)
-- `Branding/` - Logo variants and loading indicator
+- `Branding/` - Logo and loading indicator
 
 ### Shared Utilities (`src/utils/`)
 

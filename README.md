@@ -1,39 +1,39 @@
-# FundermapsAdminFront
+# FundermapsManagementFront
 
-This template should help get you started developing with Vue 3 in Vite.
+Admin-only Vue 3 management portal for the FunderMaps platform — manages users,
+organisations and mapsets. Access is restricted to users with the `administrator`
+role (enforced via a router guard). Authentication is OIDC (authorization-code +
+PKCE) against the FunderMaps API.
 
-## Recommended IDE Setup
+**Stack:** Vue 3 (`<script setup>`), TypeScript, Pinia, Vue Router, Tailwind CSS 4,
+Vite. Package manager: **pnpm**.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Setup
 
 ```sh
-npm install
+pnpm install
 ```
 
-### Compile and Hot-Reload for Development
+### Develop (Vite dev server, port 5173)
 
 ```sh
-npm run dev
+pnpm dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Type-check + production build
 
 ```sh
-npm run build
+pnpm build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Lint / format
 
 ```sh
-npm run lint
+pnpm lint
+pnpm format
 ```
+
+## Configuration
+
+Set `VITE_FUNDERMAPS_URL` to the API base URL (see `.env`). See
+[Vite Configuration Reference](https://vite.dev/config/) for build options.
