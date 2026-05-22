@@ -6,6 +6,7 @@ import '@bhplugin/vue3-datatable/dist/style.css'
 
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
+import CloseBtn from '@/components/Common/Buttons/CloseBtn.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
 import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
@@ -39,6 +40,12 @@ const showEdit = ref(false)
 const actionError = ref<string | null>(null)
 const actionSuccess = ref<string | null>(null)
 const newApiKey = ref<string | null>(null)
+const createdUser = ref<{
+  email: string
+  password: string
+  organisation: string
+  role: string
+} | null>(null)
 
 const flashSuccess = function (message: string) {
   actionSuccess.value = message
@@ -93,6 +100,7 @@ const handleRowClick = async function (row: IUser) {
   actionError.value = null
   actionSuccess.value = null
   newApiKey.value = null
+  createdUser.value = null
   apiKeys.value = []
 
   record.value = await getUser(row.id)
@@ -101,11 +109,26 @@ const handleRowClick = async function (row: IUser) {
 const handleOpenModal = function () {
   showEdit.value = false
   record.value = null
+  createdUser.value = null
   showCreate.value = true
 }
 const handleEdit = function () {
   showCreate.value = false
+  createdUser.value = null
   showEdit.value = true
+}
+
+// Reveal the credentials of a freshly created user once — the generated
+// password is not retrievable afterwards. Closing the create form lets the
+// reveal take its place in the side column.
+const handleUserCreated = function (credentials: {
+  email: string
+  password: string
+  organisation: string
+  role: string
+}) {
+  createdUser.value = credentials
+  showCreate.value = false
 }
 
 // Make sure to reset the form when closing the modal
@@ -116,6 +139,7 @@ const handleCloseModal = function () {
   actionError.value = null
   actionSuccess.value = null
   newApiKey.value = null
+  createdUser.value = null
 }
 
 const handleCreateAPIKey = async function () {
@@ -212,12 +236,45 @@ const handleRoleChange = async function (newRole: string) {
         </template>
       </Vue3Datatable>
     </Card>
-    <CreateUserForm v-if="showCreate" @cancel="handleCloseModal" @saved="refreshList" @close="handleCloseModal" />
+    <CreateUserForm v-if="showCreate" @cancel="handleCloseModal" @saved="refreshList"
+      @created="handleUserCreated" @close="handleCloseModal" />
+
+    <Card v-else-if="createdUser" class="Details col-span-1">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold">User created</h3>
+        <CloseBtn label="close" @click="handleCloseModal" />
+      </div>
+      <Alert type="success" class="mt-3">
+        <div class="mb-3 font-medium">
+          Copy these credentials now — the password won't be shown again.
+        </div>
+        <dl class="space-y-3 text-sm">
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <dt class="text-grey-700">Email</dt>
+              <dd><code class="select-all break-all">{{ createdUser.email }}</code></dd>
+            </div>
+            <CopyToClipboardIcon :value="createdUser.email" />
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <dt class="text-grey-700">Password</dt>
+              <dd><code class="select-all break-all">{{ createdUser.password }}</code></dd>
+            </div>
+            <CopyToClipboardIcon :value="createdUser.password" />
+          </div>
+        </dl>
+        <p class="mt-3 text-grey-700">
+          Added to <span class="font-medium">{{ createdUser.organisation }}</span> as
+          <span class="font-medium">{{ createdUser.role }}</span>.
+        </p>
+      </Alert>
+    </Card>
 
     <EditUserForm v-if="record && showEdit" :record="record" @cancel="handleCloseModal" @saved="refreshList"
       @close="handleCloseModal" />
 
-    <RecordDetailsCard v-if="!showEdit && !showCreate" title="User information" :record="record" :editable="true"
+    <RecordDetailsCard v-if="!showEdit && !showCreate && !createdUser" title="User information" :record="record" :editable="true"
       :deletable="true" emptyMessage="Select a user to see details." @close="handleCloseModal" @edit="handleEdit"
       @delete="handleDelete">
       <Alert v-if="actionError" :closeable="true" @close="actionError = null">
