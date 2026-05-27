@@ -5,7 +5,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="card bg-white | rounded-md border border-grey-200 p-5">
+  <div class="rounded-md border border-grey-200 bg-white p-5">
     <header v-if="title" class="card__header mb-4">
       <h3 class="text-base font-semibold text-grey-800">{{ title }}</h3>
     </header>

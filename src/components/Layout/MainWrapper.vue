@@ -3,7 +3,7 @@ import Sidebar from '@/components/Layout/Sidebar.vue'
 </script>
 
 <template>
-  <div class="page-dashboard min-h-screen bg-grey-100">
+  <div class="min-h-screen bg-grey-100">
     <Sidebar />
     <main class="ml-56 p-6">
       <slot />
