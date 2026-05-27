@@ -18,8 +18,6 @@ import Callback from '@/views/auth/Callback.vue'
 import NoAccess from '@/views/auth/403.vue'
 
 const router = createRouter({
-  linkActiveClass: 'font-bold',
-  linkExactActiveClass: 'font-bold',
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     /**************************************************************************
