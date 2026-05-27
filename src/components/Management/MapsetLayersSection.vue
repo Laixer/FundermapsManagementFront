@@ -3,6 +3,8 @@ import { computed, ref, watch, type Ref } from 'vue'
 
 import Button from '@/components/Common/Buttons/Button.vue'
 import Alert from '@/components/Common/Alert.vue'
+import Badge from '@/components/Common/Badge.vue'
+import MonoBadge from '@/components/Common/MonoBadge.vue'
 import Icon from '@/components/Common/Icons/Icon.vue'
 import Select, { type SelectOption } from '@/components/Common/Inputs/Select.vue'
 
@@ -63,6 +65,10 @@ const dirty = computed(() => {
   return initial.value.some((id, i) => id !== current.value[i])
 })
 
+const canAdd = computed(
+  () => !!addValue.value && !saving.value && !catalogLoading.value && !recordLoading.value,
+)
+
 const loadCatalog = async function () {
   if (catalog.value.length > 0) return
   try {
@@ -114,6 +120,8 @@ watch(
   { immediate: true },
 )
 
+// `#rrggbb` for inline style; the DB stores the bare hex without the `#`.
+// Display labels are the actual map colours — never recolour them client-side.
 const normalizeColor = function (hex: string): string {
   return `#${hex.toLowerCase()}`
 }
@@ -169,61 +177,82 @@ const handleSave = async function () {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="space-y-5">
     <Alert v-if="catalogError" :closeable="true" @close="catalogError = false">
       Failed to load the layer catalog.
     </Alert>
-
     <Alert v-if="recordError" :closeable="true" @close="recordError = false">
       Failed to load the mapset's current layers.
     </Alert>
-
     <Alert v-if="saveError" :closeable="true" @close="saveError = null">
       {{ saveError }}
       <ul v-if="saveUnknown.length" class="mt-1 list-disc pl-5">
         <li v-for="id in saveUnknown" :key="id">
-          <code>{{ id }}</code>
+          <code class="font-mono">{{ id }}</code>
         </li>
       </ul>
     </Alert>
-
     <Alert v-if="saveSuccess" type="success" :closeable="true" @close="saveSuccess = false">
       Layers saved.
     </Alert>
 
-    <div>
-      <div class="mb-2 flex items-baseline justify-between">
-        <h6 class="font-bold">Layers ({{ current.length }})</h6>
-        <span v-if="dirty" class="text-xs text-amber-600">Unsaved changes</span>
+    <section class="space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
+          Layers ({{ current.length }})
+          <Badge v-if="dirty" variant="warning" class="ml-2">Unsaved</Badge>
+        </h6>
+        <Button
+          outline
+          label="Add"
+          :disabled="!canAdd"
+          @click="handleAdd"
+        />
       </div>
 
-      <div v-if="current.length === 0" class="rounded border border-dashed p-3 text-sm text-grey-700">
+      <Select
+        v-if="availableOptions.length"
+        id="add-layer"
+        :options="[
+          { value: '', label: catalogLoading ? 'Loading…' : 'Select a layer to add…' },
+          ...availableOptions,
+        ]"
+        v-model="addValue"
+        :disabled="saving || catalogLoading"
+      />
+      <p v-else class="text-xs text-grey-700">All catalog layers are already assigned.</p>
+
+      <div
+        v-if="current.length === 0"
+        class="rounded-md border border-grey-200 px-3 py-6 text-center text-sm text-grey-700"
+      >
         No layers assigned.
       </div>
-
-      <ul v-else class="divide-y rounded border">
+      <ul v-else class="overflow-hidden rounded-md border border-grey-200">
         <li
           v-for="entry in selectedLayers"
           :key="entry.id"
-          class="flex items-start justify-between gap-3 p-3"
+          class="flex items-start gap-3 border-b border-grey-200 px-3 py-3 last:border-b-0"
         >
-          <div class="min-w-0 grow">
+          <div class="min-w-0 flex-1 space-y-1.5">
             <div class="flex items-center gap-2">
-              <span v-if="entry.layer" class="font-medium">{{ entry.layer.name }}</span>
-              <span v-else class="font-medium text-red-600">Unknown layer</span>
-              <code class="text-xs text-grey-700">{{ entry.id }}</code>
+              <span v-if="entry.layer" class="font-medium text-grey-800">{{
+                entry.layer.name
+              }}</span>
+              <span v-else class="font-medium text-red-700">Unknown layer</span>
+              <MonoBadge :value="entry.id" />
             </div>
             <div
               v-if="entry.layer && entry.layer.fields.length"
-              class="mt-1 flex flex-wrap gap-1.5"
+              class="flex flex-wrap gap-1.5"
             >
               <span
                 v-for="(field, i) in entry.layer.fields"
                 :key="i"
-                class="inline-flex items-center gap-1 rounded bg-grey-100 px-1.5 py-0.5 text-xs"
+                class="inline-flex items-center gap-1.5 rounded border border-grey-200 bg-grey-100 px-1.5 py-0.5 text-xs text-grey-800"
               >
                 <span
-                  class="inline-block h-2.5 w-2.5 rounded-full border border-grey-400"
+                  class="inline-block h-3 w-3 shrink-0 rounded-sm border border-grey-400"
                   :style="{ backgroundColor: normalizeColor(field.color) }"
                 />
                 {{ field.name }}
@@ -232,41 +261,25 @@ const handleSave = async function () {
           </div>
           <button
             type="button"
-            class="shrink-0"
+            class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-grey-700 transition-colors hover:bg-red-50 hover:text-red-500 disabled:cursor-default disabled:opacity-50"
             :disabled="saving"
             :aria-label="`Remove ${entry.layer?.name ?? entry.id}`"
+            :title="`Remove ${entry.layer?.name ?? entry.id}`"
             @click="handleRemove(entry.id)"
           >
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </li>
       </ul>
-    </div>
+    </section>
 
-    <div class="border-t pt-4">
-      <h6 class="mb-2 font-bold">Add layer</h6>
-      <div v-if="availableOptions.length === 0" class="text-sm text-grey-700">
-        All catalog layers are already assigned.
-      </div>
-      <div v-else class="flex items-end gap-2">
-        <div class="grow">
-          <Select
-            id="add-layer"
-            :options="[{ value: '', label: catalogLoading ? 'Loading…' : 'Select a layer…' }, ...availableOptions]"
-            v-model="addValue"
-            :disabled="saving || catalogLoading"
-          />
-        </div>
-        <Button
-          label="Add"
-          :disabled="!addValue || saving || catalogLoading || recordLoading || recordError"
-          @click="handleAdd"
-        />
-      </div>
-    </div>
-
-    <div class="flex justify-end gap-2 border-t pt-4">
-      <Button label="Revert" outline :disabled="!dirty || saving" @click="handleRevert" />
+    <div class="flex justify-end gap-2 border-t border-grey-200 pt-4">
+      <Button
+        label="Revert"
+        outline
+        :disabled="!dirty || saving"
+        @click="handleRevert"
+      />
       <Button
         label="Save"
         :disabled="!dirty || saving || recordLoading || recordError"

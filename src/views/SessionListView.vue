@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, watch, type Ref } from 'vue'
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Drawer from '@/components/Layout/Drawer.vue'
 import Table from '@/components/Common/Table.vue'
 import Alert from '@/components/Common/Alert.vue'
-import Badge from '@/components/Common/Badge.vue'
-import Toggle from '@/components/Common/Inputs/Toggle.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
 
@@ -26,9 +24,13 @@ const router = useRouter()
 
 const loading = ref(true)
 const error = ref(false)
-const includeExpired = ref(false)
 const actionError = ref<string | null>(null)
 const actionSuccess = ref<string | null>(null)
+
+// "now" tick — keep the relative duration ("valid for 14m") fresh without
+// refetching the list. Single shared computed clock for every row.
+const now = ref(Date.now())
+let clockHandle: ReturnType<typeof setInterval> | null = null
 
 const flashSuccess = function (message: string) {
   actionSuccess.value = message
@@ -45,9 +47,8 @@ const userIdFilter = computed<string | null>(() => {
 
 const columns = [
   { field: 'user_id', title: 'User' },
-  { field: 'status', title: 'Status', width: '7rem' },
+  { field: 'valid_for', title: 'Valid for', width: '10rem' },
   { field: 'created_at', title: 'Created', width: '13rem' },
-  { field: 'expires_at', title: 'Expires', width: '13rem' },
 ]
 
 const rows: Ref<ISession[]> = ref([])
@@ -65,17 +66,12 @@ const filteredUser = computed<IUser | null>(() => {
   return userMap.value.get(userIdFilter.value) ?? null
 })
 
-const isExpired = function (session: ISession): boolean {
-  return new Date(session.expires_at) <= new Date()
-}
-
 const refreshList = async function () {
   try {
     loading.value = true
     error.value = false
     const sessions = await getAllSessions({
       userId: userIdFilter.value ?? undefined,
-      includeExpired: includeExpired.value,
     })
     sessions.sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -98,10 +94,18 @@ const loadUsers = async function () {
 
 onBeforeMount(async () => {
   await Promise.all([refreshList(), loadUsers()])
+  // Tick once a minute — sessions are minute-grained; second-resolution
+  // would re-render the whole table for no real benefit.
+  clockHandle = setInterval(() => {
+    now.value = Date.now()
+  }, 60_000)
 })
 
-watch(includeExpired, refreshList)
 watch(userIdFilter, refreshList)
+
+onBeforeUnmount(() => {
+  if (clockHandle !== null) clearInterval(clockHandle)
+})
 
 const handleSelect = function (row: ISession) {
   actionError.value = null
@@ -147,6 +151,26 @@ const formatDate = function (dateStr: string | null) {
   })
 }
 
+// Human-readable remaining time until expiry. Coarse-grained because the
+// "now" clock ticks once a minute; smaller units would just look stale.
+const validFor = function (expiresAt: string): string {
+  const diffMs = new Date(expiresAt).getTime() - now.value
+  if (diffMs <= 0) return 'expired'
+
+  const minutes = Math.floor(diffMs / 60_000)
+  if (minutes < 60) return `${minutes}m`
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) {
+    const m = minutes % 60
+    return m ? `${hours}h ${m}m` : `${hours}h`
+  }
+
+  const days = Math.floor(hours / 24)
+  const h = hours % 24
+  return h ? `${days}d ${h}h` : `${days}d`
+}
+
 // IPv6 from the proxy arrives expanded (e.g. 2a02:a473:7505:0000:…); the
 // WHATWG URL parser compresses it to RFC 5952. IPv4 and unparseable strings
 // pass through unchanged.
@@ -186,13 +210,7 @@ const renderUserCell = function (userId: string): string {
           <template v-else>Active user sessions across the platform.</template>
         </p>
       </div>
-      <div class="flex items-center gap-3">
-        <Button v-if="userIdFilter" outline label="Clear filter" @click="handleClearUserFilter" />
-        <label class="flex items-center gap-2 text-sm text-grey-800">
-          <Toggle v-model="includeExpired" />
-          Include expired
-        </label>
-      </div>
+      <Button v-if="userIdFilter" outline label="Clear filter" @click="handleClearUserFilter" />
     </header>
 
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
@@ -204,25 +222,22 @@ const renderUserCell = function (userId: string): string {
       :columns="columns"
       :loading="loading"
       :selectedId="record?.id"
-      emptyMessage="No sessions to show."
+      emptyMessage="No active sessions."
       @select="handleSelect"
     >
       <template #user_id="{ row }">
         <span class="text-grey-800">{{ renderUserCell(row.user_id) }}</span>
       </template>
-      <template #status="{ row }">
-        <Badge :variant="isExpired(row) ? 'default' : 'success'">
-          {{ isExpired(row) ? 'expired' : 'active' }}
-        </Badge>
+      <template #valid_for="{ row }">
+        <span class="font-mono text-xs text-grey-700">{{ validFor(row.expires_at) }}</span>
       </template>
       <template #created_at="{ row }">{{ formatDate(row.created_at) }}</template>
-      <template #expires_at="{ row }">{{ formatDate(row.expires_at) }}</template>
     </Table>
 
     <template #aside>
       <Drawer :open="!!record" @close="handleCloseDrawer">
         <template #title>Session information</template>
-        <template v-if="record && !isExpired(record)" #actions>
+        <template v-if="record" #actions>
           <Button danger label="Terminate" @click="handleForceLogout" />
         </template>
 
@@ -244,12 +259,8 @@ const renderUserCell = function (userId: string): string {
             <dd><MonoBadge :value="record.id" /></dd>
             <dt class="text-grey-700">User</dt>
             <dd class="text-grey-800 break-all">{{ renderUserCell(record.user_id) }}</dd>
-            <dt class="text-grey-700">Status</dt>
-            <dd>
-              <Badge :variant="isExpired(record) ? 'default' : 'success'">
-                {{ isExpired(record) ? 'expired' : 'active' }}
-              </Badge>
-            </dd>
+            <dt class="text-grey-700">Valid for</dt>
+            <dd class="font-mono text-xs text-grey-800">{{ validFor(record.expires_at) }}</dd>
             <dt class="text-grey-700">IP address</dt>
             <dd class="text-grey-800">{{ formatIpAddress(record.ip_address) }}</dd>
             <dt class="text-grey-700">Created</dt>

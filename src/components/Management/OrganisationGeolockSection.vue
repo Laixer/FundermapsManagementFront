@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue'
-import { z } from 'zod'
 
 import Table from '@/components/Common/Table.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
+import Button from '@/components/Common/Buttons/Button.vue'
+import Input from '@/components/Common/Inputs/Input.vue'
+import Alert from '@/components/Common/Alert.vue'
+import Icon from '@/components/Common/Icons/Icon.vue'
+
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import {
   getGeolockDistricts,
@@ -18,18 +22,10 @@ import {
   type IGeolock,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import { getErrorMessage } from '@/services/fundermaps/errors'
-import Icon from '@/components/Common/Icons/Icon.vue'
-import Form from '@/components/Management/Form.vue'
-import Input from '@/components/Common/Inputs/Input.vue'
-import Alert from '@/components/Common/Alert.vue'
 
 const props = defineProps<{
   record: IOrg | null
 }>()
-
-const validationSchema = z.object({
-  id: z.string().min(1, 'ID is required'),
-})
 
 const districts: Ref<IGeolock[]> = ref([])
 const municipalities: Ref<IGeolock[]> = ref([])
@@ -38,6 +34,10 @@ const loading = ref(false)
 const loadError = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 const actionSuccess = ref<string | null>(null)
+
+const newDistrict = ref('')
+const newMunicipality = ref('')
+const newNeighborhood = ref('')
 
 const flashSuccess = function (message: string) {
   actionSuccess.value = message
@@ -77,16 +77,35 @@ watch(() => props.record, refresh, { immediate: true })
 
 defineExpose({ refresh })
 
-async function handleAddDistrict(formData: { id: string }) {
-  if (!props.record || !formData.id.trim()) return
-  await addGeolockDistrict(props.record.id, formData.id.trim())
-  await refresh()
-}
-
-async function handleRemove(fn: () => Promise<unknown>, label: string) {
+async function handleAdd(
+  inputRef: Ref<string>,
+  fn: (orgId: string, id: string) => Promise<unknown>,
+  label: string,
+) {
+  if (!props.record) return
+  const id = inputRef.value.trim()
+  if (!id) return
   try {
     actionError.value = null
-    await fn()
+    await fn(props.record.id, id)
+    inputRef.value = ''
+    await refresh()
+    flashSuccess(`${label} added.`)
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? `Failed to add ${label.toLowerCase()}.`
+    console.error(e)
+  }
+}
+
+async function handleRemove(
+  id: string,
+  fn: (orgId: string, id: string) => Promise<unknown>,
+  label: string,
+) {
+  if (!props.record) return
+  try {
+    actionError.value = null
+    await fn(props.record.id, id)
     await refresh()
     flashSuccess(`${label} removed.`)
   } catch (e) {
@@ -95,35 +114,18 @@ async function handleRemove(fn: () => Promise<unknown>, label: string) {
   }
 }
 
-async function handleRemoveDistrict(id: string) {
-  if (!props.record) return
-  const orgId = props.record.id
-  await handleRemove(() => removeGeolockDistrict(orgId, id), 'District')
-}
+const handleAddDistrict = () => handleAdd(newDistrict, addGeolockDistrict, 'District')
+const handleAddMunicipality = () =>
+  handleAdd(newMunicipality, addGeolockMunicipality, 'Municipality')
+const handleAddNeighborhood = () =>
+  handleAdd(newNeighborhood, addGeolockNeighborhood, 'Neighborhood')
 
-async function handleAddMunicipality(formData: { id: string }) {
-  if (!props.record || !formData.id.trim()) return
-  await addGeolockMunicipality(props.record.id, formData.id.trim())
-  await refresh()
-}
-
-async function handleRemoveMunicipality(id: string) {
-  if (!props.record) return
-  const orgId = props.record.id
-  await handleRemove(() => removeGeolockMunicipality(orgId, id), 'Municipality')
-}
-
-async function handleAddNeighborhood(formData: { id: string }) {
-  if (!props.record || !formData.id.trim()) return
-  await addGeolockNeighborhood(props.record.id, formData.id.trim())
-  await refresh()
-}
-
-async function handleRemoveNeighborhood(id: string) {
-  if (!props.record) return
-  const orgId = props.record.id
-  await handleRemove(() => removeGeolockNeighborhood(orgId, id), 'Neighborhood')
-}
+const handleRemoveDistrict = (id: string) =>
+  handleRemove(id, removeGeolockDistrict, 'District')
+const handleRemoveMunicipality = (id: string) =>
+  handleRemove(id, removeGeolockMunicipality, 'Municipality')
+const handleRemoveNeighborhood = (id: string) =>
+  handleRemove(id, removeGeolockNeighborhood, 'Neighborhood')
 </script>
 
 <template>
@@ -134,8 +136,25 @@ async function handleRemoveNeighborhood(id: string) {
       {{ actionSuccess }}
     </Alert>
 
-    <section class="space-y-3">
-      <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">Districts</h6>
+    <section class="space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
+          Districts ({{ districts.length }})
+        </h6>
+        <Button
+          outline
+          label="Add"
+          :disabled="!newDistrict.trim() || loading"
+          @click="handleAddDistrict"
+        />
+      </div>
+      <Input
+        id="add-district"
+        placeholder="District ID"
+        type="text"
+        v-model="newDistrict"
+        :disabled="loading"
+      />
       <Table
         :rows="districts"
         :columns="columns"
@@ -158,27 +177,27 @@ async function handleRemoveNeighborhood(id: string) {
           </button>
         </template>
       </Table>
-      <Form
-        :form-data="{ id: '' }"
-        :formDataHandler="handleAddDistrict"
-        :validation-schema="validationSchema"
-        :inline="true"
-        v-slot="{ formData, getError, getStatus, loading: formLoading }"
-      >
-        <Input
-          id="add-district"
-          placeholder="Enter district ID"
-          type="text"
-          v-model="formData.id"
-          :disabled="formLoading"
-          :validation-status="getStatus('id')"
-          :validation-message="getError('id')"
-        />
-      </Form>
     </section>
 
-    <section class="space-y-3">
-      <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">Municipalities</h6>
+    <section class="space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
+          Municipalities ({{ municipalities.length }})
+        </h6>
+        <Button
+          outline
+          label="Add"
+          :disabled="!newMunicipality.trim() || loading"
+          @click="handleAddMunicipality"
+        />
+      </div>
+      <Input
+        id="add-municipality"
+        placeholder="Municipality ID"
+        type="text"
+        v-model="newMunicipality"
+        :disabled="loading"
+      />
       <Table
         :rows="municipalities"
         :columns="columns"
@@ -201,27 +220,27 @@ async function handleRemoveNeighborhood(id: string) {
           </button>
         </template>
       </Table>
-      <Form
-        :form-data="{ id: '' }"
-        :formDataHandler="handleAddMunicipality"
-        :validation-schema="validationSchema"
-        :inline="true"
-        v-slot="{ formData, getError, getStatus, loading: formLoading }"
-      >
-        <Input
-          id="add-municipality"
-          placeholder="Enter municipality ID"
-          type="text"
-          v-model="formData.id"
-          :disabled="formLoading"
-          :validation-status="getStatus('id')"
-          :validation-message="getError('id')"
-        />
-      </Form>
     </section>
 
-    <section class="space-y-3">
-      <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">Neighborhoods</h6>
+    <section class="space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
+          Neighborhoods ({{ neighborhoods.length }})
+        </h6>
+        <Button
+          outline
+          label="Add"
+          :disabled="!newNeighborhood.trim() || loading"
+          @click="handleAddNeighborhood"
+        />
+      </div>
+      <Input
+        id="add-neighborhood"
+        placeholder="Neighborhood ID"
+        type="text"
+        v-model="newNeighborhood"
+        :disabled="loading"
+      />
       <Table
         :rows="neighborhoods"
         :columns="columns"
@@ -244,23 +263,6 @@ async function handleRemoveNeighborhood(id: string) {
           </button>
         </template>
       </Table>
-      <Form
-        :form-data="{ id: '' }"
-        :formDataHandler="handleAddNeighborhood"
-        :validation-schema="validationSchema"
-        :inline="true"
-        v-slot="{ formData, getError, getStatus, loading: formLoading }"
-      >
-        <Input
-          id="add-neighborhood"
-          placeholder="Enter neighborhood ID"
-          type="text"
-          v-model="formData.id"
-          :disabled="formLoading"
-          :validation-status="getStatus('id')"
-          :validation-message="getError('id')"
-        />
-      </Form>
     </section>
   </div>
 </template>
