@@ -1,17 +1,12 @@
 <script setup lang="ts">
-/**
- * This is the wrapper for all pages, except the auth pages
- */
-
-import Header from '@/components/Layout/Header.vue'
+import Sidebar from '@/components/Layout/Sidebar.vue'
 </script>
 
 <template>
-  <div class="page-dashboard">
-    <Header />
-
-    <div class="app-view | grid grid-flow-row-dense grid-cols-3 gap-3 bg-grey-100 px-3 py-3">
+  <div class="page-dashboard min-h-screen bg-grey-100">
+    <Sidebar />
+    <main class="ml-56 p-6">
       <slot />
-    </div>
+    </main>
   </div>
 </template>

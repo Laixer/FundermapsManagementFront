@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, type Ref } from 'vue'
-
-import Vue3Datatable from '@bhplugin/vue3-datatable'
-import '@bhplugin/vue3-datatable/dist/style.css'
+import { computed, onBeforeMount, ref, type Ref } from 'vue'
 
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
 import CloseBtn from '@/components/Common/Buttons/CloseBtn.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
-import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
+import Drawer from '@/components/Layout/Drawer.vue'
 import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import Icon from '@/components/Common/Icons/Icon.vue'
 import Alert from '@/components/Common/Alert.vue'
 import Badge from '@/components/Common/Badge.vue'
-
+import MonoBadge from '@/components/Common/MonoBadge.vue'
+import ListRow from '@/components/Common/ListRow.vue'
+import Input from '@/components/Common/Inputs/Input.vue'
 import Select from '@/components/Common/Inputs/Select.vue'
 
 import {
@@ -37,6 +36,7 @@ const loading = ref(true)
 const error = ref(false)
 const showCreate = ref(false)
 const showEdit = ref(false)
+const search = ref('')
 const actionError = ref<string | null>(null)
 const actionSuccess = ref<string | null>(null)
 const newApiKey = ref<string | null>(null)
@@ -54,12 +54,6 @@ const flashSuccess = function (message: string) {
   }, 3000)
 }
 
-const cols = [
-  { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
-  { field: 'given_name', title: 'Name' },
-  { field: 'email', title: 'Email' },
-  { field: 'role', title: 'Role' },
-]
 const rows: Ref<IUser[]> = ref([])
 
 interface IAuthKey {
@@ -69,16 +63,37 @@ interface IAuthKey {
   last_used: string | null
 }
 
-const apiKeyCols = [
-  { field: 'name', title: 'Name', isUnique: true },
-  { field: 'last_used', title: 'Last Used' },
-  { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
-]
-
 const record: Ref<IUser | null> = ref(null)
 const apiKeys: Ref<IAuthKey[]> = ref([])
 
-const rowClass = (row: IUser) => (record.value?.id === row.id ? 'is-selected-row' : '')
+const drawerOpen = computed(
+  () => showCreate.value || showEdit.value || !!createdUser.value || !!record.value,
+)
+
+const filteredRows = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  if (!q) return rows.value
+  return rows.value.filter((u) => {
+    const name = renderUserName(u).toLowerCase()
+    return (
+      u.email.toLowerCase().includes(q) ||
+      name.includes(q) ||
+      u.id.toLowerCase().includes(q) ||
+      (u.role ?? '').toLowerCase().includes(q)
+    )
+  })
+})
+
+const initialsFor = (user: IUser) => {
+  const name = renderUserName(user).trim()
+  if (name) {
+    const parts = name.split(/\s+/)
+    const first = parts[0]?.[0] ?? ''
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+    return (first + last).toUpperCase() || user.email.slice(0, 2).toUpperCase()
+  }
+  return user.email.slice(0, 2).toUpperCase()
+}
 
 const refreshList = async function () {
   try {
@@ -94,7 +109,7 @@ const refreshList = async function () {
 
 onBeforeMount(refreshList)
 
-const handleRowClick = async function (row: IUser) {
+const handleSelect = async function (row: IUser) {
   showCreate.value = false
   showEdit.value = false
   actionError.value = null
@@ -106,21 +121,20 @@ const handleRowClick = async function (row: IUser) {
   record.value = await getUser(row.id)
   apiKeys.value = await getAPIKeys(row.id)
 }
-const handleOpenModal = function () {
+
+const handleOpenCreate = function () {
   showEdit.value = false
   record.value = null
   createdUser.value = null
   showCreate.value = true
 }
+
 const handleEdit = function () {
   showCreate.value = false
   createdUser.value = null
   showEdit.value = true
 }
 
-// Reveal the credentials of a freshly created user once — the generated
-// password is not retrievable afterwards. Closing the create form lets the
-// reveal take its place in the side column.
 const handleUserCreated = function (credentials: {
   email: string
   password: string
@@ -131,8 +145,7 @@ const handleUserCreated = function (credentials: {
   showCreate.value = false
 }
 
-// Make sure to reset the form when closing the modal
-const handleCloseModal = function () {
+const handleCloseDrawer = function () {
   showCreate.value = false
   showEdit.value = false
   record.value = null
@@ -197,160 +210,279 @@ const handleRoleChange = async function (newRole: string) {
     actionError.value = getErrorMessage(e) ?? 'Failed to update user role.'
   }
 }
-
 </script>
 
 <template>
   <MainWrapper>
-    <Card class="List col-span-2">
-      <header
-        class="-mx-5 -mt-5 flex items-center justify-between gap-4 border-b border-grey-200 px-5 py-4"
-      >
+    <div>
+      <header class="mb-4 flex items-end justify-between gap-4">
         <div>
-          <h2 class="heading-3">Users</h2>
-          <p class="mt-1 text-sm text-grey-700">Manage accounts, roles and API keys.</p>
+          <h2 class="text-xl font-semibold text-grey-800">Users</h2>
+          <p class="mt-0.5 text-sm text-grey-700">
+            Manage accounts, roles and API keys.
+          </p>
         </div>
-        <Button label="Add User" @click="handleOpenModal" />
+        <Button label="Add user" @click="handleOpenCreate" />
       </header>
-      <Alert v-if="error" :closeable="true" @close="error = false">
-        An error occurred while trying to retrieve the list of records.
-      </Alert>
-      <Alert v-if="rows.length >= USERS_LIST_LIMIT" type="danger">
-        Showing the first {{ USERS_LIST_LIMIT }} users — additional users are not loaded.
-      </Alert>
-      <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
-        :columnFilter="true" :rowClass="rowClass" @rowClick="handleRowClick">
-        <template #id="data">
-          <div class="flex justify-between">
-            <div>{{ data.value.id }}</div>
-            <CopyToClipboardIcon :value="data.value.id" />
-          </div>
-        </template>
-        <template #given_name="data">
-          {{ renderUserName(data.value) }}
-        </template>
-        <template #role="data">
-          <Badge :variant="data.value.role === 'administrator' ? 'info' : 'default'">
-            {{ data.value.role }}
-          </Badge>
-        </template>
-      </Vue3Datatable>
-    </Card>
-    <CreateUserForm v-if="showCreate" @cancel="handleCloseModal" @saved="refreshList"
-      @created="handleUserCreated" @close="handleCloseModal" />
 
-    <Card v-else-if="createdUser" class="Details col-span-1">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">User created</h3>
-        <CloseBtn label="close" @click="handleCloseModal" />
-      </div>
-      <Alert type="success" class="mt-3">
-        <div class="mb-3 font-medium">
-          Copy these credentials now — the password won't be shown again.
-        </div>
-        <dl class="space-y-3 text-sm">
-          <div class="flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <dt class="text-grey-700">Email</dt>
-              <dd><code class="select-all break-all">{{ createdUser.email }}</code></dd>
-            </div>
-            <CopyToClipboardIcon :value="createdUser.email" />
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <dt class="text-grey-700">Password</dt>
-              <dd><code class="select-all break-all">{{ createdUser.password }}</code></dd>
-            </div>
-            <CopyToClipboardIcon :value="createdUser.password" />
-          </div>
-        </dl>
-        <p class="mt-3 text-grey-700">
-          Added to <span class="font-medium">{{ createdUser.organisation }}</span> as
-          <span class="font-medium">{{ createdUser.role }}</span>.
-        </p>
-      </Alert>
-    </Card>
-
-    <EditUserForm v-if="record && showEdit" :record="record" @cancel="handleCloseModal" @saved="refreshList"
-      @close="handleCloseModal" />
-
-    <RecordDetailsCard v-if="!showEdit && !showCreate && !createdUser" title="User information" :record="record" :editable="true"
-      :deletable="true" emptyMessage="Select a user to see details." @close="handleCloseModal" @edit="handleEdit"
-      @delete="handleDelete">
-      <Alert v-if="actionError" :closeable="true" @close="actionError = null">
-        {{ actionError }}
-      </Alert>
-      <Alert v-if="actionSuccess" type="success" :closeable="true" @close="actionSuccess = null">
-        {{ actionSuccess }}
-      </Alert>
-      <div class="space-y-6">
-        <!-- User Info -->
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <dt class="font-medium text-grey-700">Email</dt>
-          <dd>{{ record?.email }}</dd>
-          <dt class="font-medium text-grey-700">Name</dt>
-          <dd>{{ renderUserName(record!) || '-' }}</dd>
-          <dt class="font-medium text-grey-700">Phone</dt>
-          <dd>{{ record?.phone_number || '-' }}</dd>
-          <dt class="font-medium text-grey-700">Job Title</dt>
-          <dd>{{ record?.job_title || '-' }}</dd>
-        </dl>
-
-        <!-- Organisations -->
-        <div v-if="record?.organizations?.length" class="border-t pt-4">
-          <h6 class="mb-1 font-bold">Organisations</h6>
-          <ul class="text-sm text-grey-800">
-            <li v-for="org in record.organizations" :key="org.id">{{ org.name }}</li>
-          </ul>
-        </div>
-
-        <!-- Role -->
-        <div class="border-t pt-4">
-          <label class="mb-1 block text-sm font-medium text-grey-800">Role</label>
-          <Select
-            id="role"
-            :options="[
-              { label: 'User', value: 'user' },
-              { label: 'Administrator', value: 'administrator' },
-            ]"
-            :modelValue="record?.role"
-            @update:modelValue="handleRoleChange"
+      <div class="mb-3 flex items-center gap-3">
+        <div class="w-72">
+          <Input
+            id="user-search"
+            v-model="search"
+            type="search"
+            placeholder="Search by name, email, ID or role…"
           />
         </div>
-
-        <!-- Password Reset -->
-        <div class="border-t pt-4">
-          <UserResetPassword :record="record" />
-        </div>
-
-        <!-- API Keys -->
-        <div class="border-t pt-4">
-          <div class="mb-2 flex items-center justify-between">
-            <h6 class="font-bold">API Keys</h6>
-            <Button label="Generate" @click="handleCreateAPIKey" />
-          </div>
-          <Alert v-if="newApiKey" type="success" :closeable="true" @close="newApiKey = null">
-            <div class="mb-2 font-medium">
-              New API key generated — copy it now, it won't be shown again.
-            </div>
-            <div class="flex items-center gap-2">
-              <code class="select-all break-all">{{ newApiKey }}</code>
-              <CopyToClipboardIcon :value="newApiKey" />
-            </div>
-          </Alert>
-          <Vue3Datatable :rows="apiKeys" :columns="apiKeyCols" :sortable="true">
-            <template #name="data">
-              <span class="truncate">{{ data.value.name || data.value.id }}</span>
-            </template>
-            <template #actions="data">
-              <button @click.stop="handleDeleteAPIKey(data.value.id)">
-                <Icon class="aspect-square w-3" name="trash-solid" />
-              </button>
-            </template>
-          </Vue3Datatable>
-        </div>
-
+        <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
       </div>
-    </RecordDetailsCard>
+
+      <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
+        An error occurred while trying to retrieve the list of users.
+      </Alert>
+      <Alert v-if="rows.length >= USERS_LIST_LIMIT" type="warning" class="mb-3">
+        Showing the first {{ USERS_LIST_LIMIT }} users — additional users are not loaded.
+      </Alert>
+
+      <Card class="!p-0">
+        <div v-if="loading" class="px-4 py-6 text-sm text-grey-700">Loading users…</div>
+        <div v-else-if="!filteredRows.length" class="px-4 py-6 text-sm text-grey-700">
+          No users match your search.
+        </div>
+        <ListRow
+          v-for="user in filteredRows"
+          :key="user.id"
+          :selected="record?.id === user.id"
+          @select="handleSelect(user)"
+        >
+          <template #lead>
+            <span
+              class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-grey-100 text-xs font-bold text-grey-800"
+              aria-hidden="true"
+            >
+              {{ initialsFor(user) }}
+            </span>
+          </template>
+
+          <div class="flex flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <span class="truncate font-semibold text-grey-800">
+                {{ renderUserName(user) || user.email }}
+              </span>
+              <Badge :variant="user.role === 'administrator' ? 'info' : 'default'">
+                {{ user.role }}
+              </Badge>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-grey-700">
+              <span class="truncate">{{ user.email }}</span>
+              <span aria-hidden="true">·</span>
+              <MonoBadge :value="user.id" />
+            </div>
+          </div>
+
+          <template #actions>
+            <button
+              type="button"
+              class="button button--ghost"
+              :aria-label="`Copy ID for ${user.email}`"
+              title="Copy ID"
+              @click.stop
+            >
+              <CopyToClipboardIcon :value="user.id" />
+            </button>
+          </template>
+        </ListRow>
+      </Card>
+    </div>
+
+    <Drawer :open="drawerOpen" @close="handleCloseDrawer">
+      <!-- Create -->
+      <template v-if="showCreate">
+        <header class="flex h-14 shrink-0 items-center justify-between border-b border-grey-200 px-4">
+          <h3 class="text-sm font-semibold text-grey-800">New user</h3>
+          <CloseBtn label="close" @click="handleCloseDrawer" />
+        </header>
+        <div class="flex-1 overflow-y-auto p-4">
+          <CreateUserForm
+            @cancel="handleCloseDrawer"
+            @saved="refreshList"
+            @created="handleUserCreated"
+            @close="handleCloseDrawer"
+          />
+        </div>
+      </template>
+
+      <!-- Created credentials reveal -->
+      <template v-else-if="createdUser">
+        <header class="flex h-14 shrink-0 items-center justify-between border-b border-grey-200 px-4">
+          <h3 class="text-sm font-semibold text-grey-800">User created</h3>
+          <CloseBtn label="close" @click="handleCloseDrawer" />
+        </header>
+        <div class="flex-1 overflow-y-auto p-4">
+          <Alert type="success">
+            <div class="mb-3 font-medium">
+              Copy these credentials now — the password won't be shown again.
+            </div>
+            <dl class="space-y-3 text-sm">
+              <div class="flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <dt class="text-xs uppercase tracking-wide text-grey-700">Email</dt>
+                  <dd>
+                    <code class="select-all break-all font-mono">{{ createdUser.email }}</code>
+                  </dd>
+                </div>
+                <CopyToClipboardIcon :value="createdUser.email" />
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <dt class="text-xs uppercase tracking-wide text-grey-700">Password</dt>
+                  <dd>
+                    <code class="select-all break-all font-mono">{{ createdUser.password }}</code>
+                  </dd>
+                </div>
+                <CopyToClipboardIcon :value="createdUser.password" />
+              </div>
+            </dl>
+            <p class="mt-3 text-grey-700">
+              Added to <span class="font-medium">{{ createdUser.organisation }}</span> as
+              <span class="font-medium">{{ createdUser.role }}</span>.
+            </p>
+          </Alert>
+        </div>
+      </template>
+
+      <!-- Edit -->
+      <template v-else-if="record && showEdit">
+        <header class="flex h-14 shrink-0 items-center justify-between border-b border-grey-200 px-4">
+          <h3 class="text-sm font-semibold text-grey-800">
+            Edit {{ record.email }}
+          </h3>
+          <CloseBtn label="close" @click="handleCloseDrawer" />
+        </header>
+        <div class="flex-1 overflow-y-auto p-4">
+          <EditUserForm
+            :record="record"
+            @cancel="handleCloseDrawer"
+            @saved="refreshList"
+            @close="handleCloseDrawer"
+          />
+        </div>
+      </template>
+
+      <!-- Details -->
+      <template v-else-if="record">
+        <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-grey-200 px-4">
+          <h3 class="truncate text-sm font-semibold text-grey-800">User information</h3>
+          <div class="flex items-center gap-1.5">
+            <Button outline label="Edit" @click="handleEdit" />
+            <Button danger label="Delete" @click="handleDelete" />
+            <CloseBtn label="close" @click="handleCloseDrawer" />
+          </div>
+        </header>
+        <div class="flex-1 space-y-5 overflow-y-auto p-4">
+          <Alert v-if="actionError" :closeable="true" @close="actionError = null">
+            {{ actionError }}
+          </Alert>
+          <Alert v-if="actionSuccess" type="success" :closeable="true" @close="actionSuccess = null">
+            {{ actionSuccess }}
+          </Alert>
+
+          <dl class="grid grid-cols-[8rem_1fr] gap-x-4 gap-y-2 text-sm">
+            <dt class="text-grey-700">ID</dt>
+            <dd><MonoBadge :value="record.id" /></dd>
+            <dt class="text-grey-700">Email</dt>
+            <dd class="text-grey-800">{{ record.email }}</dd>
+            <dt class="text-grey-700">Name</dt>
+            <dd class="text-grey-800">{{ renderUserName(record) || '—' }}</dd>
+            <dt class="text-grey-700">Phone</dt>
+            <dd class="text-grey-800">{{ record.phone_number || '—' }}</dd>
+            <dt class="text-grey-700">Job title</dt>
+            <dd class="text-grey-800">{{ record.job_title || '—' }}</dd>
+          </dl>
+
+          <section v-if="record.organizations?.length">
+            <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">
+              Organisations
+            </h6>
+            <ul class="space-y-1 text-sm text-grey-800">
+              <li v-for="org in record.organizations" :key="org.id" class="flex items-center gap-2">
+                <span>{{ org.name }}</span>
+                <MonoBadge :value="org.id" />
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">Role</h6>
+            <Select
+              id="role"
+              :options="[
+                { label: 'User', value: 'user' },
+                { label: 'Administrator', value: 'administrator' },
+              ]"
+              :modelValue="record.role"
+              @update:modelValue="handleRoleChange"
+            />
+          </section>
+
+          <section>
+            <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">
+              Password
+            </h6>
+            <UserResetPassword :record="record" />
+          </section>
+
+          <section>
+            <div class="mb-2 flex items-center justify-between">
+              <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
+                API keys
+              </h6>
+              <Button outline label="Generate" @click="handleCreateAPIKey" />
+            </div>
+            <Alert
+              v-if="newApiKey"
+              type="success"
+              :closeable="true"
+              class="mb-3"
+              @close="newApiKey = null"
+            >
+              <div class="mb-2 font-medium">
+                New API key generated — copy it now, it won't be shown again.
+              </div>
+              <div class="flex items-center gap-2">
+                <code class="select-all break-all font-mono">{{ newApiKey }}</code>
+                <CopyToClipboardIcon :value="newApiKey" />
+              </div>
+            </Alert>
+            <div v-if="!apiKeys.length" class="text-xs text-grey-700">No API keys yet.</div>
+            <div v-else class="overflow-hidden rounded-md border border-grey-200">
+              <div
+                v-for="key in apiKeys"
+                :key="key.id"
+                class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0 hover:bg-grey-100"
+              >
+                <div class="min-w-0 flex-1">
+                  <div class="truncate font-medium text-grey-800">
+                    {{ key.name || key.id }}
+                  </div>
+                  <div class="text-xs text-grey-700">
+                    Last used: {{ key.last_used ?? '—' }}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="inline-flex h-7 w-7 items-center justify-center rounded text-grey-700 transition-colors hover:bg-red-50 hover:text-red-500"
+                  :aria-label="`Delete API key ${key.name || key.id}`"
+                  title="Delete API key"
+                  @click.stop="handleDeleteAPIKey(key.id)"
+                >
+                  <Icon class="aspect-square w-3" name="trash-solid" />
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </template>
+    </Drawer>
   </MainWrapper>
 </template>

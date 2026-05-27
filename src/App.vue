@@ -7,19 +7,6 @@ import { RouterView } from 'vue-router'
 </template>
 
 <style>
-.page-dashboard {
-  max-height: 100vh;
-}
-
-.List {
-  margin: 2rem;
-}
-
-.Details {
-  margin: 2rem;
-  margin-left: 0;
-}
-
 /* This applies to all generic Transition elements */
 .v-enter-active,
 .v-leave-active {
