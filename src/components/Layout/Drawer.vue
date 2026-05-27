@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, watch } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
+
+import CloseBtn from '@/components/Common/Buttons/CloseBtn.vue'
 
 const props = withDefaults(
   defineProps<{
     open?: boolean
-    width?: string
+    title?: string
   }>(),
   {
     open: true,
-    width: 'w-[28rem]',
+    title: '',
   },
 )
 
@@ -20,26 +22,29 @@ const handleKey = (e: KeyboardEvent) => {
 
 onMounted(() => window.addEventListener('keydown', handleKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', handleKey))
-
-watch(
-  () => props.open,
-  (open) => {
-    document.body.classList.toggle('drawer-open', open)
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
   <Transition name="drawer">
     <aside
       v-if="open"
-      class="fixed inset-y-0 right-0 z-50 flex flex-col border-l border-grey-200 bg-white shadow-[-1px_0_0_0_var(--color-grey-200)]"
-      :class="width"
-      role="dialog"
-      aria-modal="false"
+      class="drawer flex w-[28rem] shrink-0 flex-col self-stretch border-l border-grey-200 bg-white"
+      role="complementary"
     >
-      <slot />
+      <header
+        class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-grey-200 px-4"
+      >
+        <h3 class="truncate text-sm font-semibold text-grey-800">
+          <slot name="title">{{ title }}</slot>
+        </h3>
+        <div class="flex items-center gap-1.5">
+          <slot name="actions" />
+          <CloseBtn label="close" @close="emit('close')" />
+        </div>
+      </header>
+      <div class="flex-1 overflow-y-auto p-4">
+        <slot />
+      </div>
     </aside>
   </Transition>
 </template>
@@ -47,7 +52,7 @@ watch(
 <style scoped>
 .drawer-enter-active,
 .drawer-leave-active {
-  transition: transform 180ms ease;
+  transition: transform 200ms ease;
 }
 .drawer-enter-from,
 .drawer-leave-to {

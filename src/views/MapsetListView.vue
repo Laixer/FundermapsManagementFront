@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, type Ref } from 'vue'
+import { computed, onBeforeMount, ref, type Ref } from 'vue'
 
-import Vue3Datatable from '@bhplugin/vue3-datatable'
-
-import '@bhplugin/vue3-datatable/dist/style.css'
-
-import Card from '@/components/Common/Card.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
-
-import RecordDetailsCard from '@/components/Management/RecordDetailsCard.vue'
+import Drawer from '@/components/Layout/Drawer.vue'
+import Table from '@/components/Common/Table.vue'
 import MapsetTabs from '@/components/Management/MapsetTabs.vue'
 import MapsetLayersSection from '@/components/Management/MapsetLayersSection.vue'
 import FundermapsIcon from '@/components/Common/Icons/FundermapsIcon.vue'
@@ -17,22 +12,34 @@ import { getAllMapsets } from '@/services/fundermaps/endpoints/management/mapset
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import Alert from '@/components/Common/Alert.vue'
 import Badge from '@/components/Common/Badge.vue'
+import MonoBadge from '@/components/Common/MonoBadge.vue'
+import Input from '@/components/Common/Inputs/Input.vue'
 
 const loading = ref(true)
 const error = ref(false)
+const search = ref('')
 
 const record: Ref<IMapset | null> = ref(null)
 const activeTab: Ref<'info' | 'layers'> = ref('info')
 
-const cols = [
-  { field: 'icon', title: '', width: '2rem', filter: false, sort: false, search: false },
-  { field: 'id', title: 'ID', isUnique: true, width: '20rem' },
+const columns = [
+  { field: 'icon', title: '', width: '3rem' },
   { field: 'name', title: 'Name' },
-  { field: 'public', title: 'Public', type: 'bool' },
+  { field: 'public', title: 'Visibility', width: '8rem' },
+  { field: 'id', title: 'ID', width: '20rem' },
 ]
 const rows: Ref<IMapset[]> = ref([])
 
-const rowClass = (row: IMapset) => (record.value?.id === row.id ? 'is-selected-row' : '')
+const filteredRows = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  if (!q) return rows.value
+  return rows.value.filter(
+    (m) =>
+      m.name.toLowerCase().includes(q) ||
+      (m.slug ?? '').toLowerCase().includes(q) ||
+      m.id.toLowerCase().includes(q),
+  )
+})
 
 const refreshList = async function () {
   try {
@@ -48,13 +55,14 @@ const refreshList = async function () {
 
 onBeforeMount(refreshList)
 
-const handleRowClick = function (row: IMapset) {
+const handleSelect = function (row: IMapset) {
   if (record.value?.id !== row.id) {
     activeTab.value = 'info'
   }
   record.value = row
 }
-const handleCloseModal = function () {
+
+const handleCloseDrawer = function () {
   record.value = null
 }
 
@@ -69,71 +77,84 @@ const handleLayersSaved = async function (updated: IMapset) {
 
 <template>
   <MainWrapper>
-    <Card class="List col-span-2">
-      <header
-        class="-mx-5 -mt-5 flex items-center justify-between gap-4 border-b border-grey-200 px-5 py-4"
-      >
-        <div>
-          <h2 class="heading-3">Mapsets</h2>
-          <p class="mt-1 text-sm text-grey-700">
-            Map collections and the layers they include.
-          </p>
-        </div>
-      </header>
+    <header class="mb-4">
+      <h2 class="text-xl font-semibold text-grey-800">Mapsets</h2>
+      <p class="mt-0.5 text-sm text-grey-700">Map collections and the layers they include.</p>
+    </header>
 
-      <Alert v-if="error" :closeable="true" @close="error = false">
-        An error occurred while trying to retrieve the list of records.
-      </Alert>
-      <Vue3Datatable :rows="rows" :columns="cols" :loading="loading" sortColumn="name" :sortable="true"
-        :columnFilter="true" :rowClass="rowClass" @rowClick="handleRowClick">
-        <template #id="data">
-          <div class="flex justify-between">
-            <div>{{ data.value.id }}</div>
-            <CopyToClipboardIcon :value="data.value.id" />
+    <div class="mb-3 flex items-center gap-3">
+      <div class="w-72">
+        <Input
+          id="mapset-search"
+          v-model="search"
+          type="search"
+          placeholder="Search by name, slug or ID…"
+        />
+      </div>
+      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+    </div>
+
+    <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
+      An error occurred while trying to retrieve the list of mapsets.
+    </Alert>
+
+    <Table
+      :rows="filteredRows"
+      :columns="columns"
+      :loading="loading"
+      :selectedId="record?.id"
+      emptyMessage="No mapsets match your search."
+      @select="handleSelect"
+    >
+      <template #icon="{ row }">
+        <FundermapsIcon v-if="row.icon" class="aspect-square h-4" :name="row.icon" />
+      </template>
+      <template #name="{ row }">
+        <span class="font-medium text-grey-800">{{ row.name }}</span>
+      </template>
+      <template #public="{ row }">
+        <Badge :variant="row.public ? 'success' : 'default'">
+          {{ row.public ? 'Public' : 'Private' }}
+        </Badge>
+      </template>
+      <template #id="{ row }">
+        <div class="flex items-center justify-between gap-2">
+          <MonoBadge :value="row.id" />
+          <CopyToClipboardIcon :value="row.id" />
+        </div>
+      </template>
+    </Table>
+
+    <template #aside>
+      <Drawer :open="!!record" @close="handleCloseDrawer">
+        <template #title>Mapset information</template>
+        <template v-if="record">
+          <MapsetTabs v-model="activeTab" />
+          <div v-if="activeTab === 'info'" class="mt-4 space-y-4">
+            <dl class="grid grid-cols-[6rem_1fr] gap-x-4 gap-y-2 text-sm">
+              <dt class="text-grey-700">Name</dt>
+              <dd class="text-grey-800">{{ record.name }}</dd>
+              <dt class="text-grey-700">Slug</dt>
+              <dd class="text-grey-800">{{ record.slug }}</dd>
+              <dt class="text-grey-700">Visibility</dt>
+              <dd>
+                <Badge :variant="record.public ? 'success' : 'default'">
+                  {{ record.public ? 'Public' : 'Private' }}
+                </Badge>
+              </dd>
+              <dt class="text-grey-700">Note</dt>
+              <dd class="text-grey-800">{{ record.note || '—' }}</dd>
+              <dt class="text-grey-700">Order</dt>
+              <dd class="text-grey-800">{{ record.order }}</dd>
+              <dt class="text-grey-700">ID</dt>
+              <dd><MonoBadge :value="record.id" /></dd>
+            </dl>
+          </div>
+          <div v-else-if="activeTab === 'layers'" class="mt-4">
+            <MapsetLayersSection :record="record" @saved="handleLayersSaved" />
           </div>
         </template>
-        <template #public="data">
-          <Badge :variant="data.value.public ? 'success' : 'default'">
-            {{ data.value.public ? 'Public' : 'Private' }}
-          </Badge>
-        </template>
-        <template #icon="data">
-          <FundermapsIcon v-if="data.value.icon" class="aspect-square h-3.5" :name="data.value.icon" />
-        </template>
-      </Vue3Datatable>
-    </Card>
-
-    <RecordDetailsCard title="Mapset information" :record="record"
-      emptyMessage="Select a mapset to see its layers." @close="handleCloseModal">
-      <MapsetTabs v-model="activeTab" />
-      <div v-if="activeTab === 'info'" class="pt-4">
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-          <dt class="font-medium text-grey-700">Name</dt>
-          <dd>{{ record?.name }}</dd>
-          <dt class="font-medium text-grey-700">Slug</dt>
-          <dd>{{ record?.slug }}</dd>
-          <dt class="font-medium text-grey-700">Public</dt>
-          <dd>
-            <Badge :variant="record?.public ? 'success' : 'default'">
-              {{ record?.public ? 'Public' : 'Private' }}
-            </Badge>
-          </dd>
-          <dt class="font-medium text-grey-700">Note</dt>
-          <dd>{{ record?.note || '-' }}</dd>
-          <dt class="font-medium text-grey-700">Order</dt>
-          <dd>{{ record?.order }}</dd>
-        </dl>
-        <div class="mt-4 border-t border-grey-200 pt-4">
-          <h6 class="mb-1 font-bold">ID</h6>
-          <div class="flex items-center gap-2 text-sm">
-            <code>{{ record?.id }}</code>
-            <CopyToClipboardIcon :value="record?.id ?? ''" />
-          </div>
-        </div>
-      </div>
-      <div v-else-if="activeTab === 'layers'" class="pt-4">
-        <MapsetLayersSection :record="record" @saved="handleLayersSaved" />
-      </div>
-    </RecordDetailsCard>
+      </Drawer>
+    </template>
   </MainWrapper>
 </template>

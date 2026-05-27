@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue'
 
-import Vue3Datatable from '@bhplugin/vue3-datatable'
-
+import Table from '@/components/Common/Table.vue'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import { renderUserName } from '@/utils/user'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
@@ -22,11 +21,11 @@ const props = defineProps<{
 const userLoading = ref(false)
 const loadError = ref<string | null>(null)
 const actionError = ref<string | null>(null)
-const userCols = [
-  { field: 'given_name', title: 'Name' },
+const userColumns = [
+  { field: 'name', title: 'Name' },
   { field: 'email', title: 'Email' },
-  { field: 'organization_role', title: 'Role' },
-  { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
+  { field: 'organization_role', title: 'Role', width: '7rem' },
+  { field: 'actions', title: '', width: '2.5rem' },
 ]
 const userRows: Ref<IUser[]> = ref([])
 
@@ -48,7 +47,6 @@ const refresh = async function () {
 watch(() => props.record, refresh, { immediate: true })
 
 defineExpose({ refresh })
-
 
 const handleRemoveUser = async function (row: IUser) {
   if (!props.record) {
@@ -72,19 +70,30 @@ const handleRemoveUser = async function (row: IUser) {
 </script>
 
 <template>
-  <Alert v-if="loadError" :closeable="true" @close="loadError = null">{{ loadError }}</Alert>
-  <Alert v-if="actionError" :closeable="true" @close="actionError = null">{{ actionError }}</Alert>
-  <Vue3Datatable :rows="userRows" :columns="userCols" :loading="userLoading" sortColumn="name" :sortable="true"
-    :columnFilter="true">
-    <template #given_name="data">
-      {{ renderUserName(data.value) }}
-    </template>
-    <template #actions="data">
-      <div class="flex gap-1">
-        <button label="disconnect" @click.stop="handleRemoveUser(data.value)">
+  <div class="space-y-3">
+    <Alert v-if="loadError" :closeable="true" @close="loadError = null">{{ loadError }}</Alert>
+    <Alert v-if="actionError" :closeable="true" @close="actionError = null">{{ actionError }}</Alert>
+    <Table
+      :rows="userRows"
+      :columns="userColumns"
+      :loading="userLoading"
+      :clickable="false"
+      emptyMessage="No members yet."
+    >
+      <template #name="{ row }">
+        <span class="font-medium text-grey-800">{{ renderUserName(row) || '—' }}</span>
+      </template>
+      <template #actions="{ row }">
+        <button
+          type="button"
+          class="inline-flex h-7 w-7 items-center justify-center rounded text-grey-700 transition-colors hover:bg-red-50 hover:text-red-500"
+          :aria-label="`Remove ${row.email}`"
+          title="Remove from organisation"
+          @click.stop="handleRemoveUser(row)"
+        >
           <Icon class="aspect-square w-3" name="trash-solid" />
         </button>
-      </div>
-    </template>
-  </Vue3Datatable>
+      </template>
+    </Table>
+  </div>
 </template>

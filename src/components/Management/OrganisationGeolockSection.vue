@@ -2,8 +2,8 @@
 import { ref, watch, type Ref } from 'vue'
 import { z } from 'zod'
 
-import Vue3Datatable from '@bhplugin/vue3-datatable'
-
+import Table from '@/components/Common/Table.vue'
+import MonoBadge from '@/components/Common/MonoBadge.vue'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import {
   getGeolockDistricts,
@@ -46,20 +46,10 @@ const flashSuccess = function (message: string) {
   }, 3000)
 }
 
-const districtCols = [
+const columns = [
   { field: 'name', title: 'Name' },
-  { field: 'id', title: 'District ID', isUnique: true },
-  { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
-]
-const municipalityCols = [
-  { field: 'name', title: 'Name' },
-  { field: 'id', title: 'Municipality ID', isUnique: true },
-  { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
-]
-const neighborhoodCols = [
-  { field: 'name', title: 'Name' },
-  { field: 'id', title: 'Neighborhood ID', isUnique: true },
-  { field: 'actions', title: '', width: '2rem', filter: false, sort: false, search: false },
+  { field: 'id', title: 'ID', width: '12rem' },
+  { field: 'actions', title: '', width: '2.5rem' },
 ]
 
 async function refresh() {
@@ -143,15 +133,31 @@ async function handleRemoveNeighborhood(id: string) {
     <Alert v-if="actionSuccess" type="success" :closeable="true" @close="actionSuccess = null">
       {{ actionSuccess }}
     </Alert>
-    <div>
-      <h6 class="mb-2 font-bold">Districts</h6>
-      <Vue3Datatable :rows="districts" :columns="districtCols" :loading="loading" :sortable="true">
-        <template #actions="data">
-          <button @click.stop="handleRemoveDistrict(data.value.id)">
+
+    <section class="space-y-3">
+      <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">Districts</h6>
+      <Table
+        :rows="districts"
+        :columns="columns"
+        :loading="loading"
+        :clickable="false"
+        emptyMessage="No districts."
+      >
+        <template #id="{ row }">
+          <MonoBadge :value="row.id" />
+        </template>
+        <template #actions="{ row }">
+          <button
+            type="button"
+            class="inline-flex h-7 w-7 items-center justify-center rounded text-grey-700 transition-colors hover:bg-red-50 hover:text-red-500"
+            :aria-label="`Remove district ${row.id}`"
+            title="Remove district"
+            @click.stop="handleRemoveDistrict(row.id)"
+          >
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </template>
-      </Vue3Datatable>
+      </Table>
       <Form
         :form-data="{ id: '' }"
         :formDataHandler="handleAddDistrict"
@@ -169,17 +175,32 @@ async function handleRemoveNeighborhood(id: string) {
           :validation-message="getError('id')"
         />
       </Form>
-    </div>
+    </section>
 
-    <div>
-      <h6 class="mb-2 font-bold">Municipalities</h6>
-      <Vue3Datatable :rows="municipalities" :columns="municipalityCols" :loading="loading" :sortable="true">
-        <template #actions="data">
-          <button @click.stop="handleRemoveMunicipality(data.value.id)">
+    <section class="space-y-3">
+      <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">Municipalities</h6>
+      <Table
+        :rows="municipalities"
+        :columns="columns"
+        :loading="loading"
+        :clickable="false"
+        emptyMessage="No municipalities."
+      >
+        <template #id="{ row }">
+          <MonoBadge :value="row.id" />
+        </template>
+        <template #actions="{ row }">
+          <button
+            type="button"
+            class="inline-flex h-7 w-7 items-center justify-center rounded text-grey-700 transition-colors hover:bg-red-50 hover:text-red-500"
+            :aria-label="`Remove municipality ${row.id}`"
+            title="Remove municipality"
+            @click.stop="handleRemoveMunicipality(row.id)"
+          >
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </template>
-      </Vue3Datatable>
+      </Table>
       <Form
         :form-data="{ id: '' }"
         :formDataHandler="handleAddMunicipality"
@@ -197,17 +218,32 @@ async function handleRemoveNeighborhood(id: string) {
           :validation-message="getError('id')"
         />
       </Form>
-    </div>
+    </section>
 
-    <div>
-      <h6 class="mb-2 font-bold">Neighborhoods</h6>
-      <Vue3Datatable :rows="neighborhoods" :columns="neighborhoodCols" :loading="loading" :sortable="true">
-        <template #actions="data">
-          <button @click.stop="handleRemoveNeighborhood(data.value.id)">
+    <section class="space-y-3">
+      <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">Neighborhoods</h6>
+      <Table
+        :rows="neighborhoods"
+        :columns="columns"
+        :loading="loading"
+        :clickable="false"
+        emptyMessage="No neighborhoods."
+      >
+        <template #id="{ row }">
+          <MonoBadge :value="row.id" />
+        </template>
+        <template #actions="{ row }">
+          <button
+            type="button"
+            class="inline-flex h-7 w-7 items-center justify-center rounded text-grey-700 transition-colors hover:bg-red-50 hover:text-red-500"
+            :aria-label="`Remove neighborhood ${row.id}`"
+            title="Remove neighborhood"
+            @click.stop="handleRemoveNeighborhood(row.id)"
+          >
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </template>
-      </Vue3Datatable>
+      </Table>
       <Form
         :form-data="{ id: '' }"
         :formDataHandler="handleAddNeighborhood"
@@ -225,6 +261,6 @@ async function handleRemoveNeighborhood(id: string) {
           :validation-message="getError('id')"
         />
       </Form>
-    </div>
+    </section>
   </div>
 </template>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, type Ref } from 'vue'
 
-import Vue3Datatable from '@bhplugin/vue3-datatable'
-
+import Table from '@/components/Common/Table.vue'
+import MonoBadge from '@/components/Common/MonoBadge.vue'
 import type { IMapset } from '@/services/fundermaps/interfaces/IMapset.ts'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 
@@ -17,9 +17,9 @@ const props = defineProps<{
 
 const mapsetLoading = ref(false)
 const loadError = ref<string | null>(null)
-const mapsetCols = [
-  { field: 'id', title: 'ID', isUnique: true, width: '15rem' },
+const mapsetColumns = [
   { field: 'name', title: 'Name' },
+  { field: 'id', title: 'ID', width: '14rem' },
 ]
 const mapsetRows: Ref<IMapset[]> = ref([])
 
@@ -44,13 +44,24 @@ defineExpose({ refresh })
 </script>
 
 <template>
-  <Alert v-if="loadError" :closeable="true" @close="loadError = null">{{ loadError }}</Alert>
-  <Vue3Datatable :rows="mapsetRows" :columns="mapsetCols" :loading="mapsetLoading" sortColumn="name" :sortable="true">
-    <template #id="data">
-      <div class="flex justify-between">
-        <div>{{ data.value.id }}</div>
-        <CopyToClipboardIcon :value="data.value.id" />
-      </div>
-    </template>
-  </Vue3Datatable>
+  <div class="space-y-3">
+    <Alert v-if="loadError" :closeable="true" @close="loadError = null">{{ loadError }}</Alert>
+    <Table
+      :rows="mapsetRows"
+      :columns="mapsetColumns"
+      :loading="mapsetLoading"
+      :clickable="false"
+      emptyMessage="No mapsets assigned."
+    >
+      <template #name="{ row }">
+        <span class="font-medium text-grey-800">{{ row.name }}</span>
+      </template>
+      <template #id="{ row }">
+        <div class="flex items-center justify-between gap-2">
+          <MonoBadge :value="row.id" />
+          <CopyToClipboardIcon :value="row.id" />
+        </div>
+      </template>
+    </Table>
+  </div>
 </template>
