@@ -28,7 +28,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKey))
   <Transition name="drawer">
     <aside
       v-if="open"
-      class="drawer flex w-[28rem] shrink-0 flex-col self-stretch border-l border-grey-200 bg-white"
+      class="drawer flex w-[34rem] shrink-0 flex-col self-stretch border-l border-grey-200 bg-white"
       role="complementary"
     >
       <header
