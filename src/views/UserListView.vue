@@ -272,24 +272,10 @@ const handleRoleChange = async function (newRole: string) {
               {{ user.role }}
             </Badge>
           </div>
-          <div class="flex items-center gap-2 text-xs text-grey-700">
+          <div class="text-xs text-grey-700">
             <span class="truncate">{{ user.email }}</span>
-            <span aria-hidden="true">·</span>
-            <MonoBadge :value="user.id" />
           </div>
         </div>
-
-        <template #actions>
-          <button
-            type="button"
-            class="button button--ghost"
-            :aria-label="`Copy ID for ${user.email}`"
-            title="Copy ID"
-            @click.stop
-          >
-            <CopyToClipboardIcon :value="user.id" />
-          </button>
-        </template>
       </ListRow>
     </Card>
 
