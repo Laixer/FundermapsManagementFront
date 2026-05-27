@@ -126,7 +126,7 @@ const handleDelete = async function () {
           Manage customer organisations, members and their assigned mapsets.
         </p>
       </div>
-      <Button label="Add organisation" @click="handleOpenCreate" />
+      <Button lg label="Add organisation" @click="handleOpenCreate" />
     </header>
 
     <div class="mb-3 flex items-center gap-3">

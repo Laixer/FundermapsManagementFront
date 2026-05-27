@@ -221,7 +221,7 @@ const handleRoleChange = async function (newRole: string) {
         <h2 class="text-xl font-semibold text-grey-800">Users</h2>
         <p class="mt-0.5 text-sm text-grey-700">Manage accounts, roles and API keys.</p>
       </div>
-      <Button label="Add user" @click="handleOpenCreate" />
+      <Button lg label="Add user" @click="handleOpenCreate" />
     </header>
 
     <div class="mb-3 flex items-center gap-3">

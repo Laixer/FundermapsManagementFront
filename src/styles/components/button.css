@@ -2,6 +2,10 @@
   @apply inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-solid border-transparent px-3 py-1.5 text-sm font-semibold leading-none transition-colors disabled:pointer-events-none disabled:cursor-default;
 }
 
+.button--lg {
+  @apply gap-2 rounded-md px-4 py-2.5 text-sm;
+}
+
 .button--solid {
   @apply bg-green-500 text-white hover:bg-green-700 disabled:bg-grey-400;
 }
