@@ -3,7 +3,6 @@ import { computed, onBeforeMount, ref, type Ref } from 'vue'
 
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
-import CloseBtn from '@/components/Common/Buttons/CloseBtn.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Drawer from '@/components/Layout/Drawer.vue'
 import CreateUserForm from '@/components/Management/Forms/CreateUserForm.vue'
@@ -66,9 +65,13 @@ interface IAuthKey {
 const record: Ref<IUser | null> = ref(null)
 const apiKeys: Ref<IAuthKey[]> = ref([])
 
-const drawerOpen = computed(
-  () => showCreate.value || showEdit.value || !!createdUser.value || !!record.value,
-)
+const drawerMode = computed<'create' | 'created' | 'edit' | 'details' | null>(() => {
+  if (showCreate.value) return 'create'
+  if (createdUser.value) return 'created'
+  if (record.value && showEdit.value) return 'edit'
+  if (record.value) return 'details'
+  return null
+})
 
 const filteredRows = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -118,8 +121,7 @@ const handleSelect = async function (row: IUser) {
   createdUser.value = null
   apiKeys.value = []
 
-  record.value = await getUser(row.id)
-  apiKeys.value = await getAPIKeys(row.id)
+  ;[record.value, apiKeys.value] = await Promise.all([getUser(row.id), getAPIKeys(row.id)])
 }
 
 const handleOpenCreate = function () {
@@ -203,8 +205,8 @@ const handleRoleChange = async function (newRole: string) {
   try {
     actionError.value = null
     await updateUserRole(record.value.id, newRole)
-    record.value = await getUser(record.value.id)
-    await refreshList()
+    const [fresh] = await Promise.all([getUser(record.value.id), refreshList()])
+    record.value = fresh
     flashSuccess('Role updated.')
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to update user role.'
@@ -214,172 +216,146 @@ const handleRoleChange = async function (newRole: string) {
 
 <template>
   <MainWrapper>
-    <div>
-      <header class="mb-4 flex items-end justify-between gap-4">
-        <div>
-          <h2 class="text-xl font-semibold text-grey-800">Users</h2>
-          <p class="mt-0.5 text-sm text-grey-700">
-            Manage accounts, roles and API keys.
-          </p>
-        </div>
-        <Button label="Add user" @click="handleOpenCreate" />
-      </header>
-
-      <div class="mb-3 flex items-center gap-3">
-        <div class="w-72">
-          <Input
-            id="user-search"
-            v-model="search"
-            type="search"
-            placeholder="Search by name, email, ID or role…"
-          />
-        </div>
-        <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+    <header class="mb-4 flex items-end justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-semibold text-grey-800">Users</h2>
+        <p class="mt-0.5 text-sm text-grey-700">Manage accounts, roles and API keys.</p>
       </div>
+      <Button label="Add user" @click="handleOpenCreate" />
+    </header>
 
-      <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
-        An error occurred while trying to retrieve the list of users.
-      </Alert>
-      <Alert v-if="rows.length >= USERS_LIST_LIMIT" type="warning" class="mb-3">
-        Showing the first {{ USERS_LIST_LIMIT }} users — additional users are not loaded.
-      </Alert>
-
-      <Card class="!p-0">
-        <div v-if="loading" class="px-4 py-6 text-sm text-grey-700">Loading users…</div>
-        <div v-else-if="!filteredRows.length" class="px-4 py-6 text-sm text-grey-700">
-          No users match your search.
-        </div>
-        <ListRow
-          v-for="user in filteredRows"
-          :key="user.id"
-          :selected="record?.id === user.id"
-          @select="handleSelect(user)"
-        >
-          <template #lead>
-            <span
-              class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-grey-100 text-xs font-bold text-grey-800"
-              aria-hidden="true"
-            >
-              {{ initialsFor(user) }}
-            </span>
-          </template>
-
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-2">
-              <span class="truncate font-semibold text-grey-800">
-                {{ renderUserName(user) || user.email }}
-              </span>
-              <Badge :variant="user.role === 'administrator' ? 'info' : 'default'">
-                {{ user.role }}
-              </Badge>
-            </div>
-            <div class="flex items-center gap-2 text-xs text-grey-700">
-              <span class="truncate">{{ user.email }}</span>
-              <span aria-hidden="true">·</span>
-              <MonoBadge :value="user.id" />
-            </div>
-          </div>
-
-          <template #actions>
-            <button
-              type="button"
-              class="button button--ghost"
-              :aria-label="`Copy ID for ${user.email}`"
-              title="Copy ID"
-              @click.stop
-            >
-              <CopyToClipboardIcon :value="user.id" />
-            </button>
-          </template>
-        </ListRow>
-      </Card>
+    <div class="mb-3 flex items-center gap-3">
+      <div class="w-72">
+        <Input
+          id="user-search"
+          v-model="search"
+          type="search"
+          placeholder="Search by name, email, ID or role…"
+        />
+      </div>
+      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
     </div>
 
-    <Drawer :open="drawerOpen" @close="handleCloseDrawer">
-      <!-- Create -->
-      <template v-if="showCreate">
-        <header class="flex h-14 shrink-0 items-center justify-between border-b border-grey-200 px-4">
-          <h3 class="text-sm font-semibold text-grey-800">New user</h3>
-          <CloseBtn label="close" @click="handleCloseDrawer" />
-        </header>
-        <div class="flex-1 overflow-y-auto p-4">
-          <CreateUserForm
-            @cancel="handleCloseDrawer"
-            @saved="refreshList"
-            @created="handleUserCreated"
-            @close="handleCloseDrawer"
-          />
-        </div>
-      </template>
+    <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
+      An error occurred while trying to retrieve the list of users.
+    </Alert>
+    <Alert v-if="rows.length >= USERS_LIST_LIMIT" type="warning" class="mb-3">
+      Showing the first {{ USERS_LIST_LIMIT }} users — additional users are not loaded.
+    </Alert>
 
-      <!-- Created credentials reveal -->
-      <template v-else-if="createdUser">
-        <header class="flex h-14 shrink-0 items-center justify-between border-b border-grey-200 px-4">
-          <h3 class="text-sm font-semibold text-grey-800">User created</h3>
-          <CloseBtn label="close" @click="handleCloseDrawer" />
-        </header>
-        <div class="flex-1 overflow-y-auto p-4">
-          <Alert type="success">
-            <div class="mb-3 font-medium">
-              Copy these credentials now — the password won't be shown again.
-            </div>
-            <dl class="space-y-3 text-sm">
-              <div class="flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <dt class="text-xs uppercase tracking-wide text-grey-700">Email</dt>
-                  <dd>
-                    <code class="select-all break-all font-mono">{{ createdUser.email }}</code>
-                  </dd>
-                </div>
-                <CopyToClipboardIcon :value="createdUser.email" />
-              </div>
-              <div class="flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <dt class="text-xs uppercase tracking-wide text-grey-700">Password</dt>
-                  <dd>
-                    <code class="select-all break-all font-mono">{{ createdUser.password }}</code>
-                  </dd>
-                </div>
-                <CopyToClipboardIcon :value="createdUser.password" />
-              </div>
-            </dl>
-            <p class="mt-3 text-grey-700">
-              Added to <span class="font-medium">{{ createdUser.organisation }}</span> as
-              <span class="font-medium">{{ createdUser.role }}</span>.
-            </p>
-          </Alert>
-        </div>
-      </template>
+    <Card class="!p-0">
+      <div v-if="loading" class="px-4 py-6 text-sm text-grey-700">Loading users…</div>
+      <div v-else-if="!filteredRows.length" class="px-4 py-6 text-sm text-grey-700">
+        No users match your search.
+      </div>
+      <ListRow
+        v-for="user in filteredRows"
+        :key="user.id"
+        :selected="record?.id === user.id"
+        @select="handleSelect(user)"
+      >
+        <template #lead>
+          <span
+            class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-grey-100 text-xs font-bold text-grey-800"
+            aria-hidden="true"
+          >
+            {{ initialsFor(user) }}
+          </span>
+        </template>
 
-      <!-- Edit -->
-      <template v-else-if="record && showEdit">
-        <header class="flex h-14 shrink-0 items-center justify-between border-b border-grey-200 px-4">
-          <h3 class="text-sm font-semibold text-grey-800">
-            Edit {{ record.email }}
-          </h3>
-          <CloseBtn label="close" @click="handleCloseDrawer" />
-        </header>
-        <div class="flex-1 overflow-y-auto p-4">
-          <EditUserForm
-            :record="record"
-            @cancel="handleCloseDrawer"
-            @saved="refreshList"
-            @close="handleCloseDrawer"
-          />
-        </div>
-      </template>
-
-      <!-- Details -->
-      <template v-else-if="record">
-        <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-grey-200 px-4">
-          <h3 class="truncate text-sm font-semibold text-grey-800">User information</h3>
-          <div class="flex items-center gap-1.5">
-            <Button outline label="Edit" @click="handleEdit" />
-            <Button danger label="Delete" @click="handleDelete" />
-            <CloseBtn label="close" @click="handleCloseDrawer" />
+        <div class="flex flex-col gap-0.5">
+          <div class="flex items-center gap-2">
+            <span class="truncate font-semibold text-grey-800">
+              {{ renderUserName(user) || user.email }}
+            </span>
+            <Badge :variant="user.role === 'administrator' ? 'info' : 'default'">
+              {{ user.role }}
+            </Badge>
           </div>
-        </header>
-        <div class="flex-1 space-y-5 overflow-y-auto p-4">
+          <div class="flex items-center gap-2 text-xs text-grey-700">
+            <span class="truncate">{{ user.email }}</span>
+            <span aria-hidden="true">·</span>
+            <MonoBadge :value="user.id" />
+          </div>
+        </div>
+
+        <template #actions>
+          <button
+            type="button"
+            class="button button--ghost"
+            :aria-label="`Copy ID for ${user.email}`"
+            title="Copy ID"
+            @click.stop
+          >
+            <CopyToClipboardIcon :value="user.id" />
+          </button>
+        </template>
+      </ListRow>
+    </Card>
+
+    <template #aside>
+      <Drawer :open="drawerMode !== null" @close="handleCloseDrawer">
+        <template #title>
+          <template v-if="drawerMode === 'create'">New user</template>
+          <template v-else-if="drawerMode === 'created'">User created</template>
+          <template v-else-if="drawerMode === 'edit'">Edit {{ record?.email }}</template>
+          <template v-else>User information</template>
+        </template>
+
+        <template v-if="drawerMode === 'details'" #actions>
+          <Button outline label="Edit" @click="handleEdit" />
+          <Button danger label="Delete" @click="handleDelete" />
+        </template>
+
+        <!-- Create -->
+        <CreateUserForm
+          v-if="drawerMode === 'create'"
+          @cancel="handleCloseDrawer"
+          @saved="refreshList"
+          @created="handleUserCreated"
+          @close="handleCloseDrawer"
+        />
+
+        <!-- Credentials reveal -->
+        <Alert v-else-if="drawerMode === 'created' && createdUser" type="success">
+          <div class="mb-3 font-medium">
+            Copy these credentials now — the password won't be shown again.
+          </div>
+          <dl class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <dt class="text-xs uppercase tracking-wide text-grey-700">Email</dt>
+                <dd><code class="select-all break-all font-mono">{{ createdUser.email }}</code></dd>
+              </div>
+              <CopyToClipboardIcon :value="createdUser.email" />
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <dt class="text-xs uppercase tracking-wide text-grey-700">Password</dt>
+                <dd>
+                  <code class="select-all break-all font-mono">{{ createdUser.password }}</code>
+                </dd>
+              </div>
+              <CopyToClipboardIcon :value="createdUser.password" />
+            </div>
+          </dl>
+          <p class="mt-3 text-grey-700">
+            Added to <span class="font-medium">{{ createdUser.organisation }}</span> as
+            <span class="font-medium">{{ createdUser.role }}</span>.
+          </p>
+        </Alert>
+
+        <!-- Edit -->
+        <EditUserForm
+          v-else-if="drawerMode === 'edit' && record"
+          :record="record"
+          @cancel="handleCloseDrawer"
+          @saved="refreshList"
+          @close="handleCloseDrawer"
+        />
+
+        <!-- Details -->
+        <div v-else-if="drawerMode === 'details' && record" class="space-y-5">
           <Alert v-if="actionError" :closeable="true" @close="actionError = null">
             {{ actionError }}
           </Alert>
@@ -462,12 +438,8 @@ const handleRoleChange = async function (newRole: string) {
                 class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0 hover:bg-grey-100"
               >
                 <div class="min-w-0 flex-1">
-                  <div class="truncate font-medium text-grey-800">
-                    {{ key.name || key.id }}
-                  </div>
-                  <div class="text-xs text-grey-700">
-                    Last used: {{ key.last_used ?? '—' }}
-                  </div>
+                  <div class="truncate font-medium text-grey-800">{{ key.name || key.id }}</div>
+                  <div class="text-xs text-grey-700">Last used: {{ key.last_used ?? '—' }}</div>
                 </div>
                 <button
                   type="button"
@@ -482,7 +454,7 @@ const handleRoleChange = async function (newRole: string) {
             </div>
           </section>
         </div>
-      </template>
-    </Drawer>
+      </Drawer>
+    </template>
   </MainWrapper>
 </template>
