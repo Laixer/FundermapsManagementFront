@@ -13,22 +13,22 @@ const props = withDefaults(
 const classList = computed<string[]>(() => {
   switch (props.variant) {
     case 'success':
-      return ['bg-green-100', 'text-green-800']
+      return ['border-green-200', 'bg-green-50', 'text-green-800']
     case 'warning':
-      return ['bg-yellow-100', 'text-grey-800']
+      return ['border-yellow-500/40', 'bg-yellow-100', 'text-grey-800']
     case 'danger':
-      return ['bg-red-50', 'text-red-800']
+      return ['border-red-200', 'bg-red-50', 'text-red-800']
     case 'info':
-      return ['bg-blue-100', 'text-blue-900']
+      return ['border-blue-200', 'bg-blue-100', 'text-blue-900']
     default:
-      return ['bg-grey-200', 'text-grey-800']
+      return ['border-grey-200', 'bg-grey-100', 'text-grey-800']
   }
 })
 </script>
 
 <template>
   <span
-    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+    class="inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium"
     :class="classList"
   >
     <slot />

@@ -2,24 +2,24 @@
 import { computed } from 'vue'
 
 /**
- * This is the basic button.
- *  It has slots that can be used to add an icon before or after the label
- *  It has various styling toggles, which should not be used together.
+ * Basic button — small radius, flat, framed.
+ * Variants are mutually exclusive: link / ghost / outline / muted / danger / (default solid).
  */
 
-const { link, outline, muted, danger } = defineProps({
+const { link, ghost, outline, muted, danger } = defineProps({
   label: { type: String, default: 'Button' },
   disabled: { type: Boolean, default: false },
   link: { type: Boolean, default: false },
+  ghost: { type: Boolean, default: false },
   outline: { type: Boolean, default: false },
   muted: { type: Boolean, default: false },
   danger: { type: Boolean, default: false },
 })
 
 const btnClass = computed<string[]>(() => {
-  if (link) {
-    return ['button-link']
-  }
+  if (link) return ['button-link']
+
+  if (ghost) return ['button--ghost', 'group']
 
   if (danger) {
     return [
@@ -31,13 +31,9 @@ const btnClass = computed<string[]>(() => {
     ]
   }
 
-  if (outline) {
-    return ['button--outline', 'group']
-  }
+  if (outline) return ['button--outline', 'group']
 
-  if (muted) {
-    return ['button--solid', '!bg-grey-700', 'hover:!bg-grey-800', 'group']
-  }
+  if (muted) return ['button--solid', '!bg-grey-700', 'hover:!bg-grey-800', 'group']
 
   return ['button--solid', 'group']
 })

@@ -1,8 +1,11 @@
 <script setup lang="ts">
-const emit = defineEmits(['close'])
+import { computed } from 'vue'
+
+type AlertType = 'danger' | 'success' | 'info' | 'warning'
+
 const props = withDefaults(
   defineProps<{
-    type?: string
+    type?: AlertType
     closeable?: boolean
   }>(),
   {
@@ -11,33 +14,43 @@ const props = withDefaults(
   },
 )
 
-// Danger
-// border classes: border border-green-300 dark:border-green-800
-const classList =
-  props.type === 'danger'
-    ? ['text-red-800', 'bg-red-50', 'dark:text-red-400']
-    : ['text-green-800', 'bg-green-50', 'dark:text-green-400']
+const emit = defineEmits(['close'])
 
-const btnClassList =
-  props.type === 'danger'
-    ? ['bg-red-50', 'focus:ring-red-400', 'hover:bg-red-200', 'dark:text-red-400', 'text-red-500']
-    : [
-        'bg-green-50',
-        'focus:ring-green-400',
-        'hover:bg-green-200',
-        'dark:text-green-400',
-        'text-green-500',
-      ]
+const tone = computed(() => {
+  switch (props.type) {
+    case 'success':
+      return {
+        wrap: 'border-l-green-500 bg-green-50/60 text-green-800',
+        btn: 'text-green-700 hover:bg-green-100',
+      }
+    case 'info':
+      return {
+        wrap: 'border-l-blue-500 bg-blue-100/40 text-blue-900',
+        btn: 'text-blue-900 hover:bg-blue-200/60',
+      }
+    case 'warning':
+      return {
+        wrap: 'border-l-yellow-500 bg-yellow-100/70 text-grey-800',
+        btn: 'text-grey-800 hover:bg-yellow-100',
+      }
+    case 'danger':
+    default:
+      return {
+        wrap: 'border-l-red-500 bg-red-50 text-red-800',
+        btn: 'text-red-700 hover:bg-red-50',
+      }
+  }
+})
 </script>
 
 <template>
   <div
-    class="mb-4 flex items-center rounded-lg p-4 text-sm"
+    class="relative flex items-start gap-3 rounded-r-md border border-l-4 border-grey-200 p-3 text-sm"
+    :class="tone.wrap"
     role="alert"
-    :class="classList"
   >
     <svg
-      class="me-3 inline h-4 w-4 shrink-0"
+      class="mt-0.5 inline h-4 w-4 shrink-0"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
@@ -48,15 +61,14 @@ const btnClassList =
       />
     </svg>
     <span class="sr-only">Info</span>
-    <div>
+    <div class="min-w-0 flex-1">
       <slot />
     </div>
     <button
       v-if="closeable"
       type="button"
-      class="-mx-1.5 -my-1.5 ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg p-1.5 focus:ring-2"
-      :class="btnClassList"
-      data-dismiss-target="#alert-1"
+      class="-m-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded p-1 transition-colors"
+      :class="tone.btn"
       aria-label="Close"
       @click="emit('close')"
     >
