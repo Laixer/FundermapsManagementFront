@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, type Ref } from 'vue'
-
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Drawer from '@/components/Layout/Drawer.vue'
 import Table from '@/components/Common/Table.vue'
@@ -10,11 +8,7 @@ import MonoBadge from '@/components/Common/MonoBadge.vue'
 import type { IJob } from '@/services/fundermaps/interfaces/IJob'
 import { getAllJobs, getJob } from '@/services/fundermaps/endpoints/management/job'
 import { formatDate } from '@/utils/date'
-
-const loading = ref(true)
-const error = ref(false)
-
-const record: Ref<IJob | null> = ref(null)
+import { useListResource } from '@/composables/useListResource'
 
 const columns = [
   { field: 'id', title: 'ID', width: '5rem' },
@@ -23,39 +17,17 @@ const columns = [
   { field: 'priority', title: 'Priority', width: '5rem', align: 'right' as const },
   { field: 'created_at', title: 'Created', width: '13rem' },
 ]
-const rows: Ref<IJob[]> = ref([])
 
-const refreshList = async function () {
-  try {
-    loading.value = true
-    error.value = false
-    const jobs = await getAllJobs()
-    jobs.sort((a, b) => b.id - a.id)
-    rows.value = jobs
-  } catch {
-    error.value = true
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleSelect = async function (row: IJob) {
-  record.value = row
-  try {
-    record.value = await getJob(row.id)
-  } catch (e) {
-    console.error('Failed to refetch job, using row data', e)
-  }
-}
-
-const selectFirstRow = function () {
-  const first = rows.value[0]
-  if (first) handleSelect(first)
-}
-
-onBeforeMount(async () => {
-  await refreshList()
-  selectFirstRow()
+const { rows, loading, error, record, select: handleSelect } = useListResource<IJob>({
+  fetch: async () => (await getAllJobs()).sort((a, b) => b.id - a.id),
+  resolve: async (row) => {
+    try {
+      return await getJob(row.id)
+    } catch (e) {
+      console.error('Failed to refetch job, using row data', e)
+      return row
+    }
+  },
 })
 
 const statusVariant = function (

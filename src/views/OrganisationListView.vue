@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 
 import Button from '@/components/Common/Buttons/Button.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
@@ -25,16 +25,14 @@ import { getErrorMessage } from '@/services/fundermaps/errors'
 import OrganisationAddUser from '@/components/Management/Forms/OrganisationAddUser.vue'
 import OrganisationRemoveMapset from '@/components/Management/Forms/OrganisationRemoveMapset.vue'
 import OrganisationAddMapset from '@/components/Management/Forms/OrganisationAddMapset.vue'
+import { useListResource } from '@/composables/useListResource'
+import PlusIcon from '@assets/svg/icons/plus.svg?component'
 
-const loading = ref(true)
-const error = ref(false)
 const showCreate = ref(false)
 const showEdit = ref(false)
-const search = ref('')
 const actionError = ref<string | null>(null)
 
 const activeTab: Ref<'users' | 'mapsets' | 'geolock'> = ref('users')
-const record: Ref<IOrg | null> = ref(null)
 const orgUsersList = ref<InstanceType<typeof OrganisationUsersList> | null>(null)
 const orgMapsetsList = ref<InstanceType<typeof OrganisationMapsetsList> | null>(null)
 
@@ -42,14 +40,26 @@ const columns = [
   { field: 'name', title: 'Name' },
   { field: 'id', title: 'ID', width: '20rem' },
 ]
-const rows: Ref<IOrg[]> = ref([])
 
-const filteredRows = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return rows.value
-  return rows.value.filter(
-    (o) => o.name.toLowerCase().includes(q) || o.id.toLowerCase().includes(q),
-  )
+const {
+  rows,
+  loading,
+  error,
+  search,
+  record,
+  filteredRows,
+  refresh: refreshList,
+  select: handleSelect,
+  selectFirst: selectFirstRow,
+} = useListResource<IOrg>({
+  fetch: getAllOrganisations,
+  filter: (o, q) => o.name.toLowerCase().includes(q) || o.id.toLowerCase().includes(q),
+  onSelect: (row, previous) => {
+    showCreate.value = false
+    showEdit.value = false
+    actionError.value = null
+    if (previous?.id !== row.id) activeTab.value = 'users'
+  },
 })
 
 const drawerMode = computed<'create' | 'edit' | 'details' | null>(() => {
@@ -57,38 +67,6 @@ const drawerMode = computed<'create' | 'edit' | 'details' | null>(() => {
   if (record.value && showEdit.value) return 'edit'
   if (record.value) return 'details'
   return null
-})
-
-const refreshList = async function () {
-  try {
-    loading.value = true
-    error.value = false
-    rows.value = await getAllOrganisations()
-  } catch {
-    error.value = true
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleSelect = function (row: IOrg) {
-  showCreate.value = false
-  showEdit.value = false
-  actionError.value = null
-  if (record.value?.id !== row.id) {
-    activeTab.value = 'users'
-  }
-  record.value = row
-}
-
-const selectFirstRow = function () {
-  const first = filteredRows.value[0]
-  if (first) handleSelect(first)
-}
-
-onBeforeMount(async () => {
-  await refreshList()
-  selectFirstRow()
 })
 
 const handleOpenCreate = function () {
@@ -134,7 +112,11 @@ const handleDelete = async function () {
           Manage customer organisations, members and their assigned mapsets.
         </p>
       </div>
-      <Button lg label="Add organisation" @click="handleOpenCreate" />
+      <Button lg label="Add organisation" @click="handleOpenCreate">
+        <template #before>
+          <PlusIcon class="aspect-square h-4 w-4" aria-hidden="true" />
+        </template>
+      </Button>
     </header>
 
     <div class="mb-3 flex items-center gap-3">
