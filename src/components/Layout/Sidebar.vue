@@ -1,23 +1,29 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, type Component } from 'vue'
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
 import { useSessionStore } from '@/stores/session.ts'
 import fundermapsLogo from '@assets/svg/fundermaps.svg?url'
 import ExitIcon from '@assets/svg/icons/exit.svg'
+import UsersIcon from '@assets/svg/icons/users.svg?component'
+import SessionsIcon from '@assets/svg/icons/sessions.svg?component'
+import OrganisationsIcon from '@assets/svg/icons/organisations.svg?component'
+import MapsetsIcon from '@assets/svg/icons/mapsets.svg?component'
+import JobsIcon from '@assets/svg/icons/jobs.svg?component'
 
 interface NavItem {
   name: string
   label: string
+  icon: Component
 }
 
 const navLinks: NavItem[] = [
-  { name: 'users', label: 'Users' },
-  { name: 'sessions', label: 'Sessions' },
-  { name: 'organisations', label: 'Organisations' },
-  { name: 'mapsets', label: 'Mapsets' },
-  { name: 'jobs', label: 'Jobs' },
+  { name: 'users', label: 'Users', icon: UsersIcon },
+  { name: 'sessions', label: 'Sessions', icon: SessionsIcon },
+  { name: 'organisations', label: 'Organisations', icon: OrganisationsIcon },
+  { name: 'mapsets', label: 'Mapsets', icon: MapsetsIcon },
+  { name: 'jobs', label: 'Jobs', icon: JobsIcon },
 ]
 
 const sessionStore = useSessionStore()
@@ -51,6 +57,11 @@ const handleLogout = async function () {
             :to="{ name: link.name }"
             class="nav-link flex items-center rounded-md px-3 py-2 text-sm font-medium text-grey-700 transition-colors hover:bg-grey-100 hover:text-grey-800"
           >
+            <component
+              :is="link.icon"
+              class="mr-2.5 aspect-square h-4 w-4 shrink-0"
+              aria-hidden="true"
+            />
             {{ link.label }}
           </RouterLink>
         </li>
