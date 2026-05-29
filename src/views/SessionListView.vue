@@ -80,6 +80,7 @@ const {
   refresh: refreshList,
   refreshAndSelectFirst,
   select: handleSelect,
+  selectById,
   selectFirst: selectFirstRow,
 } = useListResource<ISession>({
   fetch: async () => {
@@ -100,6 +101,8 @@ const {
     actionError.value = null
     actionSuccess.value = null
   },
+  routeId: () => (typeof route.params.id === 'string' ? route.params.id : undefined),
+  syncRoute: (id) => router.replace({ name: 'sessions', params: { id }, query: route.query }),
   immediate: false,
 })
 
@@ -113,7 +116,9 @@ const loadUsers = async function () {
 
 onBeforeMount(async () => {
   await Promise.all([refreshList(), loadUsers()])
-  selectFirstRow()
+  const id = typeof route.params.id === 'string' ? route.params.id : undefined
+  if (id && rows.value.some((s) => s.id === id)) selectById(id)
+  else selectFirstRow()
   // Tick once a minute — sessions are minute-grained; second-resolution
   // would re-render the whole table for no real benefit.
   clockHandle = setInterval(() => {

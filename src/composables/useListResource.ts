@@ -1,4 +1,4 @@
-import { computed, onBeforeMount, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, onBeforeMount, ref, watch, type ComputedRef, type Ref } from 'vue'
 
 export interface UseListResourceOptions<T> {
   /** Fetch the full list of rows. */
@@ -13,6 +13,12 @@ export interface UseListResourceOptions<T> {
   autoSelectFirst?: boolean
   /** Fetch on mount (default true). Set false to drive initialisation manually. */
   immediate?: boolean
+  /** Row identity used for URL sync + matching (default: `row.id`). */
+  key?: (row: T) => string | number
+  /** Current selected id read from the route, for deep-linkable selection. */
+  routeId?: () => string | undefined
+  /** Write the selected id back to the route (called with the row's key). */
+  syncRoute?: (id: string) => void
 }
 
 export interface UseListResource<T> {
@@ -24,6 +30,7 @@ export interface UseListResource<T> {
   filteredRows: ComputedRef<T[]>
   refresh: () => Promise<void>
   select: (row: T) => Promise<void>
+  selectById: (id: string) => void
   selectFirst: () => void
   refreshAndSelectFirst: () => Promise<void>
 }
@@ -33,7 +40,7 @@ export interface UseListResource<T> {
  * state, a search-filtered view of it, and a selected `record` shown in the
  * docked detail panel. The first row is selected on load so the panel is never
  * empty. View-specific behaviour hangs off the `filter`, `resolve` and
- * `onSelect` hooks.
+ * `onSelect` hooks; pass `routeId`/`syncRoute` to keep the selection in the URL.
  */
 export function useListResource<T>(options: UseListResourceOptions<T>): UseListResource<T> {
   const rows = ref([]) as Ref<T[]>
@@ -41,6 +48,9 @@ export function useListResource<T>(options: UseListResourceOptions<T>): UseListR
   const error = ref(false)
   const search = ref('')
   const record = ref(null) as Ref<T | null>
+
+  const keyOf = (row: T): string =>
+    String(options.key ? options.key(row) : (row as Record<string, unknown>).id)
 
   const filteredRows = computed<T[]>(() => {
     const query = search.value.trim().toLowerCase()
@@ -60,10 +70,18 @@ export function useListResource<T>(options: UseListResourceOptions<T>): UseListR
     }
   }
 
-  async function select(row: T) {
+  // syncRoute=false when the selection originates from the route itself
+  // (initial load / back-forward), to avoid a navigation loop.
+  async function select(row: T, syncRoute = true) {
     options.onSelect?.(row, record.value)
     record.value = row
     if (options.resolve) record.value = await options.resolve(row)
+    if (syncRoute) options.syncRoute?.(keyOf(row))
+  }
+
+  function selectById(id: string) {
+    const row = rows.value.find((r) => keyOf(r) === id)
+    if (row) select(row, false)
   }
 
   function selectFirst() {
@@ -73,7 +91,19 @@ export function useListResource<T>(options: UseListResourceOptions<T>): UseListR
 
   async function refreshAndSelectFirst() {
     await refresh()
-    if (options.autoSelectFirst !== false) selectFirst()
+    if (options.autoSelectFirst === false) return
+    const id = options.routeId?.()
+    if (id && rows.value.some((r) => keyOf(r) === id)) selectById(id)
+    else selectFirst()
+  }
+
+  // React to external route changes (back/forward, shared links) within the
+  // same view. Skip when the route already matches what we just selected.
+  if (options.routeId) {
+    watch(options.routeId, (id) => {
+      if (!id || (record.value && keyOf(record.value) === id)) return
+      selectById(id)
+    })
   }
 
   if (options.immediate !== false) {
@@ -89,6 +119,7 @@ export function useListResource<T>(options: UseListResourceOptions<T>): UseListR
     filteredRows,
     refresh,
     select,
+    selectById,
     selectFirst,
     refreshAndSelectFirst,
   }

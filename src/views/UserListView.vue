@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type Ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
@@ -57,6 +57,9 @@ interface IAuthKey {
 
 const apiKeys: Ref<IAuthKey[]> = ref([])
 
+const route = useRoute()
+const router = useRouter()
+
 const {
   rows,
   loading,
@@ -92,6 +95,8 @@ const {
     apiKeys.value = keys
     return user
   },
+  routeId: () => (typeof route.params.id === 'string' ? route.params.id : undefined),
+  syncRoute: (id) => router.replace({ name: 'users', params: { id }, query: route.query }),
 })
 
 const drawerMode = computed<'create' | 'created' | 'edit' | 'details' | null>(() => {

@@ -61,31 +61,31 @@ const router = createRouter({
     },
     {
       name: 'organisations',
-      path: '/organisation',
+      path: '/organisation/:id?',
       component: OrganisationListView,
     },
 
     {
       name: 'mapsets',
-      path: '/mapset',
+      path: '/mapset/:id?',
       component: MapsetListView,
     },
 
     {
       name: 'users',
-      path: '/user',
+      path: '/user/:id?',
       component: UserListView,
     },
 
     {
       name: 'jobs',
-      path: '/job',
+      path: '/job/:id?',
       component: JobListView,
     },
 
     {
       name: 'sessions',
-      path: '/session',
+      path: '/session/:id?',
       component: SessionListView,
     },
   ],
