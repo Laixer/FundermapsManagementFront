@@ -16,12 +16,15 @@ import {
   JOBS_LIST_LIMIT,
 } from '@/services/fundermaps/endpoints/management/job'
 import type { IJob, JobStatus } from '@/services/fundermaps/interfaces/IJob'
+import type { IUser } from '@/services/fundermaps/interfaces/IUser'
 import { formatDate } from '@/utils/date'
+import { renderUserName } from '@/utils/user'
 
 const loading = ref(true)
 const error = ref(false)
 
 const userCount = ref(0)
+const usersList = ref<IUser[]>([])
 const orgCount = ref(0)
 const mapsetCount = ref(0)
 const sessionCount = ref(0)
@@ -42,6 +45,7 @@ const refresh = async function () {
       getAllJobs(),
     ])
     userCount.value = users.length
+    usersList.value = users
     atUserCap.value = users.length >= USERS_LIST_LIMIT
     orgCount.value = orgs.length
     mapsetCount.value = mapsets.length
@@ -77,6 +81,13 @@ const jobCounts = computed<Record<JobStatus, number>>(() => {
 const unhealthyJobs = computed(() => jobCounts.value.failed + jobCounts.value.retry)
 
 const recentJobs = computed(() => jobs.value.slice(0, 6))
+
+const recentUsers = computed(() =>
+  [...usersList.value]
+    .filter((u) => u.created_at)
+    .sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime())
+    .slice(0, 6),
+)
 
 const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warning' | 'default' => {
   switch (status) {
@@ -116,31 +127,31 @@ const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warn
       </RouterLink>
     </div>
 
-    <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card title="Job queue">
-        <Alert v-if="!loading && unhealthyJobs > 0" type="warning" class="mb-3">
-          {{ jobCounts.failed }} failed and {{ jobCounts.retry }} retrying in the last
-          {{ jobs.length }} jobs.
-        </Alert>
-        <div class="flex flex-wrap gap-x-6 gap-y-2">
-          <div v-for="status in STATUS_ORDER" :key="status" class="flex items-center gap-2 text-sm">
-            <Badge :variant="statusVariant(status)">{{ status }}</Badge>
-            <span class="font-mono text-grey-800">{{ loading ? '…' : jobCounts[status] }}</span>
-          </div>
+    <Card title="Job queue" class="mt-6">
+      <Alert v-if="!loading && unhealthyJobs > 0" type="warning" class="mb-3">
+        {{ jobCounts.failed }} failed and {{ jobCounts.retry }} retrying in the last
+        {{ jobs.length }} jobs.
+      </Alert>
+      <div class="flex flex-wrap gap-x-6 gap-y-2">
+        <div v-for="status in STATUS_ORDER" :key="status" class="flex items-center gap-2 text-sm">
+          <Badge :variant="statusVariant(status)">{{ status }}</Badge>
+          <span class="font-mono text-grey-800">{{ loading ? '…' : jobCounts[status] }}</span>
         </div>
-        <p v-if="atJobCap" class="mt-3 text-xs text-grey-700">
-          Counts cover the most recent {{ JOBS_LIST_LIMIT }} jobs.
-        </p>
-        <template #footer>
-          <RouterLink
-            :to="{ name: 'jobs' }"
-            class="text-sm font-medium text-green-700 hover:text-green-800"
-          >
-            View all jobs →
-          </RouterLink>
-        </template>
-      </Card>
+      </div>
+      <p v-if="atJobCap" class="mt-3 text-xs text-grey-700">
+        Counts cover the most recent {{ JOBS_LIST_LIMIT }} jobs.
+      </p>
+      <template #footer>
+        <RouterLink
+          :to="{ name: 'jobs' }"
+          class="text-sm font-medium text-green-700 hover:text-green-800"
+        >
+          View all jobs →
+        </RouterLink>
+      </template>
+    </Card>
 
+    <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card title="Recent jobs">
         <div v-if="loading" class="text-sm text-grey-700">Loading…</div>
         <div v-else-if="!recentJobs.length" class="text-sm text-grey-700">No jobs yet.</div>
@@ -156,6 +167,25 @@ const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warn
             </div>
             <Badge :variant="statusVariant(job.status)">{{ job.status }}</Badge>
             <span class="shrink-0 text-xs text-grey-700">{{ formatDate(job.created_at) }}</span>
+          </div>
+        </div>
+      </Card>
+
+      <Card title="Recent signups">
+        <div v-if="loading" class="text-sm text-grey-700">Loading…</div>
+        <div v-else-if="!recentUsers.length" class="text-sm text-grey-700">
+          No recent signups.
+        </div>
+        <div v-else class="overflow-hidden rounded-md border border-grey-200">
+          <div
+            v-for="user in recentUsers"
+            :key="user.id"
+            class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0"
+          >
+            <span class="min-w-0 flex-1 truncate font-medium text-grey-800">
+              {{ renderUserName(user) || user.email }}
+            </span>
+            <span class="shrink-0 text-xs text-grey-700">{{ formatDate(user.created_at ?? null) }}</span>
           </div>
         </div>
       </Card>

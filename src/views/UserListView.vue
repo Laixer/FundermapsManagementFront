@@ -29,6 +29,7 @@ import {
 } from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import { getInitials, renderUserName } from '@/utils/user'
+import { formatDate } from '@/utils/date'
 import { useFlash } from '@/composables/useFlash'
 import { useListResource } from '@/composables/useListResource'
 import { getErrorMessage } from '@/services/fundermaps/errors'
@@ -344,6 +345,10 @@ const handleRoleChange = async function (newRole: string) {
             <dd class="text-grey-800">{{ record.phone_number || '—' }}</dd>
             <dt class="text-grey-700">Job title</dt>
             <dd class="text-grey-800">{{ record.job_title || '—' }}</dd>
+            <dt class="text-grey-700">Created</dt>
+            <dd class="text-grey-800">{{ formatDate(record.created_at ?? null) }}</dd>
+            <dt class="text-grey-700">Updated</dt>
+            <dd class="text-grey-800">{{ formatDate(record.updated_at ?? null) }}</dd>
           </dl>
 
           <section>
