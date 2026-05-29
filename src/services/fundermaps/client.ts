@@ -1,4 +1,3 @@
-import { trimLeadingChar, trimTrailingChar } from '@/utils/string'
 
 import { getAccessToken, hasAccessToken, hasValidAccessToken } from './session'
 
@@ -237,7 +236,6 @@ export const del = async function del({
  * Combine the endpoint with the base path while removing the trailing & leading / of the two segments
  */
 function combineEndpoint(endpoint: string) {
-  return new URL(
-    `${trimTrailingChar(import.meta.env.VITE_FUNDERMAPS_URL || '', '/')}/api/${trimLeadingChar(endpoint, '/')}`,
-  )
+  const base = (import.meta.env.VITE_FUNDERMAPS_URL || '').replace(/\/+$/, '')
+  return new URL(`${base}/api/${endpoint.replace(/^\/+/, '')}`)
 }

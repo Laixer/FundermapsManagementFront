@@ -26,7 +26,8 @@ import {
   USERS_LIST_LIMIT,
 } from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
-import { renderUserName } from '@/utils/user'
+import { getInitials, renderUserName } from '@/utils/user'
+import { useFlash } from '@/composables/useFlash'
 import { getErrorMessage } from '@/services/fundermaps/errors'
 import UserResetPassword from '@/components/Management/Forms/UserResetPassword.vue'
 import EditUserForm from '@/components/Management/Forms/EditUserForm.vue'
@@ -37,7 +38,7 @@ const showCreate = ref(false)
 const showEdit = ref(false)
 const search = ref('')
 const actionError = ref<string | null>(null)
-const actionSuccess = ref<string | null>(null)
+const { message: actionSuccess, flash: flashSuccess } = useFlash()
 const newApiKey = ref<string | null>(null)
 const createdUser = ref<{
   email: string
@@ -45,13 +46,6 @@ const createdUser = ref<{
   organisation: string
   role: string
 } | null>(null)
-
-const flashSuccess = function (message: string) {
-  actionSuccess.value = message
-  setTimeout(() => {
-    if (actionSuccess.value === message) actionSuccess.value = null
-  }, 3000)
-}
 
 const rows: Ref<IUser[]> = ref([])
 
@@ -86,17 +80,6 @@ const filteredRows = computed(() => {
     )
   })
 })
-
-const initialsFor = (user: IUser) => {
-  const name = renderUserName(user).trim()
-  if (name) {
-    const parts = name.split(/\s+/)
-    const first = parts[0]?.[0] ?? ''
-    const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
-    return (first + last).toUpperCase() || user.email.slice(0, 2).toUpperCase()
-  }
-  return user.email.slice(0, 2).toUpperCase()
-}
 
 const refreshList = async function () {
   try {
@@ -267,7 +250,7 @@ const handleRoleChange = async function (newRole: string) {
             class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-grey-100 text-xs font-bold text-grey-800"
             aria-hidden="true"
           >
-            {{ initialsFor(user) }}
+            {{ getInitials(user) }}
           </span>
         </template>
 

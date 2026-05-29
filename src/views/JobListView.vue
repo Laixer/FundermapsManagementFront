@@ -9,6 +9,7 @@ import Badge from '@/components/Common/Badge.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
 import type { IJob } from '@/services/fundermaps/interfaces/IJob'
 import { getAllJobs, getJob } from '@/services/fundermaps/endpoints/management/job'
+import { formatDate } from '@/utils/date'
 
 const loading = ref(true)
 const error = ref(false)
@@ -72,11 +73,6 @@ const statusVariant = function (
     default:
       return 'default'
   }
-}
-
-const formatDate = function (date: string | null) {
-  if (!date) return '—'
-  return new Date(date).toLocaleString()
 }
 </script>
 

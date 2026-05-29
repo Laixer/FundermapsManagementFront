@@ -12,3 +12,18 @@ export function renderUserName(user: IUser): string {
   }
   return ''
 }
+
+/**
+ * Two-letter initials for a user — first + last name initial when a name is
+ * known, otherwise the first two characters of the email.
+ */
+export function getInitials(user: IUser): string {
+  const name = renderUserName(user).trim()
+  if (name) {
+    const parts = name.split(/\s+/)
+    const first = parts[0]?.[0] ?? ''
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+    return (first + last).toUpperCase() || user.email.slice(0, 2).toUpperCase()
+  }
+  return user.email.slice(0, 2).toUpperCase()
+}

@@ -22,6 +22,7 @@ import {
   type IGeolock,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import { getErrorMessage } from '@/services/fundermaps/errors'
+import { useFlash } from '@/composables/useFlash'
 
 const props = defineProps<{
   record: IOrg | null
@@ -33,18 +34,11 @@ const neighborhoods: Ref<IGeolock[]> = ref([])
 const loading = ref(false)
 const loadError = ref<string | null>(null)
 const actionError = ref<string | null>(null)
-const actionSuccess = ref<string | null>(null)
+const { message: actionSuccess, flash: flashSuccess } = useFlash()
 
 const newDistrict = ref('')
 const newMunicipality = ref('')
 const newNeighborhood = ref('')
-
-const flashSuccess = function (message: string) {
-  actionSuccess.value = message
-  setTimeout(() => {
-    if (actionSuccess.value === message) actionSuccess.value = null
-  }, 3000)
-}
 
 const columns = [
   { field: 'name', title: 'Name' },
