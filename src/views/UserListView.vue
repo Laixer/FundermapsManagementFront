@@ -359,6 +359,9 @@ const handleRoleChange = async function (newRole: string) {
                 class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0 hover:bg-grey-100"
               >
                 <span class="min-w-0 flex-1 truncate font-medium text-grey-800">{{ org.name }}</span>
+                <Badge v-if="org.role" :variant="org.role === 'superuser' ? 'info' : 'default'">
+                  {{ org.role }}
+                </Badge>
                 <MonoBadge :value="org.id" />
               </div>
             </div>
