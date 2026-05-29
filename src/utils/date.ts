@@ -11,6 +11,35 @@ export const formatDate = (date: string | null): string =>
   date ? new Date(date).toLocaleString('en-GB', DATE_FORMAT) : '—'
 
 /**
+ * Human-readable elapsed time between two ISO timestamps (or "—" if either is
+ * missing / negative). Coarse-grained: seconds → minutes → hours → days.
+ */
+export const formatDuration = (from: string | null, to: string | null): string => {
+  if (!from || !to) return '—'
+  const ms = new Date(to).getTime() - new Date(from).getTime()
+  if (!Number.isFinite(ms) || ms < 0) return '—'
+
+  const seconds = Math.floor(ms / 1000)
+  if (seconds < 60) return `${seconds}s`
+
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) {
+    const s = seconds % 60
+    return s ? `${minutes}m ${s}s` : `${minutes}m`
+  }
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) {
+    const m = minutes % 60
+    return m ? `${hours}h ${m}m` : `${hours}h`
+  }
+
+  const days = Math.floor(hours / 24)
+  const h = hours % 24
+  return h ? `${days}d ${h}h` : `${days}d`
+}
+
+/**
  * Human-readable time remaining until `expiresAt`, relative to `now` (ms since
  * epoch). Coarse-grained (minutes/hours/days) — callers typically tick `now`
  * once a minute, so finer units would just look stale.
