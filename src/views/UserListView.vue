@@ -13,6 +13,7 @@ import Alert from '@/components/Common/Alert.vue'
 import Badge from '@/components/Common/Badge.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
 import ListRow from '@/components/Common/ListRow.vue'
+import Skeleton from '@/components/Common/Skeleton.vue'
 import Input from '@/components/Common/Inputs/Input.vue'
 import Select from '@/components/Common/Inputs/Select.vue'
 import PlusIcon from '@assets/svg/icons/plus.svg?component'
@@ -41,6 +42,8 @@ const showEdit = ref(false)
 const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
 const newApiKey = ref<string | null>(null)
+const deleting = ref(false)
+const generatingKey = ref(false)
 const createdUser = ref<{
   email: string
   password: string
@@ -139,12 +142,15 @@ const handleCreateAPIKey = async function () {
   if (!confirm('Generate a new API key for this user?')) return
 
   try {
+    generatingKey.value = true
     actionError.value = null
     const response = await createAPIKey(record.value.id)
     apiKeys.value = await getAPIKeys(record.value.id)
     newApiKey.value = response.key
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to generate API key.'
+  } finally {
+    generatingKey.value = false
   }
 }
 
@@ -167,6 +173,7 @@ const handleDelete = async function () {
   if (!confirm(`Delete user "${record.value.email}"? This cannot be undone.`)) return
 
   try {
+    deleting.value = true
     actionError.value = null
     await deleteUser(record.value.id)
     record.value = null
@@ -175,6 +182,8 @@ const handleDelete = async function () {
     selectFirstRow()
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to delete user.'
+  } finally {
+    deleting.value = false
   }
 }
 
@@ -226,7 +235,19 @@ const handleRoleChange = async function (newRole: string) {
     </Alert>
 
     <Card class="!p-0">
-      <div v-if="loading" class="px-4 py-6 text-sm text-grey-700">Loading users…</div>
+      <template v-if="loading">
+        <div
+          v-for="n in 6"
+          :key="`skeleton-${n}`"
+          class="flex items-center gap-4 border-b border-grey-200 px-4 py-3 last:border-b-0"
+        >
+          <Skeleton width="2.25rem" height="2.25rem" rounded="rounded-md" />
+          <div class="flex flex-1 flex-col gap-1.5">
+            <Skeleton width="40%" />
+            <Skeleton width="60%" height="0.7rem" />
+          </div>
+        </div>
+      </template>
       <div v-else-if="!filteredRows.length" class="px-4 py-6 text-sm text-grey-700">
         No users match your search.
       </div>
@@ -271,8 +292,8 @@ const handleRoleChange = async function (newRole: string) {
         </template>
 
         <template v-if="drawerMode === 'details'" #actions>
-          <Button outline label="Edit" @click="handleEdit" />
-          <Button danger label="Delete" @click="handleDelete" />
+          <Button outline label="Edit" :disabled="deleting" @click="handleEdit" />
+          <Button danger label="Delete" :loading="deleting" @click="handleDelete" />
         </template>
 
         <!-- Create -->
@@ -410,7 +431,7 @@ const handleRoleChange = async function (newRole: string) {
               <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
                 API keys
               </h6>
-              <Button outline label="Generate" @click="handleCreateAPIKey" />
+              <Button outline label="Generate" :loading="generatingKey" @click="handleCreateAPIKey" />
             </div>
             <Alert
               v-if="newApiKey"

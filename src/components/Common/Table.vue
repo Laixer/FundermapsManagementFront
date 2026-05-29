@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T">
+import Skeleton from '@/components/Common/Skeleton.vue'
+
 type Column = {
   field: string
   title: string
@@ -44,6 +46,10 @@ const isSelected = (row: T): boolean => {
   if (props.selectedId == null) return false
   return fieldValue(row, 'id') === props.selectedId
 }
+
+// A natural-looking skeleton bar width per column: narrow for numeric/aligned
+// columns, wider for the main text columns.
+const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '45%' : '75%')
 </script>
 
 <template>
@@ -65,11 +71,13 @@ const isSelected = (row: T): boolean => {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="loading">
-          <td :colspan="columns.length" class="px-3 py-4 text-center text-grey-700">
-            {{ loadingMessage }}
-          </td>
-        </tr>
+        <template v-if="loading">
+          <tr v-for="n in 6" :key="`skeleton-${n}`" class="border-t border-grey-200">
+            <td v-for="c in columns" :key="c.field" class="px-3 py-2.5">
+              <Skeleton :width="skeletonWidth(c)" />
+            </td>
+          </tr>
+        </template>
         <tr v-else-if="!rows.length">
           <td :colspan="columns.length" class="px-3 py-4 text-center text-grey-700">
             {{ emptyMessage }}

@@ -6,6 +6,7 @@ import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Card from '@/components/Common/Card.vue'
 import Alert from '@/components/Common/Alert.vue'
 import Badge from '@/components/Common/Badge.vue'
+import Skeleton from '@/components/Common/Skeleton.vue'
 
 import { getAllUsers, USERS_LIST_LIMIT } from '@/services/fundermaps/endpoints/management/user'
 import { getAllOrganisations } from '@/services/fundermaps/endpoints/management/organisation'
@@ -122,7 +123,8 @@ const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warn
           <div class="text-xs font-semibold uppercase tracking-wide text-grey-700">
             {{ s.label }}
           </div>
-          <div class="mt-1 text-3xl font-semibold text-grey-800">{{ s.value }}</div>
+          <Skeleton v-if="loading" class="mt-2" width="3rem" height="1.75rem" />
+          <div v-else class="mt-1 text-3xl font-semibold text-grey-800">{{ s.value }}</div>
         </Card>
       </RouterLink>
     </div>
@@ -153,7 +155,9 @@ const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warn
 
     <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card title="Recent jobs">
-        <div v-if="loading" class="text-sm text-grey-700">Loading…</div>
+        <div v-if="loading" class="space-y-2.5 py-1">
+          <Skeleton v-for="n in 5" :key="`skj-${n}`" />
+        </div>
         <div v-else-if="!recentJobs.length" class="text-sm text-grey-700">No jobs yet.</div>
         <div v-else class="overflow-hidden rounded-md border border-grey-200">
           <div
@@ -172,7 +176,9 @@ const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warn
       </Card>
 
       <Card title="Recent signups">
-        <div v-if="loading" class="text-sm text-grey-700">Loading…</div>
+        <div v-if="loading" class="space-y-2.5 py-1">
+          <Skeleton v-for="n in 5" :key="`sku-${n}`" />
+        </div>
         <div v-else-if="!recentUsers.length" class="text-sm text-grey-700">
           No recent signups.
         </div>

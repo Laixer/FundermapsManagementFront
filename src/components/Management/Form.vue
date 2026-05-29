@@ -120,7 +120,7 @@ const handleReset = function handleReset() {
 
       <div :class="inline ? 'ml-2 flex justify-end pt-7' : 'mt-6 flex justify-end space-x-3'">
         <Button v-if="!inline" type="button" label="Cancel" outline @click="handleReset" />
-        <Button type="submit" label="Submit" :disabled="loading">
+        <Button type="submit" label="Submit" :loading="loading">
           <template v-slot:after>
             <AnimatedArrowIcon />
           </template>

@@ -30,6 +30,7 @@ const router = useRouter()
 const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
 const includeExpired = ref(false)
+const terminating = ref(false)
 
 // "now" tick — keep the relative duration ("valid for 14m") fresh without
 // refetching the list. Single shared computed clock for every row.
@@ -138,6 +139,7 @@ const handleForceLogout = async function () {
   if (!confirm(`Terminate session for "${label}"? They will need to sign in again.`)) return
 
   try {
+    terminating.value = true
     actionError.value = null
     await deleteSession(record.value.id)
     record.value = null
@@ -146,6 +148,8 @@ const handleForceLogout = async function () {
     flashSuccess('Session terminated.')
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to terminate session.'
+  } finally {
+    terminating.value = false
   }
 }
 </script>
@@ -218,7 +222,7 @@ const handleForceLogout = async function () {
       <Drawer>
         <template #title>Session information</template>
         <template v-if="record" #actions>
-          <Button danger label="Terminate" @click="handleForceLogout" />
+          <Button danger label="Terminate" :loading="terminating" @click="handleForceLogout" />
         </template>
 
         <template v-if="record">
