@@ -345,16 +345,23 @@ const handleRoleChange = async function (newRole: string) {
             <dd class="text-grey-800">{{ record.job_title || '—' }}</dd>
           </dl>
 
-          <section v-if="record.organizations?.length">
+          <section>
             <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">
               Organisations
             </h6>
-            <ul class="space-y-1 text-sm text-grey-800">
-              <li v-for="org in record.organizations" :key="org.id" class="flex items-center gap-2">
-                <span>{{ org.name }}</span>
+            <div v-if="!record.organizations?.length" class="text-xs text-grey-700">
+              Not a member of any organisation.
+            </div>
+            <div v-else class="overflow-hidden rounded-md border border-grey-200">
+              <div
+                v-for="org in record.organizations"
+                :key="org.id"
+                class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0 hover:bg-grey-100"
+              >
+                <span class="min-w-0 flex-1 truncate font-medium text-grey-800">{{ org.name }}</span>
                 <MonoBadge :value="org.id" />
-              </li>
-            </ul>
+              </div>
+            </div>
           </section>
 
           <section>
