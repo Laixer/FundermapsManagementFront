@@ -8,6 +8,7 @@ import Table from '@/components/Common/Table.vue'
 import Alert from '@/components/Common/Alert.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
+import Input from '@/components/Common/Inputs/Input.vue'
 
 import {
   deleteSession,
@@ -18,6 +19,7 @@ import type { ISession } from '@/services/fundermaps/interfaces/ISession'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser'
 import { renderUserName } from '@/utils/user'
 import { formatDate, formatIpAddress, formatValidFor } from '@/utils/date'
+import { describeClient } from '@/utils/userAgent'
 import { useFlash } from '@/composables/useFlash'
 import { useListResource } from '@/composables/useListResource'
 import { getErrorMessage } from '@/services/fundermaps/errors'
@@ -27,6 +29,7 @@ const router = useRouter()
 
 const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
+const includeExpired = ref(false)
 
 // "now" tick — keep the relative duration ("valid for 14m") fresh without
 // refetching the list. Single shared computed clock for every row.
@@ -41,8 +44,10 @@ const userIdFilter = computed<string | null>(() => {
 
 const columns = [
   { field: 'user_id', title: 'User' },
-  { field: 'valid_for', title: 'Valid for', width: '10rem' },
-  { field: 'created_at', title: 'Created', width: '13rem' },
+  { field: 'client', title: 'Client', width: '7rem' },
+  { field: 'ip_address', title: 'IP address', width: '12rem' },
+  { field: 'valid_for', title: 'Valid for', width: '8rem' },
+  { field: 'created_at', title: 'Created', width: '12rem' },
 ]
 
 const users: Ref<IUser[]> = ref([])
@@ -58,21 +63,39 @@ const filteredUser = computed<IUser | null>(() => {
   return userMap.value.get(userIdFilter.value) ?? null
 })
 
+const renderUserCell = function (userId: string): string {
+  const u = userMap.value.get(userId)
+  if (!u) return userId
+  const name = renderUserName(u)
+  return name ? `${name} <${u.email}>` : u.email
+}
+
 const {
   rows,
   loading,
   error,
+  search,
   record,
+  filteredRows,
   refresh: refreshList,
+  refreshAndSelectFirst,
   select: handleSelect,
   selectFirst: selectFirstRow,
 } = useListResource<ISession>({
   fetch: async () => {
-    const sessions = await getAllSessions({ userId: userIdFilter.value ?? undefined })
+    const sessions = await getAllSessions({
+      userId: userIdFilter.value ?? undefined,
+      includeExpired: includeExpired.value,
+    })
     return sessions.sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     )
   },
+  filter: (s, q) =>
+    renderUserCell(s.user_id).toLowerCase().includes(q) ||
+    (s.ip_address ?? '').toLowerCase().includes(q) ||
+    (s.user_agent ?? '').toLowerCase().includes(q) ||
+    describeClient(s.user_agent).toLowerCase().includes(q),
   onSelect: () => {
     actionError.value = null
     actionSuccess.value = null
@@ -98,10 +121,7 @@ onBeforeMount(async () => {
   }, 60_000)
 })
 
-watch(userIdFilter, async () => {
-  await refreshList()
-  selectFirstRow()
-})
+watch([userIdFilter, includeExpired], () => refreshAndSelectFirst())
 
 onBeforeUnmount(() => {
   if (clockHandle !== null) clearInterval(clockHandle)
@@ -128,13 +148,6 @@ const handleForceLogout = async function () {
     actionError.value = getErrorMessage(e) ?? 'Failed to terminate session.'
   }
 }
-
-const renderUserCell = function (userId: string): string {
-  const u = userMap.value.get(userId)
-  if (!u) return userId
-  const name = renderUserName(u)
-  return name ? `${name} <${u.email}>` : u.email
-}
 </script>
 
 <template>
@@ -158,20 +171,42 @@ const renderUserCell = function (userId: string): string {
       <Button v-if="userIdFilter" outline label="Clear filter" @click="handleClearUserFilter" />
     </header>
 
+    <div class="mb-3 flex items-center gap-4">
+      <div class="w-72">
+        <Input
+          id="session-search"
+          v-model="search"
+          type="search"
+          placeholder="Search by user, IP, client…"
+        />
+      </div>
+      <label class="flex cursor-pointer items-center gap-2 text-sm text-grey-700">
+        <input v-model="includeExpired" type="checkbox" class="h-4 w-4 accent-green-500" />
+        Include expired
+      </label>
+      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+    </div>
+
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
       An error occurred while trying to retrieve the list of sessions.
     </Alert>
 
     <Table
-      :rows="rows"
+      :rows="filteredRows"
       :columns="columns"
       :loading="loading"
       :selectedId="record?.id"
-      emptyMessage="No active sessions."
+      emptyMessage="No sessions match your filters."
       @select="handleSelect"
     >
       <template #user_id="{ row }">
         <span class="text-grey-800">{{ renderUserCell(row.user_id) }}</span>
+      </template>
+      <template #client="{ row }">
+        <span class="text-grey-700">{{ describeClient(row.user_agent) }}</span>
+      </template>
+      <template #ip_address="{ row }">
+        <span class="font-mono text-xs text-grey-700">{{ formatIpAddress(row.ip_address) }}</span>
       </template>
       <template #valid_for="{ row }">
         <span class="font-mono text-xs text-grey-700">{{ formatValidFor(row.expires_at, now) }}</span>
