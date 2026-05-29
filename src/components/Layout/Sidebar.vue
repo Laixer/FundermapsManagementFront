@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import { useSessionStore } from '@/stores/session.ts'
 import fundermapsLogo from '@assets/svg/fundermaps.svg?url'
 import ExitIcon from '@assets/svg/icons/exit.svg'
+import DashboardIcon from '@assets/svg/icons/dashboard.svg?component'
 import UsersIcon from '@assets/svg/icons/users.svg?component'
 import SessionsIcon from '@assets/svg/icons/sessions.svg?component'
 import OrganisationsIcon from '@assets/svg/icons/organisations.svg?component'
@@ -19,6 +20,7 @@ interface NavItem {
 }
 
 const navLinks: NavItem[] = [
+  { name: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
   { name: 'users', label: 'Users', icon: UsersIcon },
   { name: 'sessions', label: 'Sessions', icon: SessionsIcon },
   { name: 'organisations', label: 'Organisations', icon: OrganisationsIcon },

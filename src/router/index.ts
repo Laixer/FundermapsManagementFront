@@ -8,6 +8,7 @@ import { loginRedirect } from '@/services/oidc'
 import { useSessionStore } from '@/stores/session'
 import { storeToRefs } from 'pinia'
 
+import DashboardView from '@/views/DashboardView.vue'
 import OrganisationListView from '@/views/OrganisationListView.vue'
 import MapsetListView from '@/views/MapsetListView.vue'
 import JobListView from '@/views/JobListView.vue'
@@ -51,7 +52,12 @@ const router = createRouter({
     {
       name: 'home',
       path: '/',
-      redirect: { name: 'users' },
+      redirect: { name: 'dashboard' },
+    },
+    {
+      name: 'dashboard',
+      path: '/dashboard',
+      component: DashboardView,
     },
     {
       name: 'organisations',
