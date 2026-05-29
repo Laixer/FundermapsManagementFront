@@ -38,8 +38,6 @@ const refreshList = async function () {
   }
 }
 
-onBeforeMount(refreshList)
-
 const handleSelect = async function (row: IJob) {
   record.value = row
   try {
@@ -48,9 +46,16 @@ const handleSelect = async function (row: IJob) {
     console.error('Failed to refetch job, using row data', e)
   }
 }
-const handleCloseDrawer = function () {
-  record.value = null
+
+const selectFirstRow = function () {
+  const first = rows.value[0]
+  if (first) handleSelect(first)
 }
+
+onBeforeMount(async () => {
+  await refreshList()
+  selectFirstRow()
+})
 
 const statusVariant = function (
   status: string,
@@ -107,7 +112,7 @@ const formatDate = function (date: string | null) {
     </Table>
 
     <template #aside>
-      <Drawer :open="!!record" @close="handleCloseDrawer">
+      <Drawer>
         <template #title>Job information</template>
         <template v-if="record">
           <dl class="grid grid-cols-[8rem_1fr] gap-x-4 gap-y-2 text-sm">
@@ -142,6 +147,12 @@ const formatDate = function (date: string | null) {
             >
           </div>
         </template>
+        <div
+          v-else
+          class="flex h-full items-center justify-center text-center text-sm text-grey-700"
+        >
+          No jobs to show.
+        </div>
       </Drawer>
     </template>
   </MainWrapper>

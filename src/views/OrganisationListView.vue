@@ -71,8 +71,6 @@ const refreshList = async function () {
   }
 }
 
-onBeforeMount(refreshList)
-
 const handleSelect = function (row: IOrg) {
   showCreate.value = false
   showEdit.value = false
@@ -83,17 +81,26 @@ const handleSelect = function (row: IOrg) {
   record.value = row
 }
 
+const selectFirstRow = function () {
+  const first = filteredRows.value[0]
+  if (first) handleSelect(first)
+}
+
+onBeforeMount(async () => {
+  await refreshList()
+  selectFirstRow()
+})
+
 const handleOpenCreate = function () {
   showEdit.value = false
-  record.value = null
   showCreate.value = true
 }
 
-const handleCloseDrawer = function () {
+const handleDismissForm = function () {
   showCreate.value = false
   showEdit.value = false
-  record.value = null
   actionError.value = null
+  if (!record.value) selectFirstRow()
 }
 
 const handleEdit = function () {
@@ -111,6 +118,7 @@ const handleDelete = async function () {
     record.value = null
     showEdit.value = false
     await refreshList()
+    selectFirstRow()
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to delete organisation.'
   }
@@ -165,7 +173,7 @@ const handleDelete = async function () {
     </Table>
 
     <template #aside>
-      <Drawer :open="drawerMode !== null" @close="handleCloseDrawer">
+      <Drawer>
         <template #title>
           <template v-if="drawerMode === 'create'">New organisation</template>
           <template v-else-if="drawerMode === 'edit'">Edit {{ record?.name }}</template>
@@ -179,17 +187,17 @@ const handleDelete = async function () {
 
         <CreateOrganisationForm
           v-if="drawerMode === 'create'"
-          @cancel="handleCloseDrawer"
+          @cancel="handleDismissForm"
           @saved="refreshList"
-          @close="handleCloseDrawer"
+          @close="handleDismissForm"
         />
 
         <OrganisationForm
           v-else-if="drawerMode === 'edit' && record"
           :record="record"
-          @cancel="handleCloseDrawer"
+          @cancel="handleDismissForm"
           @saved="refreshList"
-          @close="handleCloseDrawer"
+          @close="handleDismissForm"
         />
 
         <div v-else-if="drawerMode === 'details' && record" class="space-y-4">
@@ -217,6 +225,13 @@ const handleDelete = async function () {
           <div v-else-if="activeTab === 'geolock'">
             <OrganisationGeolockSection :record="record" />
           </div>
+        </div>
+
+        <div
+          v-else
+          class="flex h-full items-center justify-center text-center text-sm text-grey-700"
+        >
+          No organisations to display.
         </div>
       </Drawer>
     </template>

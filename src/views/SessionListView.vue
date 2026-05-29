@@ -94,6 +94,7 @@ const loadUsers = async function () {
 
 onBeforeMount(async () => {
   await Promise.all([refreshList(), loadUsers()])
+  selectFirstRow()
   // Tick once a minute — sessions are minute-grained; second-resolution
   // would re-render the whole table for no real benefit.
   clockHandle = setInterval(() => {
@@ -101,7 +102,10 @@ onBeforeMount(async () => {
   }, 60_000)
 })
 
-watch(userIdFilter, refreshList)
+watch(userIdFilter, async () => {
+  await refreshList()
+  selectFirstRow()
+})
 
 onBeforeUnmount(() => {
   if (clockHandle !== null) clearInterval(clockHandle)
@@ -113,10 +117,9 @@ const handleSelect = function (row: ISession) {
   record.value = row
 }
 
-const handleCloseDrawer = function () {
-  record.value = null
-  actionError.value = null
-  actionSuccess.value = null
+const selectFirstRow = function () {
+  const first = rows.value[0]
+  if (first) handleSelect(first)
 }
 
 const handleClearUserFilter = function () {
@@ -133,8 +136,9 @@ const handleForceLogout = async function () {
     actionError.value = null
     await deleteSession(record.value.id)
     record.value = null
-    flashSuccess('Session terminated.')
     await refreshList()
+    selectFirstRow()
+    flashSuccess('Session terminated.')
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to terminate session.'
   }
@@ -235,7 +239,7 @@ const renderUserCell = function (userId: string): string {
     </Table>
 
     <template #aside>
-      <Drawer :open="!!record" @close="handleCloseDrawer">
+      <Drawer>
         <template #title>Session information</template>
         <template v-if="record" #actions>
           <Button danger label="Terminate" @click="handleForceLogout" />
@@ -277,6 +281,12 @@ const renderUserCell = function (userId: string): string {
             <p class="break-all text-sm text-grey-800">{{ record.user_agent }}</p>
           </div>
         </template>
+        <div
+          v-else
+          class="flex h-full items-center justify-center text-center text-sm text-grey-700"
+        >
+          No active sessions.
+        </div>
       </Drawer>
     </template>
   </MainWrapper>

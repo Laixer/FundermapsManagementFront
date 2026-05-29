@@ -110,8 +110,6 @@ const refreshList = async function () {
   }
 }
 
-onBeforeMount(refreshList)
-
 const handleSelect = async function (row: IUser) {
   showCreate.value = false
   showEdit.value = false
@@ -124,9 +122,18 @@ const handleSelect = async function (row: IUser) {
   ;[record.value, apiKeys.value] = await Promise.all([getUser(row.id), getAPIKeys(row.id)])
 }
 
+const selectFirstRow = function () {
+  const first = filteredRows.value[0]
+  if (first) handleSelect(first)
+}
+
+onBeforeMount(async () => {
+  await refreshList()
+  selectFirstRow()
+})
+
 const handleOpenCreate = function () {
   showEdit.value = false
-  record.value = null
   createdUser.value = null
   showCreate.value = true
 }
@@ -147,14 +154,14 @@ const handleUserCreated = function (credentials: {
   showCreate.value = false
 }
 
-const handleCloseDrawer = function () {
+const handleDismissForm = function () {
   showCreate.value = false
   showEdit.value = false
-  record.value = null
   actionError.value = null
   actionSuccess.value = null
   newApiKey.value = null
   createdUser.value = null
+  if (!record.value) selectFirstRow()
 }
 
 const handleCreateAPIKey = async function () {
@@ -195,6 +202,7 @@ const handleDelete = async function () {
     record.value = null
     showEdit.value = false
     await refreshList()
+    selectFirstRow()
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to delete user.'
   }
@@ -280,7 +288,7 @@ const handleRoleChange = async function (newRole: string) {
     </Card>
 
     <template #aside>
-      <Drawer :open="drawerMode !== null" @close="handleCloseDrawer">
+      <Drawer>
         <template #title>
           <template v-if="drawerMode === 'create'">New user</template>
           <template v-else-if="drawerMode === 'created'">User created</template>
@@ -296,10 +304,10 @@ const handleRoleChange = async function (newRole: string) {
         <!-- Create -->
         <CreateUserForm
           v-if="drawerMode === 'create'"
-          @cancel="handleCloseDrawer"
+          @cancel="handleDismissForm"
           @saved="refreshList"
           @created="handleUserCreated"
-          @close="handleCloseDrawer"
+          @close="handleDismissForm"
         />
 
         <!-- Credentials reveal -->
@@ -329,15 +337,18 @@ const handleRoleChange = async function (newRole: string) {
             Added to <span class="font-medium">{{ createdUser.organisation }}</span> as
             <span class="font-medium">{{ createdUser.role }}</span>.
           </p>
+          <div class="mt-4 flex justify-end">
+            <Button outline label="Done" @click="handleDismissForm" />
+          </div>
         </Alert>
 
         <!-- Edit -->
         <EditUserForm
           v-else-if="drawerMode === 'edit' && record"
           :record="record"
-          @cancel="handleCloseDrawer"
+          @cancel="handleDismissForm"
           @saved="refreshList"
-          @close="handleCloseDrawer"
+          @close="handleDismissForm"
         />
 
         <!-- Details -->
@@ -439,6 +450,13 @@ const handleRoleChange = async function (newRole: string) {
               </div>
             </div>
           </section>
+        </div>
+
+        <div
+          v-else
+          class="flex h-full items-center justify-center text-center text-sm text-grey-700"
+        >
+          No users to display.
         </div>
       </Drawer>
     </template>

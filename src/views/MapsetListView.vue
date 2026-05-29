@@ -53,8 +53,6 @@ const refreshList = async function () {
   }
 }
 
-onBeforeMount(refreshList)
-
 const handleSelect = function (row: IMapset) {
   if (record.value?.id !== row.id) {
     activeTab.value = 'info'
@@ -62,9 +60,15 @@ const handleSelect = function (row: IMapset) {
   record.value = row
 }
 
-const handleCloseDrawer = function () {
-  record.value = null
+const selectFirstRow = function () {
+  const first = filteredRows.value[0]
+  if (first) handleSelect(first)
 }
+
+onBeforeMount(async () => {
+  await refreshList()
+  selectFirstRow()
+})
 
 const handleLayersSaved = async function (updated: IMapset) {
   record.value = updated
@@ -126,7 +130,7 @@ const handleLayersSaved = async function (updated: IMapset) {
     </Table>
 
     <template #aside>
-      <Drawer :open="!!record" @close="handleCloseDrawer">
+      <Drawer>
         <template #title>Mapset information</template>
         <template v-if="record">
           <MapsetTabs v-model="activeTab" />
@@ -154,6 +158,12 @@ const handleLayersSaved = async function (updated: IMapset) {
             <MapsetLayersSection :record="record" @saved="handleLayersSaved" />
           </div>
         </template>
+        <div
+          v-else
+          class="flex h-full items-center justify-center text-center text-sm text-grey-700"
+        >
+          No mapsets to display.
+        </div>
       </Drawer>
     </template>
   </MainWrapper>
