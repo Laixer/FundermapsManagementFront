@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type Ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
@@ -365,6 +366,18 @@ const handleRoleChange = async function (newRole: string) {
                 <MonoBadge :value="org.id" />
               </div>
             </div>
+          </section>
+
+          <section>
+            <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">
+              Sessions
+            </h6>
+            <RouterLink
+              :to="{ name: 'sessions', query: { user_id: record.id } }"
+              class="text-sm font-medium text-green-700 hover:text-green-800"
+            >
+              View active sessions →
+            </RouterLink>
           </section>
 
           <section>

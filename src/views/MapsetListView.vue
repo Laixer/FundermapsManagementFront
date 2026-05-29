@@ -17,7 +17,8 @@ const columns = [
   { field: 'icon', title: '', width: '3rem' },
   { field: 'name', title: 'Name' },
   { field: 'public', title: 'Visibility', width: '8rem' },
-  { field: 'id', title: 'ID', width: '20rem' },
+  { field: 'layers', title: 'Layers', width: '6rem', align: 'right' as const },
+  { field: 'id', title: 'ID', width: '18rem' },
 ]
 
 const { rows, loading, error, search, record, filteredRows, select: handleSelect } =
@@ -79,6 +80,9 @@ const handleLayersSaved = async function (updated: IMapset) {
         <Badge :variant="row.public ? 'success' : 'default'">
           {{ row.public ? 'Public' : 'Private' }}
         </Badge>
+      </template>
+      <template #layers="{ row }">
+        <span class="font-mono text-xs text-grey-700">{{ row.layers?.length ?? 0 }}</span>
       </template>
       <template #id="{ row }">
         <div class="flex items-center justify-between gap-2">
