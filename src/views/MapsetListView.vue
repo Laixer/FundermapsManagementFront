@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, type Ref } from 'vue'
-
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Drawer from '@/components/Layout/Drawer.vue'
 import Table from '@/components/Common/Table.vue'
-import MapsetTabs from '@/components/Management/MapsetTabs.vue'
 import MapsetLayersSection from '@/components/Management/MapsetLayersSection.vue'
 import FundermapsIcon from '@/components/Common/Icons/FundermapsIcon.vue'
 import type { IMapset } from '@/services/fundermaps/interfaces/IMapset.ts'
@@ -14,13 +11,7 @@ import Alert from '@/components/Common/Alert.vue'
 import Badge from '@/components/Common/Badge.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
 import Input from '@/components/Common/Inputs/Input.vue'
-
-const loading = ref(true)
-const error = ref(false)
-const search = ref('')
-
-const record: Ref<IMapset | null> = ref(null)
-const activeTab: Ref<'info' | 'layers'> = ref('info')
+import { useListResource } from '@/composables/useListResource'
 
 const columns = [
   { field: 'icon', title: '', width: '3rem' },
@@ -28,47 +19,15 @@ const columns = [
   { field: 'public', title: 'Visibility', width: '8rem' },
   { field: 'id', title: 'ID', width: '20rem' },
 ]
-const rows: Ref<IMapset[]> = ref([])
 
-const filteredRows = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return rows.value
-  return rows.value.filter(
-    (m) =>
+const { rows, loading, error, search, record, filteredRows, select: handleSelect } =
+  useListResource<IMapset>({
+    fetch: getAllMapsets,
+    filter: (m, q) =>
       m.name.toLowerCase().includes(q) ||
       (m.slug ?? '').toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q),
-  )
-})
-
-const refreshList = async function () {
-  try {
-    loading.value = true
-    error.value = false
-    rows.value = await getAllMapsets()
-  } catch {
-    error.value = true
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleSelect = function (row: IMapset) {
-  if (record.value?.id !== row.id) {
-    activeTab.value = 'info'
-  }
-  record.value = row
-}
-
-const selectFirstRow = function () {
-  const first = filteredRows.value[0]
-  if (first) handleSelect(first)
-}
-
-onBeforeMount(async () => {
-  await refreshList()
-  selectFirstRow()
-})
+  })
 
 const handleLayersSaved = async function (updated: IMapset) {
   record.value = updated
@@ -133,28 +92,25 @@ const handleLayersSaved = async function (updated: IMapset) {
       <Drawer>
         <template #title>Mapset information</template>
         <template v-if="record">
-          <MapsetTabs v-model="activeTab" />
-          <div v-if="activeTab === 'info'" class="mt-4 space-y-4">
-            <dl class="grid grid-cols-[6rem_1fr] gap-x-4 gap-y-2 text-sm">
-              <dt class="text-grey-700">Name</dt>
-              <dd class="text-grey-800">{{ record.name }}</dd>
-              <dt class="text-grey-700">Slug</dt>
-              <dd class="text-grey-800">{{ record.slug }}</dd>
-              <dt class="text-grey-700">Visibility</dt>
-              <dd>
-                <Badge :variant="record.public ? 'success' : 'default'">
-                  {{ record.public ? 'Public' : 'Private' }}
-                </Badge>
-              </dd>
-              <dt class="text-grey-700">Note</dt>
-              <dd class="text-grey-800">{{ record.note || '—' }}</dd>
-              <dt class="text-grey-700">Order</dt>
-              <dd class="text-grey-800">{{ record.order }}</dd>
-              <dt class="text-grey-700">ID</dt>
-              <dd><MonoBadge :value="record.id" /></dd>
-            </dl>
-          </div>
-          <div v-else-if="activeTab === 'layers'" class="mt-4">
+          <dl class="grid grid-cols-[6rem_1fr] gap-x-4 gap-y-2 text-sm">
+            <dt class="text-grey-700">Name</dt>
+            <dd class="text-grey-800">{{ record.name }}</dd>
+            <dt class="text-grey-700">Slug</dt>
+            <dd class="text-grey-800">{{ record.slug }}</dd>
+            <dt class="text-grey-700">Visibility</dt>
+            <dd>
+              <Badge :variant="record.public ? 'success' : 'default'">
+                {{ record.public ? 'Public' : 'Private' }}
+              </Badge>
+            </dd>
+            <dt class="text-grey-700">Note</dt>
+            <dd class="text-grey-800">{{ record.note || '—' }}</dd>
+            <dt class="text-grey-700">Order</dt>
+            <dd class="text-grey-800">{{ record.order }}</dd>
+            <dt class="text-grey-700">ID</dt>
+            <dd><MonoBadge :value="record.id" /></dd>
+          </dl>
+          <div class="mt-6 border-t border-grey-200 pt-5">
             <MapsetLayersSection :record="record" @saved="handleLayersSaved" />
           </div>
         </template>

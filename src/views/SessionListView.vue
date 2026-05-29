@@ -19,13 +19,12 @@ import type { IUser } from '@/services/fundermaps/interfaces/IUser'
 import { renderUserName } from '@/utils/user'
 import { formatDate, formatIpAddress, formatValidFor } from '@/utils/date'
 import { useFlash } from '@/composables/useFlash'
+import { useListResource } from '@/composables/useListResource'
 import { getErrorMessage } from '@/services/fundermaps/errors'
 
 const route = useRoute()
 const router = useRouter()
 
-const loading = ref(true)
-const error = ref(false)
 const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
 
@@ -46,9 +45,7 @@ const columns = [
   { field: 'created_at', title: 'Created', width: '13rem' },
 ]
 
-const rows: Ref<ISession[]> = ref([])
 const users: Ref<IUser[]> = ref([])
-const record: Ref<ISession | null> = ref(null)
 
 const userMap = computed<Map<string, IUser>>(() => {
   const m = new Map<string, IUser>()
@@ -61,23 +58,27 @@ const filteredUser = computed<IUser | null>(() => {
   return userMap.value.get(userIdFilter.value) ?? null
 })
 
-const refreshList = async function () {
-  try {
-    loading.value = true
-    error.value = false
-    const sessions = await getAllSessions({
-      userId: userIdFilter.value ?? undefined,
-    })
-    sessions.sort(
+const {
+  rows,
+  loading,
+  error,
+  record,
+  refresh: refreshList,
+  select: handleSelect,
+  selectFirst: selectFirstRow,
+} = useListResource<ISession>({
+  fetch: async () => {
+    const sessions = await getAllSessions({ userId: userIdFilter.value ?? undefined })
+    return sessions.sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     )
-    rows.value = sessions
-  } catch {
-    error.value = true
-  } finally {
-    loading.value = false
-  }
-}
+  },
+  onSelect: () => {
+    actionError.value = null
+    actionSuccess.value = null
+  },
+  immediate: false,
+})
 
 const loadUsers = async function () {
   try {
@@ -105,17 +106,6 @@ watch(userIdFilter, async () => {
 onBeforeUnmount(() => {
   if (clockHandle !== null) clearInterval(clockHandle)
 })
-
-const handleSelect = function (row: ISession) {
-  actionError.value = null
-  actionSuccess.value = null
-  record.value = row
-}
-
-const selectFirstRow = function () {
-  const first = rows.value[0]
-  if (first) handleSelect(first)
-}
 
 const handleClearUserFilter = function () {
   router.push({ name: 'sessions' })

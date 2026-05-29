@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 
 import Card from '@/components/Common/Card.vue'
 import Button from '@/components/Common/Buttons/Button.vue'
@@ -14,6 +14,7 @@ import MonoBadge from '@/components/Common/MonoBadge.vue'
 import ListRow from '@/components/Common/ListRow.vue'
 import Input from '@/components/Common/Inputs/Input.vue'
 import Select from '@/components/Common/Inputs/Select.vue'
+import PlusIcon from '@assets/svg/icons/plus.svg?component'
 
 import {
   createAPIKey,
@@ -28,15 +29,13 @@ import {
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
 import { getInitials, renderUserName } from '@/utils/user'
 import { useFlash } from '@/composables/useFlash'
+import { useListResource } from '@/composables/useListResource'
 import { getErrorMessage } from '@/services/fundermaps/errors'
 import UserResetPassword from '@/components/Management/Forms/UserResetPassword.vue'
 import EditUserForm from '@/components/Management/Forms/EditUserForm.vue'
 
-const loading = ref(true)
-const error = ref(false)
 const showCreate = ref(false)
 const showEdit = ref(false)
-const search = ref('')
 const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
 const newApiKey = ref<string | null>(null)
@@ -47,8 +46,6 @@ const createdUser = ref<{
   role: string
 } | null>(null)
 
-const rows: Ref<IUser[]> = ref([])
-
 interface IAuthKey {
   id: string
   user_id: string
@@ -56,21 +53,21 @@ interface IAuthKey {
   last_used: string | null
 }
 
-const record: Ref<IUser | null> = ref(null)
 const apiKeys: Ref<IAuthKey[]> = ref([])
 
-const drawerMode = computed<'create' | 'created' | 'edit' | 'details' | null>(() => {
-  if (showCreate.value) return 'create'
-  if (createdUser.value) return 'created'
-  if (record.value && showEdit.value) return 'edit'
-  if (record.value) return 'details'
-  return null
-})
-
-const filteredRows = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return rows.value
-  return rows.value.filter((u) => {
+const {
+  rows,
+  loading,
+  error,
+  search,
+  record,
+  filteredRows,
+  refresh: refreshList,
+  select: handleSelect,
+  selectFirst: selectFirstRow,
+} = useListResource<IUser>({
+  fetch: getAllUsers,
+  filter: (u, q) => {
     const name = renderUserName(u).toLowerCase()
     return (
       u.email.toLowerCase().includes(q) ||
@@ -78,41 +75,29 @@ const filteredRows = computed(() => {
       u.id.toLowerCase().includes(q) ||
       (u.role ?? '').toLowerCase().includes(q)
     )
-  })
+  },
+  onSelect: () => {
+    showCreate.value = false
+    showEdit.value = false
+    actionError.value = null
+    actionSuccess.value = null
+    newApiKey.value = null
+    createdUser.value = null
+    apiKeys.value = []
+  },
+  resolve: async (row) => {
+    const [user, keys] = await Promise.all([getUser(row.id), getAPIKeys(row.id)])
+    apiKeys.value = keys
+    return user
+  },
 })
 
-const refreshList = async function () {
-  try {
-    loading.value = true
-    error.value = false
-    rows.value = await getAllUsers()
-  } catch {
-    error.value = true
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleSelect = async function (row: IUser) {
-  showCreate.value = false
-  showEdit.value = false
-  actionError.value = null
-  actionSuccess.value = null
-  newApiKey.value = null
-  createdUser.value = null
-  apiKeys.value = []
-
-  ;[record.value, apiKeys.value] = await Promise.all([getUser(row.id), getAPIKeys(row.id)])
-}
-
-const selectFirstRow = function () {
-  const first = filteredRows.value[0]
-  if (first) handleSelect(first)
-}
-
-onBeforeMount(async () => {
-  await refreshList()
-  selectFirstRow()
+const drawerMode = computed<'create' | 'created' | 'edit' | 'details' | null>(() => {
+  if (showCreate.value) return 'create'
+  if (createdUser.value) return 'created'
+  if (record.value && showEdit.value) return 'edit'
+  if (record.value) return 'details'
+  return null
 })
 
 const handleOpenCreate = function () {
@@ -212,7 +197,11 @@ const handleRoleChange = async function (newRole: string) {
         <h2 class="text-xl font-semibold text-grey-800">Users</h2>
         <p class="mt-0.5 text-sm text-grey-700">Manage accounts, roles and API keys.</p>
       </div>
-      <Button lg label="Add user" @click="handleOpenCreate" />
+      <Button lg label="Add user" @click="handleOpenCreate">
+        <template #before>
+          <PlusIcon class="aspect-square h-4 w-4" aria-hidden="true" />
+        </template>
+      </Button>
     </header>
 
     <div class="mb-3 flex items-center gap-3">
