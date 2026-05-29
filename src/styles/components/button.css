@@ -3,7 +3,7 @@
 }
 
 .button--lg {
-  @apply gap-2 rounded-md px-4 py-2.5 text-sm;
+  @apply gap-2 rounded-md px-5 py-3 text-base;
 }
 
 .button--solid {
