@@ -27,6 +27,7 @@ const route = useRoute()
 const router = useRouter()
 
 const statusFilter = ref('')
+const cancelling = ref(false)
 const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
 
@@ -129,12 +130,15 @@ const handleCancel = async function () {
   if (!confirm(`Cancel job #${record.value.id}? It will be marked as failed.`)) return
 
   try {
+    cancelling.value = true
     actionError.value = null
     record.value = await cancelJob(record.value.id)
     await refresh()
     flashSuccess('Job cancelled.')
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to cancel job.'
+  } finally {
+    cancelling.value = false
   }
 }
 </script>
@@ -211,7 +215,7 @@ const handleCancel = async function () {
       <Drawer>
         <template #title>Job information</template>
         <template v-if="record && canCancel(record)" #actions>
-          <Button danger label="Cancel job" @click="handleCancel" />
+          <Button danger label="Cancel job" :loading="cancelling" @click="handleCancel" />
         </template>
 
         <template v-if="record">

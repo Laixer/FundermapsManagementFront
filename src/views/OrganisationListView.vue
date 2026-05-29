@@ -31,6 +31,7 @@ import PlusIcon from '@assets/svg/icons/plus.svg?component'
 
 const showCreate = ref(false)
 const showEdit = ref(false)
+const deleting = ref(false)
 const actionError = ref<string | null>(null)
 
 const activeTab: Ref<'users' | 'mapsets' | 'geolock'> = ref('users')
@@ -97,6 +98,7 @@ const handleDelete = async function () {
   if (!confirm(`Delete organisation "${record.value.name}"? This cannot be undone.`)) return
 
   try {
+    deleting.value = true
     actionError.value = null
     await deleteOrganisation(record.value.id)
     record.value = null
@@ -105,6 +107,8 @@ const handleDelete = async function () {
     selectFirstRow()
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to delete organisation.'
+  } finally {
+    deleting.value = false
   }
 }
 </script>
@@ -169,8 +173,8 @@ const handleDelete = async function () {
         </template>
 
         <template v-if="drawerMode === 'details'" #actions>
-          <Button outline label="Edit" @click="handleEdit" />
-          <Button danger label="Delete" @click="handleDelete" />
+          <Button outline label="Edit" :disabled="deleting" @click="handleEdit" />
+          <Button danger label="Delete" :loading="deleting" @click="handleDelete" />
         </template>
 
         <CreateOrganisationForm

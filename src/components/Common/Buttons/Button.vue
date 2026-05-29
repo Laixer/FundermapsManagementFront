@@ -7,9 +7,10 @@ import { computed } from 'vue'
  * Sizes: default (compact) or lg (page-level primary actions).
  */
 
-const { link, ghost, outline, muted, danger, lg } = defineProps({
+const { link, ghost, outline, muted, danger, lg, loading } = defineProps({
   label: { type: String, default: 'Button' },
   disabled: { type: Boolean, default: false },
+  loading: { type: Boolean, default: false },
   link: { type: Boolean, default: false },
   ghost: { type: Boolean, default: false },
   outline: { type: Boolean, default: false },
@@ -40,8 +41,9 @@ const btnClass = computed<string[]>(() => {
 </script>
 
 <template>
-  <button class="button" :class="btnClass" :disabled="disabled">
-    <slot name="before" />
+  <button class="button" :class="btnClass" :disabled="disabled || loading">
+    <span v-if="loading" class="button__spinner" aria-hidden="true" />
+    <slot v-else name="before" />
     <span class="button__label">{{ label }}</span>
     <slot name="after" />
   </button>
