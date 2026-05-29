@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Drawer from '@/components/Layout/Drawer.vue'
@@ -21,6 +22,9 @@ import { formatDate, formatDuration } from '@/utils/date'
 import { useListResource } from '@/composables/useListResource'
 import { useFlash } from '@/composables/useFlash'
 import { getErrorMessage } from '@/services/fundermaps/errors'
+
+const route = useRoute()
+const router = useRouter()
 
 const statusFilter = ref('')
 const actionError = ref<string | null>(null)
@@ -70,6 +74,9 @@ const {
         return row
       }
     },
+    key: (j) => j.id,
+    routeId: () => (typeof route.params.id === 'string' ? route.params.id : undefined),
+    syncRoute: (id) => router.replace({ name: 'jobs', params: { id }, query: route.query }),
   })
 
 // Re-fetch from the server when the status filter changes, landing on the

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type Ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import Button from '@/components/Common/Buttons/Button.vue'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
@@ -41,6 +42,9 @@ const columns = [
   { field: 'id', title: 'ID', width: '20rem' },
 ]
 
+const route = useRoute()
+const router = useRouter()
+
 const {
   rows,
   loading,
@@ -60,6 +64,8 @@ const {
     actionError.value = null
     if (previous?.id !== row.id) activeTab.value = 'users'
   },
+  routeId: () => (typeof route.params.id === 'string' ? route.params.id : undefined),
+  syncRoute: (id) => router.replace({ name: 'organisations', params: { id }, query: route.query }),
 })
 
 const drawerMode = computed<'create' | 'edit' | 'details' | null>(() => {

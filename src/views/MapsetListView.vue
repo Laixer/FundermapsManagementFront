@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useRoute, useRouter } from 'vue-router'
+
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Drawer from '@/components/Layout/Drawer.vue'
 import Table from '@/components/Common/Table.vue'
@@ -21,6 +23,9 @@ const columns = [
   { field: 'id', title: 'ID', width: '18rem' },
 ]
 
+const route = useRoute()
+const router = useRouter()
+
 const { rows, loading, error, search, record, filteredRows, select: handleSelect } =
   useListResource<IMapset>({
     fetch: getAllMapsets,
@@ -28,6 +33,8 @@ const { rows, loading, error, search, record, filteredRows, select: handleSelect
       m.name.toLowerCase().includes(q) ||
       (m.slug ?? '').toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q),
+    routeId: () => (typeof route.params.id === 'string' ? route.params.id : undefined),
+    syncRoute: (id) => router.replace({ name: 'mapsets', params: { id }, query: route.query }),
   })
 
 const handleLayersSaved = async function (updated: IMapset) {
