@@ -99,10 +99,3 @@ export function hasValidAccessToken(): boolean {
 export function getExpiresIn() {
   return getSessionTokens()?.expires_in || null
 }
-
-/**
- * The ISO Date at which the access token expires
- */
-export function getExpiresAt() {
-  return getSessionTokens()?.expires_at || null
-}

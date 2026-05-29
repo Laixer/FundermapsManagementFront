@@ -17,6 +17,8 @@ import { getAllUsers } from '@/services/fundermaps/endpoints/management/user'
 import type { ISession } from '@/services/fundermaps/interfaces/ISession'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser'
 import { renderUserName } from '@/utils/user'
+import { formatDate, formatIpAddress, formatValidFor } from '@/utils/date'
+import { useFlash } from '@/composables/useFlash'
 import { getErrorMessage } from '@/services/fundermaps/errors'
 
 const route = useRoute()
@@ -25,19 +27,12 @@ const router = useRouter()
 const loading = ref(true)
 const error = ref(false)
 const actionError = ref<string | null>(null)
-const actionSuccess = ref<string | null>(null)
+const { message: actionSuccess, flash: flashSuccess } = useFlash()
 
 // "now" tick — keep the relative duration ("valid for 14m") fresh without
 // refetching the list. Single shared computed clock for every row.
 const now = ref(Date.now())
 let clockHandle: ReturnType<typeof setInterval> | null = null
-
-const flashSuccess = function (message: string) {
-  actionSuccess.value = message
-  setTimeout(() => {
-    if (actionSuccess.value === message) actionSuccess.value = null
-  }, 3000)
-}
 
 const userIdFilter = computed<string | null>(() => {
   const v = route.query.user_id
@@ -140,50 +135,6 @@ const handleForceLogout = async function () {
   }
 }
 
-const formatDate = function (dateStr: string | null) {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-// Human-readable remaining time until expiry. Coarse-grained because the
-// "now" clock ticks once a minute; smaller units would just look stale.
-const validFor = function (expiresAt: string): string {
-  const diffMs = new Date(expiresAt).getTime() - now.value
-  if (diffMs <= 0) return 'expired'
-
-  const minutes = Math.floor(diffMs / 60_000)
-  if (minutes < 60) return `${minutes}m`
-
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) {
-    const m = minutes % 60
-    return m ? `${hours}h ${m}m` : `${hours}h`
-  }
-
-  const days = Math.floor(hours / 24)
-  const h = hours % 24
-  return h ? `${days}d ${h}h` : `${days}d`
-}
-
-// IPv6 from the proxy arrives expanded (e.g. 2a02:a473:7505:0000:…); the
-// WHATWG URL parser compresses it to RFC 5952. IPv4 and unparseable strings
-// pass through unchanged.
-const formatIpAddress = function (ip: string | null): string {
-  if (!ip) return '—'
-  if (!ip.includes(':')) return ip
-  try {
-    return new URL(`http://[${ip}]`).hostname.replace(/^\[|\]$/g, '')
-  } catch {
-    return ip
-  }
-}
-
 const renderUserCell = function (userId: string): string {
   const u = userMap.value.get(userId)
   if (!u) return userId
@@ -229,7 +180,7 @@ const renderUserCell = function (userId: string): string {
         <span class="text-grey-800">{{ renderUserCell(row.user_id) }}</span>
       </template>
       <template #valid_for="{ row }">
-        <span class="font-mono text-xs text-grey-700">{{ validFor(row.expires_at) }}</span>
+        <span class="font-mono text-xs text-grey-700">{{ formatValidFor(row.expires_at, now) }}</span>
       </template>
       <template #created_at="{ row }">{{ formatDate(row.created_at) }}</template>
     </Table>
@@ -260,7 +211,7 @@ const renderUserCell = function (userId: string): string {
             <dt class="text-grey-700">User</dt>
             <dd class="text-grey-800 break-all">{{ renderUserCell(record.user_id) }}</dd>
             <dt class="text-grey-700">Valid for</dt>
-            <dd class="font-mono text-xs text-grey-800">{{ validFor(record.expires_at) }}</dd>
+            <dd class="font-mono text-xs text-grey-800">{{ formatValidFor(record.expires_at, now) }}</dd>
             <dt class="text-grey-700">IP address</dt>
             <dd class="text-grey-800">{{ formatIpAddress(record.ip_address) }}</dd>
             <dt class="text-grey-700">Created</dt>
