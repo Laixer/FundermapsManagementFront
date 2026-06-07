@@ -19,13 +19,30 @@ interface NavItem {
   icon: Component
 }
 
-const navLinks: NavItem[] = [
-  { name: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
-  { name: 'users', label: 'Users', icon: UsersIcon },
-  { name: 'sessions', label: 'Sessions', icon: SessionsIcon },
-  { name: 'organisations', label: 'Organisations', icon: OrganisationsIcon },
-  { name: 'mapsets', label: 'Mapsets', icon: MapsetsIcon },
-  { name: 'jobs', label: 'Jobs', icon: JobsIcon },
+interface NavGroup {
+  label?: string
+  items: NavItem[]
+}
+
+const navGroups: NavGroup[] = [
+  {
+    items: [{ name: 'dashboard', label: 'Dashboard', icon: DashboardIcon }],
+  },
+  {
+    label: 'Access',
+    items: [
+      { name: 'users', label: 'Users', icon: UsersIcon },
+      { name: 'sessions', label: 'Sessions', icon: SessionsIcon },
+      { name: 'organisations', label: 'Organisations', icon: OrganisationsIcon },
+    ],
+  },
+  {
+    label: 'Platform',
+    items: [
+      { name: 'mapsets', label: 'Mapsets', icon: MapsetsIcon },
+      { name: 'jobs', label: 'Jobs', icon: JobsIcon },
+    ],
+  },
 ]
 
 const sessionStore = useSessionStore()
@@ -53,19 +70,29 @@ const handleLogout = async function () {
     </div>
 
     <nav class="flex-1 overflow-y-auto px-2 py-3">
-      <ul class="flex flex-col gap-0.5">
-        <li v-for="link in navLinks" :key="link.name">
-          <RouterLink
-            :to="{ name: link.name }"
-            class="nav-link flex items-center rounded-md px-3 py-2 text-sm font-medium text-grey-700 transition-colors hover:bg-grey-100 hover:text-grey-800"
+      <ul class="flex flex-col gap-4">
+        <li v-for="(group, index) in navGroups" :key="group.label ?? index">
+          <p
+            v-if="group.label"
+            class="px-3 pb-1 text-[0.6875rem] font-semibold uppercase tracking-wider text-grey-400"
           >
-            <component
-              :is="link.icon"
-              class="mr-2.5 aspect-square h-4 w-4 shrink-0"
-              aria-hidden="true"
-            />
-            {{ link.label }}
-          </RouterLink>
+            {{ group.label }}
+          </p>
+          <ul class="flex flex-col gap-0.5">
+            <li v-for="link in group.items" :key="link.name">
+              <RouterLink
+                :to="{ name: link.name }"
+                class="nav-link flex items-center rounded-md px-3 py-2 text-sm font-medium text-grey-700 transition-colors hover:bg-grey-100 hover:text-grey-800"
+              >
+                <component
+                  :is="link.icon"
+                  class="mr-2.5 aspect-square h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                />
+                {{ link.label }}
+              </RouterLink>
+            </li>
+          </ul>
         </li>
       </ul>
     </nav>
