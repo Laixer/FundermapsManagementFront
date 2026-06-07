@@ -377,7 +377,7 @@ const handleRoleChange = async function (newRole: string) {
             <dd class="text-grey-800">{{ formatDate(record.updated_at ?? null) }}</dd>
           </dl>
 
-          <section>
+          <section class="border-t border-grey-200 pt-5">
             <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">
               Organisations
             </h6>
@@ -399,7 +399,7 @@ const handleRoleChange = async function (newRole: string) {
             </div>
           </section>
 
-          <section>
+          <section class="border-t border-grey-200 pt-5">
             <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">
               Sessions
             </h6>
@@ -411,7 +411,7 @@ const handleRoleChange = async function (newRole: string) {
             </RouterLink>
           </section>
 
-          <section>
+          <section class="border-t border-grey-200 pt-5">
             <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">Role</h6>
             <Select
               id="role"
@@ -424,14 +424,14 @@ const handleRoleChange = async function (newRole: string) {
             />
           </section>
 
-          <section>
+          <section class="border-t border-grey-200 pt-5">
             <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">
               Password
             </h6>
             <UserResetPassword :record="record" />
           </section>
 
-          <section>
+          <section class="border-t border-grey-200 pt-5">
             <div class="mb-2 flex items-center justify-between">
               <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
                 API keys
