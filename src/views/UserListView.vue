@@ -264,7 +264,10 @@ const handleRoleChange = async function (newRole: string) {
       >
         <template #lead>
           <span
-            class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-grey-100 text-xs font-bold text-grey-800"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-md text-xs font-bold"
+            :class="
+              record?.id === user.id ? 'bg-green-100 text-green-800' : 'bg-grey-100 text-grey-800'
+            "
             aria-hidden="true"
           >
             {{ getInitials(user) }}
@@ -272,14 +275,9 @@ const handleRoleChange = async function (newRole: string) {
         </template>
 
         <div class="flex flex-col gap-0.5">
-          <div class="flex items-center gap-2">
-            <span class="truncate font-semibold text-grey-800">
-              {{ renderUserName(user) || user.email }}
-            </span>
-            <Badge :variant="user.role === 'administrator' ? 'info' : 'default'">
-              {{ user.role }}
-            </Badge>
-          </div>
+          <span class="truncate font-semibold text-grey-800">
+            {{ renderUserName(user) || user.email }}
+          </span>
           <div class="text-xs text-grey-700">
             <span class="truncate">{{ user.email }}</span>
           </div>
@@ -394,7 +392,6 @@ const handleRoleChange = async function (newRole: string) {
                 <Badge v-if="org.role" :variant="org.role === 'superuser' ? 'info' : 'default'">
                   {{ org.role }}
                 </Badge>
-                <MonoBadge :value="org.id" />
               </div>
             </div>
           </section>
