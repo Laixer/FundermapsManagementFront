@@ -4,12 +4,12 @@
  */
 
 // Import necessary libraries
-import { type ZodTypeAny, z } from 'zod'
+import { type ZodType, z } from 'zod'
 // We use `get` and `groupBy` from `lodash` for brevity
 import { get, groupBy } from 'lodash-es'
 import { ref, watch, computed, toValue, type MaybeRefOrGetter } from 'vue'
 
-export default function <T extends ZodTypeAny>(
+export default function <T extends ZodType>(
   schema: T,
   data: MaybeRefOrGetter<Record<string, unknown>>,
   options?: { mode: 'eager' | 'lazy' },
@@ -19,7 +19,7 @@ export default function <T extends ZodTypeAny>(
 
   // Reactive variables to track form validity and errors
   const isValid = ref(true)
-  const errors = ref<Record<string, z.ZodIssue[]> | null>(null)
+  const errors = ref<Record<string, z.core.$ZodIssue[]> | null>(null)
   const hasRun = ref(false)
 
   // Function to clear errors

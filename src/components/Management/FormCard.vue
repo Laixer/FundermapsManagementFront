@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type ZodTypeAny } from 'zod'
+import { type ZodType } from 'zod'
 
 import Form from '@/components/Management/Form.vue'
 
@@ -11,7 +11,7 @@ withDefaults(
     formDataHandler: (formData: any) => void | Promise<void>
     title?: string
     formData?: Record<string, unknown>
-    validationSchema?: ZodTypeAny
+    validationSchema?: ZodType
   }>(),
   {
     title: '',

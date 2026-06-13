@@ -20,7 +20,7 @@ const formData = ref({
 })
 const validationSchema = z
   .object({
-    email: z.string().email('Please enter a valid email address'),
+    email: z.email('Please enter a valid email address'),
     given_name: z.string(),
     family_name: z.string(),
     phone_number: z.string(),
