@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { type ZodIssue } from 'zod'
+import type { core } from 'zod'
 
 export interface SelectOption {
   value: string | number | boolean
@@ -16,7 +16,7 @@ const props = withDefaults(
     required?: boolean
     disabled?: boolean
     validationStatus?: 'none' | 'success' | 'error'
-    validationMessage?: ZodIssue[] | string
+    validationMessage?: core.$ZodIssue[] | string
     tabindex?: number
   }>(),
   {

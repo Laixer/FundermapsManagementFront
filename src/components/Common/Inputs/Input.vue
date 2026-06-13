@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { type ZodIssue } from 'zod'
+import type { core } from 'zod'
 
 const props = withDefaults(
   defineProps<{
@@ -13,7 +13,7 @@ const props = withDefaults(
     required?: boolean
     disabled?: boolean
     validationStatus?: 'none' | 'success' | 'error'
-    validationMessage?: ZodIssue[] | string
+    validationMessage?: core.$ZodIssue[] | string
     tabindex?: number
   }>(),
   {

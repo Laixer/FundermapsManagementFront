@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, toValue } from 'vue'
-import { z, type ZodTypeAny } from 'zod'
+import { z, type ZodType } from 'zod'
 import useValidation from '@/services/useValidation'
 
 import Button from '@/components/Common/Buttons/Button.vue'
@@ -16,7 +16,7 @@ const props = withDefaults(
     formDataHandler: (formData: any) => void | Promise<void>
     title?: string
     formData?: Record<string, unknown>
-    validationSchema?: ZodTypeAny
+    validationSchema?: ZodType
     inline?: boolean
   }>(),
   {
