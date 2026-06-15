@@ -14,6 +14,7 @@ import MapsetListView from '@/views/MapsetListView.vue'
 import JobListView from '@/views/JobListView.vue'
 import SessionListView from '@/views/SessionListView.vue'
 import UserListView from '@/views/UserListView.vue'
+import RateLimitListView from '@/views/RateLimitListView.vue'
 import Login from '@/views/auth/Login.vue'
 import Callback from '@/views/auth/Callback.vue'
 import NoAccess from '@/views/auth/403.vue'
@@ -87,6 +88,12 @@ const router = createRouter({
       name: 'sessions',
       path: '/session/:id?',
       component: SessionListView,
+    },
+
+    {
+      name: 'rate-limits',
+      path: '/rate-limit/:id?',
+      component: RateLimitListView,
     },
   ],
 })
