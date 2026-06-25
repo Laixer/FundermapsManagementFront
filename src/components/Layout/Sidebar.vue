@@ -12,6 +12,7 @@ import SessionsIcon from '@assets/svg/icons/sessions.svg?component'
 import OrganisationsIcon from '@assets/svg/icons/organisations.svg?component'
 import MapsetsIcon from '@assets/svg/icons/mapsets.svg?component'
 import JobsIcon from '@assets/svg/icons/jobs.svg?component'
+import ContractorsIcon from '@assets/svg/icons/fundermaps/tools.svg?component'
 
 interface NavItem {
   name: string
@@ -41,6 +42,7 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'mapsets', label: 'Mapsets', icon: MapsetsIcon },
       { name: 'jobs', label: 'Jobs', icon: JobsIcon },
+      { name: 'contractors', label: 'Contractors', icon: ContractorsIcon },
     ],
   },
 ]
