@@ -15,6 +15,7 @@ import JobListView from '@/views/JobListView.vue'
 import SessionListView from '@/views/SessionListView.vue'
 import UserListView from '@/views/UserListView.vue'
 import RateLimitListView from '@/views/RateLimitListView.vue'
+import ContractorListView from '@/views/ContractorListView.vue'
 import Login from '@/views/auth/Login.vue'
 import Callback from '@/views/auth/Callback.vue'
 import NoAccess from '@/views/auth/403.vue'
@@ -94,6 +95,12 @@ const router = createRouter({
       name: 'rate-limits',
       path: '/rate-limit/:id?',
       component: RateLimitListView,
+    },
+
+    {
+      name: 'contractors',
+      path: '/contractor/:id?',
+      component: ContractorListView,
     },
   ],
 })
