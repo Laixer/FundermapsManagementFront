@@ -16,6 +16,10 @@ const tabs = [
     slug: 'users',
   },
   {
+    label: 'Roles',
+    slug: 'roles',
+  },
+  {
     label: 'Mapsets',
     slug: 'mapsets',
   },

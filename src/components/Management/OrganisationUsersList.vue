@@ -8,11 +8,14 @@ import type { IOrg } from '@/services/fundermaps/endpoints/management/organisati
 
 import {
   getAllOrganisationUsers,
+  getOrganisationRoles,
   removeUserFromOrganisation,
+  updateOrganisationUserRole,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import { getErrorMessage } from '@/services/fundermaps/errors'
 import Icon from '@/components/Common/Icons/Icon.vue'
 import Alert from '@/components/Common/Alert.vue'
+import Select, { type SelectOption } from '@/components/Common/Inputs/Select.vue'
 
 const props = defineProps<{
   record: IOrg | null
@@ -24,17 +27,31 @@ const actionError = ref<string | null>(null)
 const userColumns = [
   { field: 'name', title: 'Name' },
   { field: 'email', title: 'Email' },
-  { field: 'organization_role', title: 'Role', width: '7rem' },
+  { field: 'organization_role', title: 'Role', width: '10rem' },
   { field: 'actions', title: '', width: '2.5rem' },
 ]
-const userRows: Ref<IUser[]> = ref([])
+// /management/org/:id/user rows are users with the membership role merged in.
+type IOrgUser = IUser & { organization_role: string }
+
+const userRows: Ref<IOrgUser[]> = ref([])
+
+const FIXED_ROLES = ['reader', 'writer', 'verifier', 'superuser']
+const roleOptions: Ref<SelectOption[]> = ref([])
 
 const refresh = async function () {
   if (props.record) {
     try {
       userLoading.value = true
       loadError.value = null
-      userRows.value = await getAllOrganisationUsers(props.record.id)
+      const [users, customRoles] = await Promise.all([
+        getAllOrganisationUsers(props.record.id),
+        getOrganisationRoles(props.record.id),
+      ])
+      userRows.value = users
+      roleOptions.value = [
+        ...FIXED_ROLES.map((role) => ({ label: role, value: role })),
+        ...customRoles.map((role) => ({ label: role.role, value: role.role })),
+      ]
     } catch (e) {
       loadError.value = getErrorMessage(e) ?? 'Failed to load users.'
       console.error(e)
@@ -67,6 +84,21 @@ const handleRemoveUser = async function (row: IUser) {
     }
   }
 }
+
+const handleRoleChange = async function (row: IOrgUser, newRole: string) {
+  if (!props.record || newRole === row.organization_role) {
+    return
+  }
+
+  try {
+    actionError.value = null
+    await updateOrganisationUserRole(props.record.id, row.id, newRole)
+    await refresh()
+  } catch (e) {
+    actionError.value = getErrorMessage(e) ?? 'Failed to update role.'
+    await refresh()
+  }
+}
 </script>
 
 <template>
@@ -82,6 +114,14 @@ const handleRemoveUser = async function (row: IUser) {
     >
       <template #name="{ row }">
         <span class="font-medium text-grey-800">{{ renderUserName(row) || '—' }}</span>
+      </template>
+      <template #organization_role="{ row }">
+        <Select
+          :id="`org-role-${row.id}`"
+          :options="roleOptions"
+          :modelValue="row.organization_role"
+          @update:modelValue="(value) => handleRoleChange(row, String(value))"
+        />
       </template>
       <template #actions="{ row }">
         <button
