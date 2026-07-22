@@ -70,6 +70,20 @@ export const addUserToOrganisation = async function addUserToOrganisation(
   })
 }
 
+export const updateOrganisationUserRole = async function updateOrganisationUserRole(
+  orgId: string,
+  UserID: string,
+  Role: string,
+) {
+  return await put({
+    endpoint: `management/org/${orgId}/user`,
+    body: {
+      user_id: UserID,
+      role: Role,
+    },
+  })
+}
+
 export const removeUserFromOrganisation = async function removeUserFromOrganisation(
   orgId: string,
   UserID: string,
@@ -93,6 +107,67 @@ export const deleteOrganisation = async function deleteOrganisation(orgId: strin
   return await del({
     endpoint: `management/org/${orgId}`,
   })
+}
+
+// Roles endpoints (#1006 dynamic custom roles)
+
+// A permission map: resource → granted actions (e.g. { inquiry: ['read'] }).
+export type IPermissionMap = Record<string, string[]>
+
+// API response shape for /api/management/org/:id/role (Drizzle row keys).
+export interface ICustomRole {
+  id: string
+  organizationId: string
+  role: string
+  permission: IPermissionMap
+  createdAt: string
+  updatedAt: string | null
+}
+
+// Static metadata for the permission matrix: the resources/actions a custom
+// role may grant, plus what the four fixed roles resolve to (read-only).
+export interface IPermissionMetadata {
+  resources: IPermissionMap
+  fixed_roles: Record<string, IPermissionMap>
+}
+
+export const getPermissionMetadata = async function getPermissionMetadata(): Promise<IPermissionMetadata> {
+  return await get({ endpoint: 'management/permission' })
+}
+
+export const getOrganisationRoles = async function getOrganisationRoles(
+  orgId: string,
+): Promise<ICustomRole[]> {
+  return await get({ endpoint: `management/org/${orgId}/role` })
+}
+
+export const createOrganisationRole = async function createOrganisationRole(
+  orgId: string,
+  name: string,
+  permission: IPermissionMap,
+): Promise<ICustomRole> {
+  return await post({
+    endpoint: `management/org/${orgId}/role`,
+    body: { name, permission },
+  })
+}
+
+export const updateOrganisationRole = async function updateOrganisationRole(
+  orgId: string,
+  roleId: string,
+  payload: { name?: string; permission?: IPermissionMap },
+): Promise<ICustomRole> {
+  return await put({
+    endpoint: `management/org/${orgId}/role/${roleId}`,
+    body: payload,
+  })
+}
+
+export const deleteOrganisationRole = async function deleteOrganisationRole(
+  orgId: string,
+  roleId: string,
+) {
+  return await del({ endpoint: `management/org/${orgId}/role/${roleId}` })
 }
 
 // Geolock endpoints

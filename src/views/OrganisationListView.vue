@@ -14,6 +14,7 @@ import CreateOrganisationForm from '@/components/Management/Forms/CreateOrganisa
 import OrganisationForm from '@/components/Management/Forms/OrganisationForm.vue'
 import CopyToClipboardIcon from '@/components/Common/Icons/CopyToClipboardIcon.vue'
 import OrganisationUsersList from '@/components/Management/OrganisationUsersList.vue'
+import OrganisationRolesSection from '@/components/Management/OrganisationRolesSection.vue'
 import OrganisationMapsetsList from '@/components/Management/OrganisationMapsetsList.vue'
 import OrganisationGeolockSection from '@/components/Management/OrganisationGeolockSection.vue'
 
@@ -34,7 +35,7 @@ const showEdit = ref(false)
 const deleting = ref(false)
 const actionError = ref<string | null>(null)
 
-const activeTab: Ref<'users' | 'mapsets' | 'geolock'> = ref('users')
+const activeTab: Ref<'users' | 'roles' | 'mapsets' | 'geolock'> = ref('users')
 const orgUsersList = ref<InstanceType<typeof OrganisationUsersList> | null>(null)
 const orgMapsetsList = ref<InstanceType<typeof OrganisationMapsetsList> | null>(null)
 
@@ -208,6 +209,9 @@ const handleDelete = async function () {
           <div v-if="activeTab === 'users'" class="space-y-3">
             <OrganisationUsersList ref="orgUsersList" :record="record" />
             <OrganisationAddUser :record="record" @saved="orgUsersList?.refresh()" />
+          </div>
+          <div v-else-if="activeTab === 'roles'">
+            <OrganisationRolesSection :record="record" />
           </div>
           <div v-else-if="activeTab === 'mapsets'" class="space-y-3">
             <OrganisationMapsetsList ref="orgMapsetsList" :record="record" />
