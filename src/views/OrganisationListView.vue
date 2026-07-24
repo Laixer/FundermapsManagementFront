@@ -17,6 +17,7 @@ import OrganisationUsersList from '@/components/Management/OrganisationUsersList
 import OrganisationRolesSection from '@/components/Management/OrganisationRolesSection.vue'
 import OrganisationMapsetsList from '@/components/Management/OrganisationMapsetsList.vue'
 import OrganisationGeolockSection from '@/components/Management/OrganisationGeolockSection.vue'
+import OrganisationUsageSection from '@/components/Management/OrganisationUsageSection.vue'
 
 import {
   deleteOrganisation,
@@ -35,7 +36,7 @@ const showEdit = ref(false)
 const deleting = ref(false)
 const actionError = ref<string | null>(null)
 
-const activeTab: Ref<'users' | 'roles' | 'mapsets' | 'geolock'> = ref('users')
+const activeTab: Ref<'users' | 'roles' | 'mapsets' | 'geolock' | 'usage'> = ref('users')
 const orgUsersList = ref<InstanceType<typeof OrganisationUsersList> | null>(null)
 const orgMapsetsList = ref<InstanceType<typeof OrganisationMapsetsList> | null>(null)
 
@@ -220,6 +221,9 @@ const handleDelete = async function () {
           </div>
           <div v-else-if="activeTab === 'geolock'">
             <OrganisationGeolockSection :record="record" />
+          </div>
+          <div v-else-if="activeTab === 'usage'">
+            <OrganisationUsageSection :record="record" />
           </div>
         </div>
 
