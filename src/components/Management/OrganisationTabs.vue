@@ -27,6 +27,10 @@ const tabs = [
     label: 'Geolock',
     slug: 'geolock',
   },
+  {
+    label: 'Usage',
+    slug: 'usage',
+  },
 ]
 </script>
 

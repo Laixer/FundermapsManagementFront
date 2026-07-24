@@ -258,3 +258,26 @@ export const removeGeolockNeighborhood = async function removeGeolockNeighborhoo
   })
 }
 
+
+// Billable product usage from application.product_tracker. Grafana
+// (analytics.fundermaps.com) remains the home for trends and alerting; this
+// is the in-context "what is this customer consuming right now" lookup.
+export interface IUsageProduct {
+  product: string
+  month_to_date: number
+  last_30_days: number
+}
+
+export interface IOrgUsage {
+  products: IUsageProduct[]
+  total: {
+    month_to_date: number
+    last_30_days: number
+  }
+}
+
+export const getOrganisationUsage = async function getOrganisationUsage(
+  orgId: string,
+): Promise<IOrgUsage> {
+  return await get({ endpoint: `management/org/${orgId}/usage` })
+}
