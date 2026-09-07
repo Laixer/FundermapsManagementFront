@@ -1,10 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import {
-  hasAccessToken,
-  hasRefreshToken,
-  hasValidAccessToken,
-} from '@/services/fundermaps/session'
-import { loginRedirect } from '@/services/oidc'
+import { loginRedirect } from '@/services/auth'
 import { useSessionStore } from '@/stores/session'
 import { storeToRefs } from 'pinia'
 
@@ -17,7 +12,6 @@ import UserListView from '@/views/UserListView.vue'
 import RateLimitListView from '@/views/RateLimitListView.vue'
 import ContractorListView from '@/views/ContractorListView.vue'
 import Login from '@/views/auth/Login.vue'
-import Callback from '@/views/auth/Callback.vue'
 import NoAccess from '@/views/auth/403.vue'
 
 const router = createRouter({
@@ -30,19 +24,12 @@ const router = createRouter({
       name: 'login',
       path: '/login',
       component: Login,
-      // Login lives at the auth app — kick off the OIDC redirect before the
-      // (placeholder) component renders, so the old login form never flashes.
-      beforeEnter: async () => {
-        await loginRedirect()
+      // Login lives at the auth app — navigate there before the (placeholder)
+      // component renders. Come back to the portal root afterwards.
+      beforeEnter: () => {
+        loginRedirect(window.location.origin + '/')
         return false
       },
-    },
-
-    {
-      // OIDC redirect target: exchanges the code for tokens (Callback.vue).
-      name: 'auth-callback',
-      path: '/auth/callback',
-      component: Callback,
     },
 
     {
@@ -106,36 +93,22 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  // The OIDC callback owns its own auth (it exchanges the code for tokens);
-  // never gate it or it'd bounce to login before the exchange runs.
-  if (to.name === 'auth-callback') return
-
   const sessionStore = useSessionStore()
   const { isAuthenticated, isAdministrator } = storeToRefs(sessionStore)
 
-  // Restore the session on page load. Prefer a still-valid access token;
-  // otherwise fall back to the refresh token (offline_access) so a returning
-  // admin re-mints a session without a login round-trip.
-  if (to.name !== '403' && !isAuthenticated.value) {
+  // Restore the user from the session cookie on page load.
+  if (to.name !== '403' && to.name !== 'login' && !isAuthenticated.value) {
     try {
-      if (hasAccessToken() && hasValidAccessToken()) {
-        await sessionStore.authenticateFromAccessToken()
-      } else if (hasRefreshToken()) {
-        await sessionStore.loginFromRefreshToken()
-      }
+      await sessionStore.authenticate()
     } catch {
-      // session validation/refresh failed — store has already cleaned up
+      // no session — handled below
     }
   }
 
-  // make sure the user is authenticated
-  if (
-    // Avoid an infinite redirect
-    to.name !== 'login' &&
-    !isAuthenticated.value
-  ) {
-    // redirect the user to the login page (its beforeEnter starts the OIDC flow)
-    return { name: 'login' }
+  // Not signed in: go to the auth app, which returns to the requested page.
+  if (to.name !== 'login' && to.name !== '403' && !isAuthenticated.value) {
+    loginRedirect(window.location.origin + to.fullPath)
+    return false
   }
 
   // Only administrators are allowed access
@@ -145,4 +118,5 @@ router.beforeEach(async (to) => {
     }
   }
 })
+
 export default router
