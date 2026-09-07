@@ -1,16 +1,9 @@
-import { computed, type ShallowRef, shallowRef, watch } from 'vue'
+import { computed, type ShallowRef, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
-import { useRouter } from 'vue-router'
 
 import type { IUser } from '@/services/fundermaps/interfaces/IUser'
 import api from '@/services/fundermaps'
-import {
-  getExpiresIn,
-  hasRefreshToken,
-  hasValidAccessToken,
-  removeSessionTokens,
-} from '@/services/fundermaps/session'
-import { refresh as oidcRefresh, logoutRedirect as oidcLogoutRedirect } from '@/services/oidc'
+import { loginRedirect, logoutRedirect } from '@/services/auth'
 
 /**
  * Holds the information of the logged in user
@@ -32,58 +25,15 @@ const isAdministrator = computed<boolean>(() => {
 })
 
 /**
- * reference to the interval loop in which the access token is refreshed
+ * Load the user behind the session cookie. Throws when there is no session
+ * (the API answers 401), so the router guard can send the user to log in.
  */
-let refreshInterval: ReturnType<typeof setInterval> | null = null
-
-/**
- * Restore the user from a still-valid access token (page load within the
- * token's 1h lifetime). Used by the router guard and the OIDC callback.
- */
-async function authenticateFromAccessToken() {
+async function authenticate() {
   try {
-    if (!hasValidAccessToken()) {
-      clearLocalSession()
-      return
-    }
-
     currentUser.value = await api.user.me()
   } catch (e) {
-    console.error(e)
-
-    // clean up a partial success if need be
     clearLocalSession()
-
-    throw e // pass on the unhappy news
-  }
-}
-
-/**
- * Cold start with an expired access token but a live refresh token
- * (offline_access): swap the refresh token for a fresh access token, then
- * load the user. Lets a returning admin skip the login round-trip.
- */
-async function loginFromRefreshToken() {
-  try {
-    if (!hasRefreshToken()) {
-      clearLocalSession()
-      return
-    }
-
-    const ok = await oidcRefresh()
-    if (!ok) {
-      clearLocalSession()
-      return
-    }
-
-    currentUser.value = await api.user.me()
-  } catch (e) {
-    console.error(e)
-
-    // clean up a partial success if need be
-    clearLocalSession()
-
-    throw e // pass on the unhappy news
+    throw e
   }
 }
 
@@ -91,7 +41,6 @@ async function loginFromRefreshToken() {
  * Clear local session state without touching the server.
  */
 function clearLocalSession() {
-  removeSessionTokens()
   currentUser.value = null
 }
 
@@ -107,74 +56,33 @@ function logout() {
  *
  */
 function useSession() {
-  const router = useRouter()
-
   /**
-   * User-initiated logout: end the SSO session at the provider
-   * (RP-initiated, via /oauth2/end-session), which returns to /login. Null
-   * the user first so the authed shell doesn't flash before the browser
-   * navigates away. No router.push — `oidcLogoutRedirect` does a full-page
-   * navigation.
+   * User-initiated logout: end the session at the API (clears the cookie)
+   * and land on the auth app's login page. Null the user first so the
+   * authed shell doesn't flash before the browser navigates away.
    */
   function logoutAndRedirect() {
     currentUser.value = null
-    oidcLogoutRedirect()
+    void logoutRedirect()
   }
 
   /**
-   * Session lapsed (refresh rejected): drop local state and bounce to
-   * /login, whose guard re-runs the OIDC flow — a live SSO session re-auths
-   * silently, a dead one lands on the auth app's login form. Distinct from
-   * logoutAndRedirect, which deliberately ends the SSO session.
+   * Session lapsed: drop local state and go log in again; the auth app
+   * returns the user to the current page afterwards.
    */
   function sessionExpiredRedirect() {
     clearLocalSession()
-    if (router.currentRoute.value.name !== 'login') {
-      router.push({ name: 'login' })
-    }
+    loginRedirect()
   }
-
-  /**
-   * Refresh the access token via the OIDC refresh grant. On failure the
-   * session has lapsed — bounce to login to re-auth.
-   */
-  async function refreshSessionToken() {
-    const ok = await oidcRefresh()
-    if (!ok) {
-      sessionExpiredRedirect()
-    }
-  }
-
-  /**
-   * Start a loop to refresh the access token upon authentication
-   */
-  watch(
-    () => isAdministrator.value,
-    () => {
-      if (isAdministrator.value) {
-        const expiresIn = getExpiresIn()
-
-        if (expiresIn === null) {
-          sessionExpiredRedirect()
-          return
-        }
-
-        refreshInterval = setInterval(refreshSessionToken, Math.max(30, expiresIn - 60) * 1000)
-      } else if (refreshInterval !== null) {
-        clearInterval(refreshInterval)
-        refreshInterval = null
-      }
-    },
-  )
 
   return {
     currentUser,
     isAuthenticated,
     isAdministrator,
-    authenticateFromAccessToken,
-    loginFromRefreshToken,
+    authenticate,
     logout,
     logoutAndRedirect,
+    sessionExpiredRedirect,
   }
 }
 

@@ -1,7 +1,6 @@
 
-import { getAccessToken, hasAccessToken, hasValidAccessToken } from './session'
+import { loginRedirect } from '@/services/auth'
 
-import { useRouter, useRoute } from 'vue-router'
 import { getAPIKeyAuthHeader, hasAPIKey } from './api-key'
 import { APICallError, APIClientError, APIErrorResponse, APITokenError } from './errors'
 
@@ -13,36 +12,10 @@ export interface AuthorizationHeader {
  * The function thats is calling the shots
  */
 
-const passAuthCheckOrExit = function passAuthOrThrowException(
-  requireAuth: boolean,
-  autoredirect: boolean,
-) {
-  // Check for auth
-  try {
-    if (requireAuth && !hasAPIKey()) {
-      if (!hasAccessToken()) {
-        throw new APITokenError('Missing access token')
-      }
-
-      if (!hasValidAccessToken()) {
-        throw new APITokenError('Access token has expired')
-      }
-    }
-  } catch (e) {
-    // When auth is required & missing / expired => redirect to login
-    if (autoredirect) {
-      const route = useRoute()
-      if (route.name !== 'Login') {
-        const router = useRouter()
-        router.push({ name: 'login' })
-      }
-      return
-    } else {
-      throw e
-    }
-  }
-}
-
+/**
+ * Auth is the Better Auth session cookie (or the API key override); the
+ * server decides. A 401 on a requireAuth call is handled after the response.
+ */
 const makeCall = async function makeCall({
   endpoint,
   method = 'GET',
@@ -65,11 +38,10 @@ const makeCall = async function makeCall({
   let url: URL
 
   try {
-    passAuthCheckOrExit(requireAuth, autoredirect)
-
-    // Auth header
+    // Auth header: only the API-key override adds one; the session cookie
+    // travels by itself (credentials: 'include' below).
     if (requireAuth) {
-      authHeader = getAPIKeyAuthHeader() || { Authorization: `Bearer ${getAccessToken()}` } || {}
+      authHeader = getAPIKeyAuthHeader() || {}
     }
 
     if (typeof endpoint === 'string') {
@@ -111,16 +83,12 @@ const makeCall = async function makeCall({
       }
     }
 
-    // Options
-    // Better Auth's OIDC provider reads sessions from a cookie on the
-    // OAuth2 authorize navigation; send + accept cookies on /auth/* so the
-    // OIDC return flow (Grafana SSO) sees a logged-in session.
-    const isAuthRoute = typeof endpoint === 'string' && endpoint.replace(/^\/+/, '').startsWith('auth/')
+    // Options. The Better Auth session cookie is the credential, on every call.
     fetchOptions = {
       method,
       headers: Object.assign(authHeader, headers),
       body,
-      ...(isAuthRoute ? { credentials: 'include' as RequestCredentials } : {}),
+      credentials: 'include' as RequestCredentials,
     }
 
     const response = await fetch(url, fetchOptions)
@@ -139,10 +107,14 @@ const makeCall = async function makeCall({
     }
 
     if (!response.ok) {
+      // Session gone (expired, revoked, signed out elsewhere): go and log in
+      // again; the auth app brings the user back to this page.
+      if (response.status === 401 && requireAuth && autoredirect && !hasAPIKey()) {
+        loginRedirect()
+        throw new APITokenError('Session expired')
+      }
       throw new APIErrorResponse(response.status, responseBody)
     }
-
-    passAuthCheckOrExit(requireAuth, autoredirect)
 
     return responseBody
   } catch (err: unknown) {
