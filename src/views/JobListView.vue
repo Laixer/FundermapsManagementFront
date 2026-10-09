@@ -10,26 +10,15 @@ import Badge from '@/components/Common/Badge.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
 import Input from '@/components/Common/Inputs/Input.vue'
 import Select from '@/components/Common/Inputs/Select.vue'
-import Button from '@/components/Common/Buttons/Button.vue'
 import type { IJob } from '@/services/fundermaps/interfaces/IJob'
-import {
-  cancelJob,
-  getAllJobs,
-  getJob,
-  JOBS_LIST_LIMIT,
-} from '@/services/fundermaps/endpoints/management/job'
+import { getAllJobs, getJob, JOBS_LIST_LIMIT } from '@/services/fundermaps/endpoints/management/job'
 import { formatDate, formatDuration } from '@/utils/date'
 import { useListResource } from '@/composables/useListResource'
-import { useFlash } from '@/composables/useFlash'
-import { getErrorMessage } from '@/services/fundermaps/errors'
 
 const route = useRoute()
 const router = useRouter()
 
 const statusFilter = ref('')
-const cancelling = ref(false)
-const actionError = ref<string | null>(null)
-const { message: actionSuccess, flash: flashSuccess } = useFlash()
 
 const STATUS_OPTIONS = [
   { label: 'All statuses', value: '' },
@@ -121,26 +110,6 @@ const jobDuration = (job: IJob): string =>
   job.status === 'completed' || job.status === 'failed'
     ? formatDuration(job.created_at, job.updated_at)
     : '—'
-
-const canCancel = (job: IJob | null): boolean =>
-  !!job && (job.status === 'pending' || job.status === 'retry')
-
-const handleCancel = async function () {
-  if (!record.value) return
-  if (!confirm(`Cancel job #${record.value.id}? It will be marked as failed.`)) return
-
-  try {
-    cancelling.value = true
-    actionError.value = null
-    record.value = await cancelJob(record.value.id)
-    await refresh()
-    flashSuccess('Job cancelled.')
-  } catch (e) {
-    actionError.value = getErrorMessage(e) ?? 'Failed to cancel job.'
-  } finally {
-    cancelling.value = false
-  }
-}
 </script>
 
 <template>
@@ -214,23 +183,8 @@ const handleCancel = async function () {
     <template #aside>
       <Drawer>
         <template #title>Job information</template>
-        <template v-if="record && canCancel(record)" #actions>
-          <Button danger label="Cancel job" :loading="cancelling" @click="handleCancel" />
-        </template>
 
         <template v-if="record">
-          <Alert v-if="actionError" :closeable="true" class="mb-3" @close="actionError = null">
-            {{ actionError }}
-          </Alert>
-          <Alert
-            v-if="actionSuccess"
-            type="success"
-            :closeable="true"
-            class="mb-3"
-            @close="actionSuccess = null"
-          >
-            {{ actionSuccess }}
-          </Alert>
 
           <dl class="grid grid-cols-[8rem_1fr] gap-x-4 gap-y-2 text-sm">
             <dt class="text-grey-700">ID</dt>
