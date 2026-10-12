@@ -66,8 +66,8 @@ const handleLogout = async function () {
     class="fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r border-grey-200 bg-white"
   >
     <div class="flex h-14 items-center border-b border-grey-200 px-4">
-      <RouterLink :to="{ name: 'users' }" class="inline-flex items-center gap-2" aria-label="Fundermaps">
-        <img :src="fundermapsLogo" alt="Fundermaps" class="h-6 w-auto" />
+      <RouterLink :to="{ name: 'users' }" class="inline-flex items-center gap-2" aria-label="FunderMaps">
+        <img :src="fundermapsLogo" alt="FunderMaps" class="h-6 w-auto" />
       </RouterLink>
     </div>
 

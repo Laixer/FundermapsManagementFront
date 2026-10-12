@@ -17,7 +17,7 @@ const initialFormData = {
 }
 const validationSchema = z
   .object({
-    mapsetid: z.string().min(1, 'Mapset id is required.'),
+    mapsetid: z.string().min(1, 'Mapset ID is required.'),
   })
   .strict()
 
@@ -40,7 +40,7 @@ const formHandler = async function (formData: { mapsetid: string }) {
     <Input
       id="mapsetid"
       label="Remove a mapset from the organisation"
-      placeholder="Enter id of the mapset you want to remove"
+      placeholder="Enter the ID of the mapset you want to remove"
       type="text"
       v-model="formData.mapsetid"
       :validationStatus="getStatus('mapsetid')"

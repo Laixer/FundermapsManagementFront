@@ -19,7 +19,7 @@ const initialFormData = {
 }
 const validationSchema = z
   .object({
-    userid: z.string().min(1, 'User id is required.'),
+    userid: z.string().min(1, 'User ID is required.'),
     role: z.enum(['reader', 'writer', 'verifier', 'superuser']),
   })
   .strict()
@@ -48,7 +48,7 @@ const formHandler = async function (formData: { userid: string; role: string }) 
     <Input
       id="userid"
       label="User ID"
-      placeholder="Enter the id of the user you want to connect"
+      placeholder="Enter the ID of the user you want to connect"
       type="text"
       v-model="formData.userid"
       :validationStatus="getStatus('userid')"
