@@ -24,7 +24,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <AuthWrapper title="Inlogpagina voor de Fundermaps Applicatie">
+  <AuthWrapper title="No access">
     <Card title="No access">
       You do not have the required permissions. You will be automatically logged out and redirected
       in 10 seconds.
