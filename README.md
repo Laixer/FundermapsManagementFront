@@ -2,8 +2,9 @@
 
 Admin-only Vue 3 management portal for the FunderMaps platform — manages users,
 organisations and mapsets. Access is restricted to users with the `administrator`
-role (enforced via a router guard). Authentication is OIDC (authorization-code +
-PKCE) against the FunderMaps API.
+role (enforced via a router guard). Authentication is the session cookie the
+FunderMaps API sets (Better Auth), shared by every `*.fundermaps.com` app; login
+happens in the auth app.
 
 **Stack:** Vue 3 (`<script setup>`), TypeScript, Pinia, Vue Router, Tailwind CSS 4,
 Vite. Package manager: **pnpm**.

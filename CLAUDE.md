@@ -26,29 +26,28 @@ No test framework is configured.
 
 ### API Layer (`src/services/fundermaps/`)
 
-- `client.ts` - Core HTTP client wrapping `fetch`. Exports `get`, `post`, `put`, `del`. Constructs URLs from `VITE_FUNDERMAPS_URL` env var + `/api/` prefix. Handles auth headers (Bearer token or API key) automatically.
+- `client.ts` - Core HTTP client wrapping `fetch`. Exports `get`, `post`, `put`, `del`. Constructs URLs from `VITE_FUNDERMAPS_URL` env var + `/api/` prefix. Sends the session cookie (`credentials: 'include'`); only when `VITE_AUTH_KEY` is set does it add an `Authorization: authkey …` header instead.
 - `endpoints/management/user.ts` - User CRUD, password reset, API key management, role updates.
 - `endpoints/management/organisation.ts` - Org CRUD, user/mapset membership, geolock management (districts, municipalities, neighborhoods).
 - `endpoints/management/mapset.ts` - Mapset listing (read-only).
-- `oidc.ts` - OIDC authorization-code + PKCE client (`client_id=managementfront`). Handles the login redirect, code exchange at `/auth/callback`, single-flight silent refresh, and RP-initiated logout (end-session with `id_token_hint`).
-- `session.ts` - Stores the OIDC token set (access/refresh/id tokens + expiry) in `localStorage`.
-- `api-key.ts` - Optional API key auth via `VITE_AUTH_KEY`; when set, overrides the Bearer token in `client.ts`.
+- `../auth.ts` (`src/services/auth.ts`) - The session is the Better Auth cookie on the API origin, shared by every `*.fundermaps.com` app; nothing is stored in this app. `loginRedirect()` sends the browser to the auth app (`${VITE_AUTH_URL}/login?redirect=…`), `hasSession()` probes `/api/auth/get-session`, `logoutRedirect()` posts `/api/auth/sign-out`. (Until October 2026 this was OIDC with tokens in `localStorage`; `oidc.ts` and `session.ts` in this folder are gone.)
+- `api-key.ts` - Optional API key auth via `VITE_AUTH_KEY`; when set, `client.ts` sends that key instead of relying on the cookie.
 - `errors.ts` - Custom error classes (`APICallError`, `APITokenError`, `APIErrorResponse`).
 
 ### State (`src/stores/`)
 
-Single store: `session.ts` - Pinia store managing authentication state, current user, and timer-based token refresh. Login/logout go through the OIDC redirects in `services/oidc.ts`.
+Single store: `session.ts` - Pinia store managing authentication state and the current user (loaded from the API behind the cookie). Login/logout go through the redirects in `services/auth.ts`.
 
 ### Routing (`src/router/`)
 
-All routes are top-level. Home (`/`) redirects to `/user`. The `/login` route kicks off the OIDC redirect and `/auth/callback` completes the code exchange. Router guards redirect unauthenticated users to `/login` and non-admins to `/403`.
+All routes are top-level. Home (`/`) redirects to `/dashboard`. The `/login` route sends the browser to the auth app, which returns the user once the cookie is set; there is no callback route. Router guards send unauthenticated users to log in and non-admins to `/403`.
 
 ### Views (`src/views/`)
 
 - `UserListView` - User list + detail panel with role change, password reset, API key management, delete
 - `OrganisationListView` - Org list + detail panel with tabs (Users, Mapsets, Geolock), edit name, delete
 - `MapsetListView` - Read-only mapset list + detail panel
-- Auth views: `Login` (OIDC redirect shim), `Callback` (OIDC code exchange), `403`
+- Auth views: `Login` (redirect shim to the auth app), `403`
 
 ### Components (`src/components/`)
 
