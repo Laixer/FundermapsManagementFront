@@ -5,18 +5,12 @@ import { RouterLink } from 'vue-router'
 import MainWrapper from '@/components/Layout/MainWrapper.vue'
 import Card from '@/components/Common/Card.vue'
 import Alert from '@/components/Common/Alert.vue'
-import Badge from '@/components/Common/Badge.vue'
 import Skeleton from '@/components/Common/Skeleton.vue'
 
 import { getAllUsers, USERS_LIST_LIMIT } from '@/services/fundermaps/endpoints/management/user'
 import { getAllOrganisations } from '@/services/fundermaps/endpoints/management/organisation'
 import { getAllMapsets } from '@/services/fundermaps/endpoints/management/mapset'
 import { getAllSessions } from '@/services/fundermaps/endpoints/management/session'
-import {
-  getAllJobs,
-  JOBS_LIST_LIMIT,
-} from '@/services/fundermaps/endpoints/management/job'
-import type { IJob, JobStatus } from '@/services/fundermaps/interfaces/IJob'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser'
 import { formatDate } from '@/utils/date'
 import { renderUserName } from '@/utils/user'
@@ -29,21 +23,18 @@ const usersList = ref<IUser[]>([])
 const orgCount = ref(0)
 const mapsetCount = ref(0)
 const sessionCount = ref(0)
-const jobs = ref<IJob[]>([])
 
 const atUserCap = ref(false)
-const atJobCap = ref(false)
 
 const refresh = async function () {
   try {
     loading.value = true
     error.value = false
-    const [users, orgs, mapsets, sessions, jobList] = await Promise.all([
+    const [users, orgs, mapsets, sessions] = await Promise.all([
       getAllUsers(),
       getAllOrganisations(),
       getAllMapsets(),
       getAllSessions(),
-      getAllJobs(),
     ])
     userCount.value = users.length
     usersList.value = users
@@ -51,8 +42,6 @@ const refresh = async function () {
     orgCount.value = orgs.length
     mapsetCount.value = mapsets.length
     sessionCount.value = sessions.length
-    jobs.value = jobList.sort((a, b) => b.id - a.id)
-    atJobCap.value = jobList.length >= JOBS_LIST_LIMIT
   } catch {
     error.value = true
   } finally {
@@ -71,39 +60,12 @@ const stats = computed(() => [
   { label: 'Active sessions', value: fmt(sessionCount.value, false), to: { name: 'sessions' } },
 ])
 
-const STATUS_ORDER: JobStatus[] = ['pending', 'processing', 'retry', 'failed', 'completed']
-
-const jobCounts = computed<Record<JobStatus, number>>(() => {
-  const counts = { pending: 0, processing: 0, retry: 0, failed: 0, completed: 0 }
-  for (const j of jobs.value) counts[j.status]++
-  return counts
-})
-
-const unhealthyJobs = computed(() => jobCounts.value.failed + jobCounts.value.retry)
-
-const recentJobs = computed(() => jobs.value.slice(0, 6))
-
 const recentUsers = computed(() =>
   [...usersList.value]
     .filter((u) => u.created_at)
     .sort((a, b) => new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime())
     .slice(0, 6),
 )
-
-const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warning' | 'default' => {
-  switch (status) {
-    case 'completed':
-      return 'success'
-    case 'processing':
-      return 'info'
-    case 'failed':
-      return 'danger'
-    case 'retry':
-      return 'warning'
-    default:
-      return 'default'
-  }
-}
 </script>
 
 <template>
@@ -129,72 +91,25 @@ const statusVariant = (status: JobStatus): 'success' | 'info' | 'danger' | 'warn
       </RouterLink>
     </div>
 
-    <Card title="Job queue" class="mt-6">
-      <Alert v-if="!loading && unhealthyJobs > 0" type="warning" class="mb-3">
-        {{ jobCounts.failed }} failed and {{ jobCounts.retry }} retrying in the last
-        {{ jobs.length }} jobs.
-      </Alert>
-      <div class="flex flex-wrap gap-x-6 gap-y-2">
-        <div v-for="status in STATUS_ORDER" :key="status" class="flex items-center gap-2 text-sm">
-          <Badge :variant="statusVariant(status)">{{ status }}</Badge>
-          <span class="font-mono text-grey-800">{{ loading ? '…' : jobCounts[status] }}</span>
+    <Card title="Recent signups" class="mt-6">
+      <div v-if="loading" class="space-y-2.5 py-1">
+        <Skeleton v-for="n in 5" :key="`sku-${n}`" />
+      </div>
+      <div v-else-if="!recentUsers.length" class="text-sm text-grey-700">
+        No recent signups.
+      </div>
+      <div v-else class="overflow-hidden rounded-md border border-grey-200">
+        <div
+          v-for="user in recentUsers"
+          :key="user.id"
+          class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0"
+        >
+          <span class="min-w-0 flex-1 truncate font-medium text-grey-800">
+            {{ renderUserName(user) || user.email }}
+          </span>
+          <span class="shrink-0 text-xs text-grey-700">{{ formatDate(user.created_at ?? null) }}</span>
         </div>
       </div>
-      <p v-if="atJobCap" class="mt-3 text-xs text-grey-700">
-        Counts cover the most recent {{ JOBS_LIST_LIMIT }} jobs.
-      </p>
-      <template #footer>
-        <RouterLink
-          :to="{ name: 'jobs' }"
-          class="text-sm font-medium text-green-700 hover:text-green-800"
-        >
-          View all jobs →
-        </RouterLink>
-      </template>
     </Card>
-
-    <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card title="Recent jobs">
-        <div v-if="loading" class="space-y-2.5 py-1">
-          <Skeleton v-for="n in 5" :key="`skj-${n}`" />
-        </div>
-        <div v-else-if="!recentJobs.length" class="text-sm text-grey-700">No jobs yet.</div>
-        <div v-else class="overflow-hidden rounded-md border border-grey-200">
-          <div
-            v-for="job in recentJobs"
-            :key="job.id"
-            class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0"
-          >
-            <div class="flex min-w-0 flex-1 items-center gap-2">
-              <span class="font-mono text-xs text-grey-700">#{{ job.id }}</span>
-              <span class="truncate font-medium text-grey-800">{{ job.job_type }}</span>
-            </div>
-            <Badge :variant="statusVariant(job.status)">{{ job.status }}</Badge>
-            <span class="shrink-0 text-xs text-grey-700">{{ formatDate(job.created_at) }}</span>
-          </div>
-        </div>
-      </Card>
-
-      <Card title="Recent signups">
-        <div v-if="loading" class="space-y-2.5 py-1">
-          <Skeleton v-for="n in 5" :key="`sku-${n}`" />
-        </div>
-        <div v-else-if="!recentUsers.length" class="text-sm text-grey-700">
-          No recent signups.
-        </div>
-        <div v-else class="overflow-hidden rounded-md border border-grey-200">
-          <div
-            v-for="user in recentUsers"
-            :key="user.id"
-            class="flex items-center justify-between gap-3 border-b border-grey-200 px-3 py-2 text-sm last:border-b-0"
-          >
-            <span class="min-w-0 flex-1 truncate font-medium text-grey-800">
-              {{ renderUserName(user) || user.email }}
-            </span>
-            <span class="shrink-0 text-xs text-grey-700">{{ formatDate(user.created_at ?? null) }}</span>
-          </div>
-        </div>
-      </Card>
-    </div>
   </MainWrapper>
 </template>

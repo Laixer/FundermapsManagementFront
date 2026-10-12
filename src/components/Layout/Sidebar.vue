@@ -11,7 +11,6 @@ import UsersIcon from '@assets/svg/icons/users.svg?component'
 import SessionsIcon from '@assets/svg/icons/sessions.svg?component'
 import OrganisationsIcon from '@assets/svg/icons/organisations.svg?component'
 import MapsetsIcon from '@assets/svg/icons/mapsets.svg?component'
-import JobsIcon from '@assets/svg/icons/jobs.svg?component'
 import RateLimitsIcon from '@assets/svg/icons/switch.svg?component'
 import ContractorsIcon from '@assets/svg/icons/fundermaps/tools.svg?component'
 
@@ -42,7 +41,6 @@ const navGroups: NavGroup[] = [
     label: 'Platform',
     items: [
       { name: 'mapsets', label: 'Mapsets', icon: MapsetsIcon },
-      { name: 'jobs', label: 'Jobs', icon: JobsIcon },
       { name: 'rate-limits', label: 'Rate limits', icon: RateLimitsIcon },
       { name: 'contractors', label: 'Contractors', icon: ContractorsIcon },
     ],
