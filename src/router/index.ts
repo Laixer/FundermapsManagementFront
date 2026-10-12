@@ -36,6 +36,7 @@ const router = createRouter({
       name: '403',
       path: '/403',
       component: NoAccess,
+      meta: { title: 'No access' },
     },
 
     {
@@ -90,9 +91,12 @@ const router = createRouter({
       name: 'not-found',
       path: '/:pathMatch(.*)*',
       component: NotFoundView,
+      meta: { title: 'Page not found' },
     },
   ],
 })
+
+const PORTAL_TITLE = 'FunderMaps Management'
 
 router.beforeEach(async (to) => {
   const sessionStore = useSessionStore()
@@ -119,6 +123,15 @@ router.beforeEach(async (to) => {
       return { name: '403' }
     }
   }
+})
+
+// A page that is not a section of the portal ("No access", "Page not found")
+// says so in the browser tab; every other page keeps the portal's name.
+router.afterEach((to, _from, failure) => {
+  if (failure) return
+
+  const page = typeof to.meta.title === 'string' ? to.meta.title : ''
+  document.title = page ? `${page} · ${PORTAL_TITLE}` : PORTAL_TITLE
 })
 
 export default router
