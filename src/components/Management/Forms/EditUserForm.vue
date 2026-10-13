@@ -20,7 +20,7 @@ const formData = ref({
 })
 const validationSchema = z
   .object({
-    email: z.email('Please enter a valid email address'),
+    email: z.email('Please enter a valid email address.'),
     given_name: z.string(),
     family_name: z.string(),
     phone_number: z.string(),
@@ -72,23 +72,23 @@ const formHandler = async function (formData: {
   <FormCard :title="`Edit ${record?.email}`" :form-data="formData" :validation-schema="validationSchema"
     :formDataHandler="formHandler" v-slot="{ formData, getStatus, getError }">
 
-    <Input id="email" label="Email Address" type="email" v-model="formData.email" placeholder="Enter email address"
+    <Input id="email" label="Email" type="email" v-model="formData.email" placeholder="Enter email address"
       :validationStatus="getStatus('email')" :validationMessage="getError('email')" :tabindex="3" />
 
     <div class="grid grid-cols-2 gap-4">
-      <Input id="given_name" label="Given Name" type="text" v-model="formData.given_name" placeholder="Enter given name"
+      <Input id="given_name" label="Given name" type="text" v-model="formData.given_name" placeholder="Enter given name"
         :validationStatus="getStatus('given_name')" :validationMessage="getError('given_name')" :tabindex="4" />
 
-      <Input id="family_name" label="Family Name" type="text" v-model="formData.family_name"
+      <Input id="family_name" label="Family name" type="text" v-model="formData.family_name"
         placeholder="Enter family name" :validationStatus="getStatus('family_name')"
         :validationMessage="getError('family_name')" :tabindex="5" />
     </div>
 
-    <Input id="phone_number" label="Phone Number" type="tel" v-model="formData.phone_number"
+    <Input id="phone_number" label="Phone number" type="tel" v-model="formData.phone_number"
       placeholder="Enter phone number" :validationStatus="getStatus('phone_number')"
       :validationMessage="getError('phone_number')" :tabindex="6" />
 
-    <Input id="job_title" label="Job Title" type="text" v-model="formData.job_title" placeholder="Enter job title"
+    <Input id="job_title" label="Job title" type="text" v-model="formData.job_title" placeholder="Enter job title"
       :validationStatus="getStatus('job_title')" :validationMessage="getError('job_title')" :tabindex="7" />
   </FormCard>
 </template>

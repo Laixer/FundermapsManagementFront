@@ -3,7 +3,7 @@ import { ref, watch, type Ref } from 'vue'
 
 import Table from '@/components/Common/Table.vue'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
-import { renderUserName } from '@/utils/user'
+import { organisationRoleLabel, renderUserName } from '@/utils/user'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 
 import {
@@ -49,7 +49,7 @@ const refresh = async function () {
       ])
       userRows.value = users
       roleOptions.value = [
-        ...FIXED_ROLES.map((role) => ({ label: role, value: role })),
+        ...FIXED_ROLES.map((role) => ({ label: organisationRoleLabel(role), value: role })),
         ...customRoles.map((role) => ({ label: role.role, value: role.role })),
       ]
     } catch (e) {
@@ -70,9 +70,7 @@ const handleRemoveUser = async function (row: IUser) {
     return
   }
 
-  const confirmed = confirm(
-    `Confirm removing ${renderUserName(row) || row.email} from ${props.record.name}`,
-  )
+  const confirmed = confirm(`Remove ${renderUserName(row) || row.email} from ${props.record.name}?`)
 
   if (confirmed) {
     try {
@@ -115,9 +113,14 @@ const handleRoleChange = async function (row: IOrgUser, newRole: string) {
       <template #name="{ row }">
         <span class="font-medium text-grey-800">{{ renderUserName(row) || '—' }}</span>
       </template>
+      <!-- The address may break, so the role keeps the room it needs to be read. -->
+      <template #email="{ row }">
+        <span class="break-all">{{ row.email }}</span>
+      </template>
       <template #organization_role="{ row }">
         <Select
           :id="`org-role-${row.id}`"
+          class="min-w-36"
           :options="roleOptions"
           :modelValue="row.organization_role"
           @update:modelValue="(value) => handleRoleChange(row, String(value))"

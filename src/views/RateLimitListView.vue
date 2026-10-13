@@ -34,6 +34,9 @@ const router = useRouter()
 
 const showCreate = ref(false)
 const deleting = ref(false)
+// False until the first load is done. The limits and the keys arrive
+// separately, and a row is only selected once both are in.
+const ready = ref(false)
 const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
 
@@ -102,6 +105,7 @@ onBeforeMount(async () => {
   const id = typeof route.params.id === 'string' ? route.params.id : undefined
   if (id && rows.value.some((r) => r.id === id)) selectById(id)
   else selectFirstRow()
+  ready.value = true
 })
 
 const drawerMode = computed<'create' | 'details' | null>(() => {
@@ -172,7 +176,7 @@ const handleDelete = async function () {
           organisation.
         </p>
       </div>
-      <Button lg label="Add limit" @click="handleOpenCreate">
+      <Button lg label="Add limit" class="shrink-0 whitespace-nowrap" @click="handleOpenCreate">
         <template #before>
           <PlusIcon class="aspect-square h-4 w-4" aria-hidden="true" />
         </template>
@@ -180,7 +184,7 @@ const handleDelete = async function () {
     </header>
 
     <div class="mb-3 flex items-center gap-3">
-      <div class="w-72">
+      <div class="w-96">
         <Input
           id="rate-limit-search"
           v-model="search"
@@ -188,7 +192,9 @@ const handleDelete = async function () {
           placeholder="Search by organisation, key or product…"
         />
       </div>
-      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+      <span v-if="!loading" class="text-xs text-grey-700">
+        {{ filteredRows.length }} of {{ rows.length }}
+      </span>
     </div>
 
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
@@ -200,7 +206,9 @@ const handleDelete = async function () {
       :columns="columns"
       :loading="loading"
       :selectedId="record?.id"
-      emptyMessage="No rate limits configured."
+      :emptyMessage="
+        rows.length ? 'No rate limits match your search.' : 'No rate limits configured.'
+      "
       @select="handleSelect"
     >
       <template #organization="{ row }">
@@ -217,7 +225,7 @@ const handleDelete = async function () {
         <span class="text-grey-700">{{ periodLabel(row.period) }}</span>
       </template>
       <template #limit_count="{ row }">
-        <span class="font-mono text-grey-800">{{ row.limit_count.toLocaleString() }}</span>
+        <span class="font-mono text-grey-800">{{ row.limit_count.toLocaleString('en-GB') }}</span>
       </template>
       <template #updated_at="{ row }">{{ formatDate(row.updated_at) }}</template>
     </Table>
@@ -286,7 +294,7 @@ const handleDelete = async function () {
           v-else
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
-          Select a rate limit, or add one.
+          {{ loading || !ready ? 'Loading…' : 'Select a rate limit, or add one.' }}
         </div>
       </Drawer>
     </template>

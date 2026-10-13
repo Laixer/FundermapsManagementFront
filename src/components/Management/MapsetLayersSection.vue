@@ -239,7 +239,7 @@ const handleSave = async function () {
               <span v-if="entry.layer" class="font-medium text-grey-800">{{
                 entry.layer.name
               }}</span>
-              <span v-else class="font-medium text-red-700">Unknown layer</span>
+              <span v-else class="font-medium text-red-800">Unknown layer</span>
               <MonoBadge :value="entry.id" />
             </div>
             <div

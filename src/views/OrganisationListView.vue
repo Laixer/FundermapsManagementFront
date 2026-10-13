@@ -124,7 +124,12 @@ const handleDelete = async function () {
           Manage customer organisations, members and their assigned mapsets.
         </p>
       </div>
-      <Button lg label="Add organisation" @click="handleOpenCreate">
+      <Button
+        lg
+        label="Add organisation"
+        class="shrink-0 whitespace-nowrap"
+        @click="handleOpenCreate"
+      >
         <template #before>
           <PlusIcon class="aspect-square h-4 w-4" aria-hidden="true" />
         </template>
@@ -132,7 +137,7 @@ const handleDelete = async function () {
     </header>
 
     <div class="mb-3 flex items-center gap-3">
-      <div class="w-72">
+      <div class="w-96">
         <Input
           id="org-search"
           v-model="search"
@@ -140,7 +145,9 @@ const handleDelete = async function () {
           placeholder="Search by name or ID…"
         />
       </div>
-      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+      <span v-if="!loading" class="text-xs text-grey-700">
+        {{ filteredRows.length }} of {{ rows.length }}
+      </span>
     </div>
 
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
@@ -152,7 +159,7 @@ const handleDelete = async function () {
       :columns="columns"
       :loading="loading"
       :selectedId="record?.id"
-      emptyMessage="No organisations match your search."
+      :emptyMessage="rows.length ? 'No organisations match your search.' : 'No organisations yet.'"
       @select="handleSelect"
     >
       <template #name="{ row }">
@@ -231,7 +238,7 @@ const handleDelete = async function () {
           v-else
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
-          No organisations to display.
+          {{ loading ? 'Loading…' : 'No organisations to display.' }}
         </div>
       </Drawer>
     </template>

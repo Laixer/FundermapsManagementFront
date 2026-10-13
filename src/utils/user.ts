@@ -13,6 +13,22 @@ export function renderUserName(user: IUser): string {
   return ''
 }
 
+const FIXED_ROLE_LABELS = new Map([
+  ['reader', 'Reader'],
+  ['writer', 'Writer'],
+  ['verifier', 'Verifier'],
+  ['superuser', 'Superuser'],
+])
+
+/**
+ * How an organisation role is written on screen: the four fixed roles with a
+ * capital, as the role pickers in the forms do; a custom role keeps the name
+ * it was given.
+ */
+export function organisationRoleLabel(role: string): string {
+  return FIXED_ROLE_LABELS.get(role) ?? role
+}
+
 /**
  * Two-letter initials for a user — first + last name initial when a name is
  * known, otherwise the first two characters of the email.

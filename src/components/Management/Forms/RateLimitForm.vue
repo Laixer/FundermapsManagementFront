@@ -29,12 +29,18 @@ const emit = defineEmits(['saved', 'cancel'])
 
 const isEdit = computed(() => !!props.record)
 
-const keyOptions = computed(() =>
-  props.keys.map((k) => ({
-    value: `${k.source}:${k.api_key_id}`,
-    label: `${k.organization_name ?? 'No organisation'} — ${k.name ?? k.api_key_id} (${k.source})`,
-  })),
-)
+// The leading empty option is what a new limit starts on; only a legacy key
+// says where it comes from.
+const keyOptions = computed(() => [
+  { value: '', label: 'Select an API key…' },
+  ...props.keys.map((k) => {
+    const legacy = k.source === 'legacy' ? ' (legacy)' : ''
+    return {
+      value: `${k.source}:${k.api_key_id}`,
+      label: `${k.organization_name ?? 'No organisation'} — ${k.name ?? k.api_key_id}${legacy}`,
+    }
+  }),
+])
 
 const productOptions = RATE_LIMIT_PRODUCTS.map((p) => ({ value: p, label: p }))
 const periodOptions = RATE_LIMIT_PERIODS.map((p) => ({

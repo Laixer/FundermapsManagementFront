@@ -17,6 +17,9 @@ import { renderUserName } from '@/utils/user'
 
 const loading = ref(true)
 const error = ref(false)
+// True once the numbers have been read. `error` only says whether the message
+// is on screen, and that can be closed.
+const loaded = ref(false)
 
 const userCount = ref(0)
 const usersList = ref<IUser[]>([])
@@ -42,6 +45,7 @@ const refresh = async function () {
     orgCount.value = orgs.length
     mapsetCount.value = mapsets.length
     sessionCount.value = sessions.length
+    loaded.value = true
   } catch {
     error.value = true
   } finally {
@@ -51,7 +55,11 @@ const refresh = async function () {
 
 onBeforeMount(refresh)
 
-const fmt = (value: number, capped: boolean) => (loading.value ? '…' : `${value}${capped ? '+' : ''}`)
+const fmt = (value: number, capped: boolean) => {
+  if (loading.value) return '…'
+  if (!loaded.value) return '—'
+  return `${value}${capped ? '+' : ''}`
+}
 
 const stats = computed(() => [
   { label: 'Users', value: fmt(userCount.value, atUserCap.value), to: { name: 'users' } },
@@ -95,6 +103,7 @@ const recentUsers = computed(() =>
       <div v-if="loading" class="space-y-2.5 py-1">
         <Skeleton v-for="n in 5" :key="`sku-${n}`" />
       </div>
+      <div v-else-if="!loaded" class="text-sm text-grey-700">—</div>
       <div v-else-if="!recentUsers.length" class="text-sm text-grey-700">
         No recent signups.
       </div>

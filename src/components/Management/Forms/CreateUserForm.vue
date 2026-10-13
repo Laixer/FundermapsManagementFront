@@ -159,7 +159,7 @@ const formHandler = async function (formData: {
     <div class="grid grid-cols-2 gap-4">
       <Input
         id="given_name"
-        label="Given Name"
+        label="Given name"
         type="text"
         v-model="formData.given_name"
         placeholder="Enter given name"
@@ -170,7 +170,7 @@ const formHandler = async function (formData: {
 
       <Input
         id="family_name"
-        label="Family Name"
+        label="Family name"
         type="text"
         v-model="formData.family_name"
         placeholder="Enter family name"
@@ -182,7 +182,7 @@ const formHandler = async function (formData: {
 
     <Input
       id="phone_number"
-      label="Phone Number"
+      label="Phone number"
       type="tel"
       v-model="formData.phone_number"
       placeholder="Enter phone number"
@@ -193,7 +193,7 @@ const formHandler = async function (formData: {
 
     <Input
       id="job_title"
-      label="Job Title"
+      label="Job title"
       type="text"
       v-model="formData.job_title"
       placeholder="Enter job title"

@@ -26,8 +26,8 @@ const columns = [
   { field: 'last_30_days', title: 'Last 30d', width: '7rem' },
 ]
 
-// Dutch grouping matches the rest of the portal's number rendering.
-const formatCount = (n: number): string => new Intl.NumberFormat('nl-NL').format(n)
+// en-GB grouping (12,480), like the rate limits and the dates of this portal.
+const formatCount = (n: number): string => new Intl.NumberFormat('en-GB').format(n)
 
 const monthLabel = computed(() =>
   new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
@@ -80,15 +80,18 @@ defineExpose({ refresh })
       <template #last_30_days="{ row }">
         <span class="text-grey-700 font-mono text-xs">{{ formatCount(row.last_30_days) }}</span>
       </template>
+      <!-- A row of the table itself, so the totals stand under their columns. -->
+      <template #footer>
+        <tr class="border-grey-200 border-t">
+          <td class="text-grey-700 px-3 py-2 font-medium">Total</td>
+          <td class="text-grey-800 px-3 py-2 font-mono text-xs">
+            {{ formatCount(total.month_to_date) }}
+          </td>
+          <td class="text-grey-800 px-3 py-2 font-mono text-xs">
+            {{ formatCount(total.last_30_days) }}
+          </td>
+        </tr>
+      </template>
     </Table>
-
-    <dl
-      v-if="products.length"
-      class="border-grey-200 grid grid-cols-[1fr_7rem_7rem] gap-x-4 border-t pt-3 text-sm"
-    >
-      <dt class="text-grey-700 font-medium">Total</dt>
-      <dd class="text-grey-800 font-mono text-xs">{{ formatCount(total.month_to_date) }}</dd>
-      <dd class="text-grey-800 font-mono text-xs">{{ formatCount(total.last_30_days) }}</dd>
-    </dl>
   </div>
 </template>

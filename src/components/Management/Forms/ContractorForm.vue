@@ -48,7 +48,7 @@ const formHandler = async function (formData: { name: string }) {
   >
     <Input
       id="name"
-      label="Contractor Name"
+      label="Contractor name"
       type="text"
       v-model="formData.name"
       placeholder="Enter contractor name"

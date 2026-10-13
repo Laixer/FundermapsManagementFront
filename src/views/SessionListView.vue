@@ -31,6 +31,9 @@ const actionError = ref<string | null>(null)
 const { message: actionSuccess, flash: flashSuccess } = useFlash()
 const includeExpired = ref(false)
 const terminating = ref(false)
+// False until the first load is done. The sessions and the users arrive
+// separately, and a row is only selected once both are in.
+const ready = ref(false)
 
 // "now" tick — keep the relative duration ("valid for 14m") fresh without
 // refetching the list. Single shared computed clock for every row.
@@ -120,6 +123,7 @@ onBeforeMount(async () => {
   const id = typeof route.params.id === 'string' ? route.params.id : undefined
   if (id && rows.value.some((s) => s.id === id)) selectById(id)
   else selectFirstRow()
+  ready.value = true
   // Tick once a minute — sessions are minute-grained; second-resolution
   // would re-render the whole table for no real benefit.
   clockHandle = setInterval(() => {
@@ -171,17 +175,26 @@ const handleForceLogout = async function () {
             >.
           </template>
           <template v-else-if="userIdFilter">
+            <!-- Plain text, not the usual MonoBadge: its grey chip does not show on this
+                 grey page, so its padding read as a space before the full stop. -->
             Active sessions for user
-            <MonoBadge :value="userIdFilter" />.
+            <span class="font-mono text-xs text-grey-800">{{ userIdFilter }}</span
+            >.
           </template>
           <template v-else>Active user sessions across the platform.</template>
         </p>
       </div>
-      <Button v-if="userIdFilter" outline label="Clear filter" @click="handleClearUserFilter" />
+      <Button
+        v-if="userIdFilter"
+        outline
+        label="Clear filter"
+        class="shrink-0 whitespace-nowrap"
+        @click="handleClearUserFilter"
+      />
     </header>
 
     <div class="mb-3 flex items-center gap-4">
-      <div class="w-72">
+      <div class="w-96">
         <Input
           id="session-search"
           v-model="search"
@@ -189,11 +202,13 @@ const handleForceLogout = async function () {
           placeholder="Search by user, IP, client…"
         />
       </div>
-      <label class="flex cursor-pointer items-center gap-2 text-sm text-grey-700">
+      <label class="flex cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-grey-700">
         <input v-model="includeExpired" type="checkbox" class="h-4 w-4 accent-green-500" />
         Include expired
       </label>
-      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+      <span v-if="!loading" class="whitespace-nowrap text-xs text-grey-700">
+        {{ filteredRows.length }} of {{ rows.length }}
+      </span>
     </div>
 
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
@@ -270,7 +285,7 @@ const handleForceLogout = async function () {
           v-else
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
-          No active sessions.
+          {{ loading || !ready ? 'Loading…' : 'No active sessions.' }}
         </div>
       </Drawer>
     </template>

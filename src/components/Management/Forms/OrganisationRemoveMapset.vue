@@ -38,7 +38,7 @@ const formHandler = async function (formData: { mapsetid: string }) {
     v-slot="{ formData, getStatus, getError, loading }"
   >
     <Input
-      id="mapsetid"
+      id="remove-mapset-id"
       label="Remove a mapset from the organisation"
       placeholder="Enter the ID of the mapset you want to remove"
       type="text"
