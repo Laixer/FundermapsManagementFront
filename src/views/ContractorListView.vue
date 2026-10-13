@@ -81,10 +81,15 @@ const handleEdit = function () {
       <div>
         <h2 class="text-grey-800 text-xl font-semibold">Contractors</h2>
         <p class="text-grey-700 mt-0.5 text-sm">
-          Manage the "Uitvoerder" list offered when creating an inquiry.
+          Manage the contractors offered in the Studio when a report is created.
         </p>
       </div>
-      <Button lg label="Add contractor" @click="handleOpenCreate">
+      <Button
+        lg
+        label="Add contractor"
+        class="shrink-0 whitespace-nowrap"
+        @click="handleOpenCreate"
+      >
         <template #before>
           <PlusIcon class="aspect-square h-4 w-4" aria-hidden="true" />
         </template>
@@ -92,7 +97,7 @@ const handleEdit = function () {
     </header>
 
     <div class="mb-3 flex items-center gap-3">
-      <div class="w-72">
+      <div class="w-96">
         <Input
           id="contractor-search"
           v-model="search"
@@ -100,7 +105,9 @@ const handleEdit = function () {
           placeholder="Search by name or ID…"
         />
       </div>
-      <span class="text-grey-700 text-xs">{{ filteredRows.length }} of {{ rows.length }}</span>
+      <span v-if="!loading" class="text-grey-700 text-xs">
+        {{ filteredRows.length }} of {{ rows.length }}
+      </span>
     </div>
 
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
@@ -112,7 +119,7 @@ const handleEdit = function () {
       :columns="columns"
       :loading="loading"
       :selectedId="record ? String(record.id) : undefined"
-      emptyMessage="No contractors match your search."
+      :emptyMessage="rows.length ? 'No contractors match your search.' : 'No contractors yet.'"
       @select="handleSelect"
     >
       <template #name="{ row }">
@@ -163,7 +170,7 @@ const handleEdit = function () {
           v-else
           class="text-grey-700 flex h-full items-center justify-center text-center text-sm"
         >
-          No contractors to display.
+          {{ loading ? 'Loading…' : 'No contractors to display.' }}
         </div>
       </Drawer>
     </template>

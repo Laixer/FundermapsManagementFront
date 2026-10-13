@@ -29,7 +29,7 @@ import {
   USERS_LIST_LIMIT,
 } from '@/services/fundermaps/endpoints/management/user.ts'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
-import { getInitials, renderUserName } from '@/utils/user'
+import { getInitials, organisationRoleLabel, renderUserName } from '@/utils/user'
 import { formatDate } from '@/utils/date'
 import { useFlash } from '@/composables/useFlash'
 import { useListResource } from '@/composables/useListResource'
@@ -44,6 +44,8 @@ const { message: actionSuccess, flash: flashSuccess } = useFlash()
 const newApiKey = ref<string | null>(null)
 const deleting = ref(false)
 const generatingKey = ref(false)
+// Bumped when a role change fails: the select is drawn again and shows the role that is stored.
+const roleSelectKey = ref(0)
 const createdUser = ref<{
   email: string
   password: string
@@ -202,6 +204,7 @@ const handleRoleChange = async function (newRole: string) {
     flashSuccess('Role updated.')
   } catch (e) {
     actionError.value = getErrorMessage(e) ?? 'Failed to update user role.'
+    roleSelectKey.value++
   }
 }
 </script>
@@ -213,7 +216,7 @@ const handleRoleChange = async function (newRole: string) {
         <h2 class="text-xl font-semibold text-grey-800">Users</h2>
         <p class="mt-0.5 text-sm text-grey-700">Manage accounts, roles and API keys.</p>
       </div>
-      <Button lg label="Add user" @click="handleOpenCreate">
+      <Button lg label="Add user" class="shrink-0 whitespace-nowrap" @click="handleOpenCreate">
         <template #before>
           <PlusIcon class="aspect-square h-4 w-4" aria-hidden="true" />
         </template>
@@ -221,7 +224,7 @@ const handleRoleChange = async function (newRole: string) {
     </header>
 
     <div class="mb-3 flex items-center gap-3">
-      <div class="w-72">
+      <div class="w-96">
         <Input
           id="user-search"
           v-model="search"
@@ -229,7 +232,9 @@ const handleRoleChange = async function (newRole: string) {
           placeholder="Search by name, email, ID or role…"
         />
       </div>
-      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+      <span v-if="!loading" class="text-xs text-grey-700">
+        {{ filteredRows.length }} of {{ rows.length }}
+      </span>
     </div>
 
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
@@ -254,7 +259,7 @@ const handleRoleChange = async function (newRole: string) {
         </div>
       </template>
       <div v-else-if="!filteredRows.length" class="px-4 py-6 text-sm text-grey-700">
-        No users match your search.
+        {{ rows.length ? 'No users match your search.' : 'No users yet.' }}
       </div>
       <ListRow
         v-for="user in filteredRows"
@@ -278,7 +283,7 @@ const handleRoleChange = async function (newRole: string) {
           <span class="truncate font-semibold text-grey-800">
             {{ renderUserName(user) || user.email }}
           </span>
-          <div class="text-xs text-grey-700">
+          <div v-if="renderUserName(user)" class="text-xs text-grey-700">
             <span class="truncate">{{ user.email }}</span>
           </div>
         </div>
@@ -365,7 +370,7 @@ const handleRoleChange = async function (newRole: string) {
             <dd class="text-grey-800">{{ record.email }}</dd>
             <dt class="text-grey-700">Name</dt>
             <dd class="text-grey-800">{{ renderUserName(record) || '—' }}</dd>
-            <dt class="text-grey-700">Phone</dt>
+            <dt class="text-grey-700">Phone number</dt>
             <dd class="text-grey-800">{{ record.phone_number || '—' }}</dd>
             <dt class="text-grey-700">Job title</dt>
             <dd class="text-grey-800">{{ record.job_title || '—' }}</dd>
@@ -390,7 +395,7 @@ const handleRoleChange = async function (newRole: string) {
               >
                 <span class="min-w-0 flex-1 truncate font-medium text-grey-800">{{ org.name }}</span>
                 <Badge v-if="org.role" :variant="org.role === 'superuser' ? 'info' : 'default'">
-                  {{ org.role }}
+                  {{ organisationRoleLabel(org.role) }}
                 </Badge>
               </div>
             </div>
@@ -412,6 +417,7 @@ const handleRoleChange = async function (newRole: string) {
             <h6 class="mb-2 text-xs font-semibold uppercase tracking-wide text-grey-700">Role</h6>
             <Select
               id="role"
+              :key="roleSelectKey"
               :options="[
                 { label: 'User', value: 'user' },
                 { label: 'Administrator', value: 'administrator' },
@@ -459,7 +465,9 @@ const handleRoleChange = async function (newRole: string) {
               >
                 <div class="min-w-0 flex-1">
                   <div class="truncate font-medium text-grey-800">{{ key.name || key.id }}</div>
-                  <div class="text-xs text-grey-700">Last used: {{ key.last_used ?? '—' }}</div>
+                  <div class="text-xs text-grey-700">
+                    Last used: {{ formatDate(key.last_used) }}
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -479,7 +487,7 @@ const handleRoleChange = async function (newRole: string) {
           v-else
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
-          No users to display.
+          {{ loading ? 'Loading…' : 'No users to display.' }}
         </div>
       </Drawer>
     </template>

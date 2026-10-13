@@ -15,7 +15,7 @@ const initialFormData = {
 }
 const validationSchema = z
   .object({
-    password: z.string().min(6, 'The password has to be at least 6 characters'),
+    password: z.string().min(6, 'The password has to be at least 6 characters.'),
   })
   .strict()
 

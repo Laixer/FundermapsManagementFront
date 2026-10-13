@@ -106,6 +106,9 @@ const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '
           </td>
         </tr>
       </tbody>
+      <tfoot v-if="$slots.footer && !loading && rows.length">
+        <slot name="footer" />
+      </tfoot>
     </table>
   </div>
 </template>

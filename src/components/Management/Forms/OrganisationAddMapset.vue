@@ -38,7 +38,7 @@ const formHandler = async function (formData: { mapsetid: string }) {
     v-slot="{ formData, getStatus, getError, loading }"
   >
     <Input
-      id="mapsetid"
+      id="add-mapset-id"
       label="Add an existing mapset to the organisation"
       placeholder="Enter the ID of the mapset you want to connect"
       type="text"

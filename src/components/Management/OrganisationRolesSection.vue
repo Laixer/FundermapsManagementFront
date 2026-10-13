@@ -202,6 +202,8 @@ const handleDelete = async function (role: ICustomRole) {
             <Icon class="aspect-square w-3" name="trash-solid" />
           </button>
         </div>
+        <!-- A fixed role has no actions; an empty slot would make the table show its "—". -->
+        <span v-else />
       </template>
     </Table>
 

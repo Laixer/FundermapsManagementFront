@@ -112,14 +112,14 @@ const handleAddDistrict = () => handleAdd(newDistrict, addGeolockDistrict, 'Dist
 const handleAddMunicipality = () =>
   handleAdd(newMunicipality, addGeolockMunicipality, 'Municipality')
 const handleAddNeighborhood = () =>
-  handleAdd(newNeighborhood, addGeolockNeighborhood, 'Neighborhood')
+  handleAdd(newNeighborhood, addGeolockNeighborhood, 'Neighbourhood')
 
 const handleRemoveDistrict = (id: string) =>
   handleRemove(id, removeGeolockDistrict, 'District')
 const handleRemoveMunicipality = (id: string) =>
   handleRemove(id, removeGeolockMunicipality, 'Municipality')
 const handleRemoveNeighborhood = (id: string) =>
-  handleRemove(id, removeGeolockNeighborhood, 'Neighborhood')
+  handleRemove(id, removeGeolockNeighborhood, 'Neighbourhood')
 </script>
 
 <template>
@@ -219,7 +219,7 @@ const handleRemoveNeighborhood = (id: string) =>
     <section class="space-y-2">
       <div class="flex items-center justify-between gap-2">
         <h6 class="text-xs font-semibold uppercase tracking-wide text-grey-700">
-          Neighborhoods ({{ neighborhoods.length }})
+          Neighbourhoods ({{ neighborhoods.length }})
         </h6>
         <Button
           outline
@@ -230,7 +230,7 @@ const handleRemoveNeighborhood = (id: string) =>
       </div>
       <Input
         id="add-neighborhood"
-        placeholder="Neighborhood ID"
+        placeholder="Neighbourhood ID"
         type="text"
         v-model="newNeighborhood"
         :disabled="loading"
@@ -240,7 +240,7 @@ const handleRemoveNeighborhood = (id: string) =>
         :columns="columns"
         :loading="loading"
         :clickable="false"
-        emptyMessage="No neighborhoods."
+        emptyMessage="No neighbourhoods."
       >
         <template #id="{ row }">
           <MonoBadge :value="row.id" />
@@ -249,8 +249,8 @@ const handleRemoveNeighborhood = (id: string) =>
           <button
             type="button"
             class="inline-flex h-7 w-7 items-center justify-center rounded text-grey-700 transition-colors hover:bg-red-50 hover:text-red-500"
-            :aria-label="`Remove neighborhood ${row.id}`"
-            title="Remove neighborhood"
+            :aria-label="`Remove neighbourhood ${row.id}`"
+            title="Remove neighbourhood"
             @click.stop="handleRemoveNeighborhood(row.id)"
           >
             <Icon class="aspect-square w-3" name="trash-solid" />

@@ -54,7 +54,7 @@ const handleLayersSaved = async function (updated: IMapset) {
     </header>
 
     <div class="mb-3 flex items-center gap-3">
-      <div class="w-72">
+      <div class="w-96">
         <Input
           id="mapset-search"
           v-model="search"
@@ -62,7 +62,9 @@ const handleLayersSaved = async function (updated: IMapset) {
           placeholder="Search by name, slug or ID…"
         />
       </div>
-      <span class="text-xs text-grey-700">{{ filteredRows.length }} of {{ rows.length }}</span>
+      <span v-if="!loading" class="text-xs text-grey-700">
+        {{ filteredRows.length }} of {{ rows.length }}
+      </span>
     </div>
 
     <Alert v-if="error" :closeable="true" class="mb-3" @close="error = false">
@@ -74,11 +76,13 @@ const handleLayersSaved = async function (updated: IMapset) {
       :columns="columns"
       :loading="loading"
       :selectedId="record?.id"
-      emptyMessage="No mapsets match your search."
+      :emptyMessage="rows.length ? 'No mapsets match your search.' : 'No mapsets yet.'"
       @select="handleSelect"
     >
       <template #icon="{ row }">
         <FundermapsIcon v-if="row.icon" class="aspect-square h-4" :name="row.icon" />
+        <!-- An empty slot would make the table show its "—" for a missing value. -->
+        <span v-else />
       </template>
       <template #name="{ row }">
         <span class="font-medium text-grey-800">{{ row.name }}</span>
@@ -129,7 +133,7 @@ const handleLayersSaved = async function (updated: IMapset) {
           v-else
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
-          No mapsets to display.
+          {{ loading ? 'Loading…' : 'No mapsets to display.' }}
         </div>
       </Drawer>
     </template>

@@ -24,7 +24,9 @@
     &[data-validation="error"],
     &:has(:user-invalid) {
       select {
-        @apply border-red-500 pr-20 text-red-500;
+        /* One line: the two icons leave little room, and a wrapped text made
+           the field taller than the one beside it. */
+        @apply truncate border-red-500 pr-20 text-red-500;
 
         background-image: url("@assets/svg/icons/select-marker.svg"),
           url("@assets/svg/icons/validation-error.svg"),
