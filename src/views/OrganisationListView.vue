@@ -29,6 +29,7 @@ import OrganisationAddUser from '@/components/Management/Forms/OrganisationAddUs
 import OrganisationRemoveMapset from '@/components/Management/Forms/OrganisationRemoveMapset.vue'
 import OrganisationAddMapset from '@/components/Management/Forms/OrganisationAddMapset.vue'
 import { useListResource } from '@/composables/useListResource'
+import { shortId } from '@/utils/id'
 import PlusIcon from '@assets/svg/icons/plus.svg?component'
 
 const showCreate = ref(false)
@@ -42,7 +43,7 @@ const orgMapsetsList = ref<InstanceType<typeof OrganisationMapsetsList> | null>(
 
 const columns = [
   { field: 'name', title: 'Name' },
-  { field: 'id', title: 'ID', width: '20rem' },
+  { field: 'id', title: 'ID', width: '8rem' },
 ]
 
 const route = useRoute()
@@ -52,6 +53,7 @@ const {
   rows,
   loading,
   error,
+  loaded,
   search,
   record,
   filteredRows,
@@ -146,7 +148,8 @@ const handleDelete = async function () {
         />
       </div>
       <span v-if="!loading" class="text-xs text-grey-700">
-        {{ filteredRows.length }} of {{ rows.length }}
+        <template v-if="loaded">{{ filteredRows.length }} of {{ rows.length }}</template>
+        <template v-else>—</template>
       </span>
     </div>
 
@@ -154,7 +157,9 @@ const handleDelete = async function () {
       An error occurred while trying to retrieve the list of organisations.
     </Alert>
 
+    <!-- After a failed first load there is no list: only the message above. -->
     <Table
+      v-if="loading || loaded"
       :rows="filteredRows"
       :columns="columns"
       :loading="loading"
@@ -167,7 +172,7 @@ const handleDelete = async function () {
       </template>
       <template #id="{ row }">
         <div class="flex items-center justify-between gap-2">
-          <MonoBadge :value="row.id" />
+          <MonoBadge :value="shortId(row.id)" :title="row.id" />
           <CopyToClipboardIcon :value="row.id" />
         </div>
       </template>
@@ -235,7 +240,7 @@ const handleDelete = async function () {
         </div>
 
         <div
-          v-else
+          v-else-if="loading || loaded"
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
           {{ loading ? 'Loading…' : 'No organisations to display.' }}

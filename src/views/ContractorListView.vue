@@ -34,6 +34,7 @@ const {
   rows,
   loading,
   error,
+  loaded,
   search,
   record,
   filteredRows,
@@ -106,7 +107,8 @@ const handleEdit = function () {
         />
       </div>
       <span v-if="!loading" class="text-grey-700 text-xs">
-        {{ filteredRows.length }} of {{ rows.length }}
+        <template v-if="loaded">{{ filteredRows.length }} of {{ rows.length }}</template>
+        <template v-else>—</template>
       </span>
     </div>
 
@@ -114,7 +116,9 @@ const handleEdit = function () {
       An error occurred while trying to retrieve the list of contractors.
     </Alert>
 
+    <!-- After a failed first load there is no list: only the message above. -->
     <Table
+      v-if="loading || loaded"
       :rows="filteredRows"
       :columns="columns"
       :loading="loading"
@@ -167,7 +171,7 @@ const handleEdit = function () {
         </div>
 
         <div
-          v-else
+          v-else-if="loading || loaded"
           class="text-grey-700 flex h-full items-center justify-center text-center text-sm"
         >
           {{ loading ? 'Loading…' : 'No contractors to display.' }}

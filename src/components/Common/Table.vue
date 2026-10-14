@@ -6,6 +6,9 @@ type Column = {
   title: string
   width?: string
   align?: 'left' | 'right' | 'center'
+  // For the header and every cell of the column, e.g. to leave the column out
+  // while the table is too narrow for it (`@max-[38rem]:hidden`).
+  class?: string
 }
 
 const props = withDefaults(
@@ -18,6 +21,9 @@ const props = withDefaults(
     loadingMessage?: string
     rowKey?: (row: T) => string | number
     clickable?: boolean
+    // Columns keep the width they are given and the others share the rest
+    // equally, whatever is in them.
+    fixed?: boolean
   }>(),
   {
     loading: false,
@@ -25,6 +31,7 @@ const props = withDefaults(
     emptyMessage: 'No records.',
     loadingMessage: 'Loading…',
     clickable: true,
+    fixed: false,
   },
 )
 
@@ -53,8 +60,8 @@ const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '
 </script>
 
 <template>
-  <div class="overflow-x-auto rounded-md border border-grey-200 bg-white">
-    <table class="w-full text-sm">
+  <div class="@container overflow-x-auto rounded-md border border-grey-200 bg-white">
+    <table class="w-full text-sm" :class="fixed && 'table-fixed'">
       <thead
         class="border-b border-grey-200 bg-grey-100 text-xs font-semibold uppercase tracking-wide text-grey-700"
       >
@@ -62,8 +69,8 @@ const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '
           <th
             v-for="c in columns"
             :key="c.field"
-            class="px-3 py-2"
-            :class="alignClass(c.align)"
+            class="px-3 py-2 whitespace-nowrap"
+            :class="[alignClass(c.align), c.class]"
             :style="c.width ? { width: c.width } : undefined"
           >
             {{ c.title }}
@@ -73,7 +80,7 @@ const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '
       <tbody>
         <template v-if="loading">
           <tr v-for="n in 6" :key="`skeleton-${n}`" class="border-t border-grey-200">
-            <td v-for="c in columns" :key="c.field" class="px-3 py-2.5">
+            <td v-for="c in columns" :key="c.field" class="px-3 py-2.5" :class="c.class">
               <Skeleton :width="skeletonWidth(c)" />
             </td>
           </tr>
@@ -98,7 +105,7 @@ const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '
             v-for="c in columns"
             :key="c.field"
             class="px-3 py-2 align-middle text-grey-800"
-            :class="alignClass(c.align)"
+            :class="[alignClass(c.align), c.class]"
           >
             <slot :name="c.field" :row="row" :value="fieldValue(row, c.field)">
               {{ fieldValue(row, c.field) ?? '—' }}

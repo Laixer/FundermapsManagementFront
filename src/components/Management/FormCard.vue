@@ -5,18 +5,12 @@ import Form from '@/components/Management/Form.vue'
 
 const emit = defineEmits(['saved', 'cancel'])
 
-withDefaults(
-  defineProps<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    formDataHandler: (formData: any) => void | Promise<void>
-    title?: string
-    formData?: Record<string, unknown>
-    validationSchema?: ZodType
-  }>(),
-  {
-    title: '',
-  },
-)
+defineProps<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formDataHandler: (formData: any) => void | Promise<void>
+  formData?: Record<string, unknown>
+  validationSchema?: ZodType
+}>()
 </script>
 
 <template>

@@ -40,7 +40,6 @@ const formHandler = async function (formData: { name: string }) {
 
 <template>
   <FormCard
-    :title="`Edit ${record.name}`"
     :form-data="formData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"

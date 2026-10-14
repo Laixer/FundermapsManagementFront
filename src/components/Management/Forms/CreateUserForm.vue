@@ -103,7 +103,6 @@ const formHandler = async function (formData: {
 
 <template>
   <FormCard
-    title="Add User"
     :form-data="initialFormData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"

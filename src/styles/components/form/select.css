@@ -24,9 +24,7 @@
     &[data-validation="error"],
     &:has(:user-invalid) {
       select {
-        /* One line: the two icons leave little room, and a wrapped text made
-           the field taller than the one beside it. */
-        @apply truncate border-red-500 pr-20 text-red-500;
+        @apply border-red-500 pr-20 text-red-500;
 
         background-image: url("@assets/svg/icons/select-marker.svg"),
           url("@assets/svg/icons/validation-error.svg"),
@@ -44,7 +42,9 @@
   select {
     all: unset;
 
-    @apply box-border w-full rounded border border-solid
+    /* One line (truncate): a long option, or the little room the icons of the
+       error state leave, made the field taller than the one beside it. */
+    @apply box-border w-full truncate rounded border border-solid
       border-grey-400 bg-white bg-gradient-to-b from-white to-grey-100 py-2.5
       pl-4 pr-10 text-base leading-none text-blue-900 placeholder-grey-400;
 

@@ -58,7 +58,7 @@ onBeforeMount(refresh)
 const fmt = (value: number, capped: boolean) => {
   if (loading.value) return '…'
   if (!loaded.value) return '—'
-  return `${value}${capped ? '+' : ''}`
+  return `${value.toLocaleString('en-GB')}${capped ? '+' : ''}`
 }
 
 const stats = computed(() => [

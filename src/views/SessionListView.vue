@@ -46,12 +46,20 @@ const userIdFilter = computed<string | null>(() => {
   return null
 })
 
+// The list shows the columns it has room for, so that it never scrolls
+// sideways: the IP address and then the creation date, which the panel shows
+// too, are left out while the table is narrower than they need.
 const columns = [
   { field: 'user_id', title: 'User' },
-  { field: 'client', title: 'Client', width: '7rem' },
-  { field: 'ip_address', title: 'IP address', width: '12rem' },
-  { field: 'valid_for', title: 'Valid for', width: '8rem' },
-  { field: 'created_at', title: 'Created', width: '12rem' },
+  { field: 'client', title: 'Client', width: '5rem' },
+  { field: 'ip_address', title: 'IP address', width: '12rem', class: '@max-[58rem]:hidden' },
+  { field: 'valid_for', title: 'Valid for', width: '5.25rem' },
+  {
+    field: 'created_at',
+    title: 'Created',
+    width: '9rem',
+    class: 'whitespace-nowrap @max-[38rem]:hidden',
+  },
 ]
 
 const users: Ref<IUser[]> = ref([])
@@ -78,6 +86,7 @@ const {
   rows,
   loading,
   error,
+  loaded,
   search,
   record,
   filteredRows,
@@ -150,6 +159,7 @@ const handleForceLogout = async function () {
   try {
     terminating.value = true
     actionError.value = null
+    actionSuccess.value = null
     await deleteSession(record.value.id)
     record.value = null
     await refreshList()
@@ -207,7 +217,8 @@ const handleForceLogout = async function () {
         Include expired
       </label>
       <span v-if="!loading" class="whitespace-nowrap text-xs text-grey-700">
-        {{ filteredRows.length }} of {{ rows.length }}
+        <template v-if="loaded">{{ filteredRows.length }} of {{ rows.length }}</template>
+        <template v-else>—</template>
       </span>
     </div>
 
@@ -215,7 +226,9 @@ const handleForceLogout = async function () {
       An error occurred while trying to retrieve the list of sessions.
     </Alert>
 
+    <!-- After a failed first load there is no list: only the message above. -->
     <Table
+      v-if="loading || loaded"
       :rows="filteredRows"
       :columns="columns"
       :loading="loading"
@@ -224,7 +237,7 @@ const handleForceLogout = async function () {
       @select="handleSelect"
     >
       <template #user_id="{ row }">
-        <span class="text-grey-800">{{ renderUserCell(row.user_id) }}</span>
+        <span class="text-grey-800 wrap-anywhere">{{ renderUserCell(row.user_id) }}</span>
       </template>
       <template #client="{ row }">
         <span class="text-grey-700">{{ describeClient(row.user_agent) }}</span>
@@ -282,7 +295,7 @@ const handleForceLogout = async function () {
           </div>
         </template>
         <div
-          v-else
+          v-else-if="loading || !ready || loaded"
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
           {{ loading || !ready ? 'Loading…' : 'No active sessions.' }}
