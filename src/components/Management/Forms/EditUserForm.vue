@@ -69,7 +69,7 @@ const formHandler = async function (formData: {
 </script>
 
 <template>
-  <FormCard :title="`Edit ${record?.email}`" :form-data="formData" :validation-schema="validationSchema"
+  <FormCard :form-data="formData" :validation-schema="validationSchema"
     :formDataHandler="formHandler" v-slot="{ formData, getStatus, getError }">
 
     <Input id="email" label="Email" type="email" v-model="formData.email" placeholder="Enter email address"

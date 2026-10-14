@@ -14,28 +14,37 @@ import Badge from '@/components/Common/Badge.vue'
 import MonoBadge from '@/components/Common/MonoBadge.vue'
 import Input from '@/components/Common/Inputs/Input.vue'
 import { useListResource } from '@/composables/useListResource'
+import { shortId } from '@/utils/id'
 
 const columns = [
-  { field: 'icon', title: '', width: '3rem' },
+  { field: 'icon', title: '', width: '2.5rem' },
   { field: 'name', title: 'Name' },
-  { field: 'public', title: 'Visibility', width: '8rem' },
-  { field: 'layers', title: 'Layers', width: '6rem', align: 'right' as const },
-  { field: 'id', title: 'ID', width: '18rem' },
+  { field: 'public', title: 'Visibility', width: '5.5rem' },
+  { field: 'layers', title: 'Layers', width: '4.5rem', align: 'right' as const },
+  { field: 'id', title: 'ID', width: '8rem' },
 ]
 
 const route = useRoute()
 const router = useRouter()
 
-const { rows, loading, error, search, record, filteredRows, select: handleSelect } =
-  useListResource<IMapset>({
-    fetch: getAllMapsets,
-    filter: (m, q) =>
-      m.name.toLowerCase().includes(q) ||
-      (m.slug ?? '').toLowerCase().includes(q) ||
-      m.id.toLowerCase().includes(q),
-    routeId: () => (typeof route.params.id === 'string' ? route.params.id : undefined),
-    syncRoute: (id) => router.replace({ name: 'mapsets', params: { id }, query: route.query }),
-  })
+const {
+  rows,
+  loading,
+  error,
+  loaded,
+  search,
+  record,
+  filteredRows,
+  select: handleSelect,
+} = useListResource<IMapset>({
+  fetch: getAllMapsets,
+  filter: (m, q) =>
+    m.name.toLowerCase().includes(q) ||
+    (m.slug ?? '').toLowerCase().includes(q) ||
+    m.id.toLowerCase().includes(q),
+  routeId: () => (typeof route.params.id === 'string' ? route.params.id : undefined),
+  syncRoute: (id) => router.replace({ name: 'mapsets', params: { id }, query: route.query }),
+})
 
 const handleLayersSaved = async function (updated: IMapset) {
   record.value = updated
@@ -63,7 +72,8 @@ const handleLayersSaved = async function (updated: IMapset) {
         />
       </div>
       <span v-if="!loading" class="text-xs text-grey-700">
-        {{ filteredRows.length }} of {{ rows.length }}
+        <template v-if="loaded">{{ filteredRows.length }} of {{ rows.length }}</template>
+        <template v-else>—</template>
       </span>
     </div>
 
@@ -71,7 +81,9 @@ const handleLayersSaved = async function (updated: IMapset) {
       An error occurred while trying to retrieve the list of mapsets.
     </Alert>
 
+    <!-- After a failed first load there is no list: only the message above. -->
     <Table
+      v-if="loading || loaded"
       :rows="filteredRows"
       :columns="columns"
       :loading="loading"
@@ -97,7 +109,7 @@ const handleLayersSaved = async function (updated: IMapset) {
       </template>
       <template #id="{ row }">
         <div class="flex items-center justify-between gap-2">
-          <MonoBadge :value="row.id" />
+          <MonoBadge :value="shortId(row.id)" :title="row.id" />
           <CopyToClipboardIcon :value="row.id" />
         </div>
       </template>
@@ -130,7 +142,7 @@ const handleLayersSaved = async function (updated: IMapset) {
           </div>
         </template>
         <div
-          v-else
+          v-else-if="loading || loaded"
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
           {{ loading ? 'Loading…' : 'No mapsets to display.' }}

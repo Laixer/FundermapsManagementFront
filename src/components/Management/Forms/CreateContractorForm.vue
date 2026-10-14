@@ -21,7 +21,6 @@ const formHandler = async function (formData: { name: string }) {
 
 <template>
   <FormCard
-    title="Add contractor"
     :form-data="initialFormData"
     :validation-schema="validationSchema"
     :formDataHandler="formHandler"

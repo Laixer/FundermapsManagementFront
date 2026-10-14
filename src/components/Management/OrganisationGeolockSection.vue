@@ -81,6 +81,7 @@ async function handleAdd(
   if (!id) return
   try {
     actionError.value = null
+    actionSuccess.value = null
     await fn(props.record.id, id)
     inputRef.value = ''
     await refresh()
@@ -99,6 +100,7 @@ async function handleRemove(
   if (!props.record) return
   try {
     actionError.value = null
+    actionSuccess.value = null
     await fn(props.record.id, id)
     await refresh()
     flashSuccess(`${label} removed.`)

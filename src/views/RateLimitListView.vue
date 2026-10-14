@@ -20,6 +20,7 @@ import {
 } from '@/services/fundermaps/endpoints/management/rate-limit'
 import type { IRateLimit, IRateLimitKey } from '@/services/fundermaps/interfaces/IRateLimit'
 import { formatDate } from '@/utils/date'
+import { shortId } from '@/utils/id'
 import { useFlash } from '@/composables/useFlash'
 import { useListResource } from '@/composables/useListResource'
 import { getErrorMessage } from '@/services/fundermaps/errors'
@@ -55,19 +56,35 @@ const keyLabel = (r: { source: string; api_key_id: string }) =>
 const orgLabel = (r: { source: string; api_key_id: string }) =>
   keyOf(r)?.organization_name ?? '—'
 
+// The list has no room for a whole key id: a key without a name shows the start
+// of it, with the id in the title (and in full in the panel).
+const keyCell = (r: { source: string; api_key_id: string }) => {
+  const name = keyOf(r)?.name
+  return name != null ? { text: name } : { text: shortId(r.api_key_id), title: r.api_key_id }
+}
+
+// The list shows the columns it has room for, so that it never scrolls
+// sideways: the date and then the window, which the panel shows too, are left
+// out while the table is narrower than they need.
 const columns = [
   { field: 'organization', title: 'Organisation' },
   { field: 'key', title: 'API key' },
-  { field: 'product', title: 'Product', width: '8rem' },
-  { field: 'period', title: 'Window', width: '7rem' },
-  { field: 'limit_count', title: 'Limit', width: '7rem', align: 'right' as const },
-  { field: 'updated_at', title: 'Updated', width: '11rem' },
+  { field: 'product', title: 'Product', width: '7.25rem' },
+  { field: 'period', title: 'Window', width: '5.5rem', class: '@max-[38rem]:hidden' },
+  { field: 'limit_count', title: 'Limit', width: '6rem', align: 'right' as const },
+  {
+    field: 'updated_at',
+    title: 'Updated',
+    width: '9rem',
+    class: 'whitespace-nowrap @max-[50rem]:hidden',
+  },
 ]
 
 const {
   rows,
   loading,
   error,
+  loaded,
   search,
   record,
   filteredRows,
@@ -153,6 +170,7 @@ const handleDelete = async function () {
   try {
     deleting.value = true
     actionError.value = null
+    actionSuccess.value = null
     await deleteRateLimit(r.source, r.api_key_id, r.product)
     record.value = null
     await refreshList()
@@ -193,7 +211,8 @@ const handleDelete = async function () {
         />
       </div>
       <span v-if="!loading" class="text-xs text-grey-700">
-        {{ filteredRows.length }} of {{ rows.length }}
+        <template v-if="loaded">{{ filteredRows.length }} of {{ rows.length }}</template>
+        <template v-else>—</template>
       </span>
     </div>
 
@@ -201,7 +220,10 @@ const handleDelete = async function () {
       An error occurred while trying to retrieve the rate limits.
     </Alert>
 
+    <!-- After a failed first load there is no list: only the message above. -->
     <Table
+      v-if="loading || loaded"
+      fixed
       :rows="filteredRows"
       :columns="columns"
       :loading="loading"
@@ -212,10 +234,12 @@ const handleDelete = async function () {
       @select="handleSelect"
     >
       <template #organization="{ row }">
-        <span class="text-grey-800">{{ orgLabel(row) }}</span>
+        <span class="text-grey-800 break-words">{{ orgLabel(row) }}</span>
       </template>
       <template #key="{ row }">
-        <span class="text-grey-700">{{ keyLabel(row) }}</span>
+        <span class="text-grey-700 break-words" :title="keyCell(row).title">
+          {{ keyCell(row).text }}
+        </span>
         <Badge v-if="row.source === 'legacy'" variant="warning" class="ml-2">legacy</Badge>
       </template>
       <template #product="{ row }">
@@ -291,7 +315,7 @@ const handleDelete = async function () {
         </div>
 
         <div
-          v-else
+          v-else-if="loading || !ready || loaded"
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
           {{ loading || !ready ? 'Loading…' : 'Select a rate limit, or add one.' }}

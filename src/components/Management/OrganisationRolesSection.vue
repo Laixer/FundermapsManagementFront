@@ -21,6 +21,7 @@ import {
   type IPermissionMetadata,
 } from '@/services/fundermaps/endpoints/management/organisation.ts'
 import { getErrorMessage } from '@/services/fundermaps/errors'
+import { organisationRoleLabel } from '@/utils/user'
 
 const props = defineProps<{
   record: IOrg | null
@@ -173,7 +174,9 @@ const handleDelete = async function (role: ICustomRole) {
       emptyMessage="No roles to display."
     >
       <template #name="{ row }">
-        <span class="font-medium text-grey-800">{{ row.name }}</span>
+        <span class="font-medium text-grey-800">
+          {{ row.custom ? row.name : organisationRoleLabel(row.name) }}
+        </span>
         <span v-if="!row.custom" class="ml-1 text-xs text-grey-700">(fixed)</span>
       </template>
       <template #permission="{ row }">

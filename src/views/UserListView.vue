@@ -69,6 +69,7 @@ const {
   rows,
   loading,
   error,
+  loaded,
   search,
   record,
   filteredRows,
@@ -151,6 +152,7 @@ const handleCreateAPIKey = async function () {
   try {
     generatingKey.value = true
     actionError.value = null
+    actionSuccess.value = null
     const response = await createAPIKey(record.value.id)
     apiKeys.value = await getAPIKeys(record.value.id)
     newApiKey.value = response.key
@@ -167,6 +169,7 @@ const handleDeleteAPIKey = async function (id: string) {
 
   try {
     actionError.value = null
+    actionSuccess.value = null
     await deleteAPIKey(record.value.id, id)
     apiKeys.value = await getAPIKeys(record.value.id)
     flashSuccess('API key deleted.')
@@ -182,6 +185,7 @@ const handleDelete = async function () {
   try {
     deleting.value = true
     actionError.value = null
+    actionSuccess.value = null
     await deleteUser(record.value.id)
     record.value = null
     showEdit.value = false
@@ -198,6 +202,7 @@ const handleRoleChange = async function (newRole: string) {
   if (!record.value) return
   try {
     actionError.value = null
+    actionSuccess.value = null
     await updateUserRole(record.value.id, newRole)
     const [fresh] = await Promise.all([getUser(record.value.id), refreshList()])
     record.value = fresh
@@ -233,7 +238,8 @@ const handleRoleChange = async function (newRole: string) {
         />
       </div>
       <span v-if="!loading" class="text-xs text-grey-700">
-        {{ filteredRows.length }} of {{ rows.length }}
+        <template v-if="loaded">{{ filteredRows.length }} of {{ rows.length }}</template>
+        <template v-else>—</template>
       </span>
     </div>
 
@@ -244,7 +250,8 @@ const handleRoleChange = async function (newRole: string) {
       Showing the first {{ USERS_LIST_LIMIT }} users — additional users are not loaded.
     </Alert>
 
-    <Card class="!p-0">
+    <!-- After a failed first load there is no list: only the message above. -->
+    <Card v-if="loading || loaded" class="!p-0">
       <template v-if="loading">
         <div
           v-for="n in 6"
@@ -338,7 +345,7 @@ const handleRoleChange = async function (newRole: string) {
           </dl>
           <p class="mt-3 text-grey-700">
             Added to <span class="font-medium">{{ createdUser.organisation }}</span> as
-            <span class="font-medium">{{ createdUser.role }}</span>.
+            <span class="font-medium">{{ organisationRoleLabel(createdUser.role) }}</span>.
           </p>
           <div class="mt-4 flex justify-end">
             <Button outline label="Done" @click="handleDismissForm" />
@@ -484,7 +491,7 @@ const handleRoleChange = async function (newRole: string) {
         </div>
 
         <div
-          v-else
+          v-else-if="loading || loaded"
           class="flex h-full items-center justify-center text-center text-sm text-grey-700"
         >
           {{ loading ? 'Loading…' : 'No users to display.' }}

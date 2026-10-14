@@ -20,22 +20,26 @@ const tone = computed(() => {
   switch (props.type) {
     case 'success':
       return {
+        label: 'Success',
         wrap: 'border-l-green-500 bg-green-50/60 text-green-800',
         btn: 'text-green-700 hover:bg-green-100',
       }
     case 'info':
       return {
+        label: 'Info',
         wrap: 'border-l-blue-500 bg-blue-100/40 text-blue-900',
         btn: 'text-blue-900 hover:bg-blue-200/60',
       }
     case 'warning':
       return {
+        label: 'Warning',
         wrap: 'border-l-yellow-500 bg-yellow-100/70 text-grey-800',
         btn: 'text-grey-800 hover:bg-yellow-100',
       }
     case 'danger':
     default:
       return {
+        label: 'Error',
         wrap: 'border-l-red-500 bg-red-50 text-red-800',
         btn: 'text-red-700 hover:bg-red-50',
       }
@@ -60,7 +64,7 @@ const tone = computed(() => {
         d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"
       />
     </svg>
-    <span class="sr-only">Info</span>
+    <span class="sr-only">{{ tone.label }}</span>
     <div class="min-w-0 flex-1">
       <slot />
     </div>

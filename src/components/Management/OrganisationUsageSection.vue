@@ -65,6 +65,8 @@ defineExpose({ refresh })
       {{ monthLabel }}. Trends and history live in Grafana.
     </p>
 
+    <!-- The counts keep the size of the table's text (no text-xs): they are what
+         this tab is for, and the rate limits show theirs at that size too. -->
     <Table
       :rows="products"
       :columns="columns"
@@ -75,19 +77,19 @@ defineExpose({ refresh })
         <span class="text-grey-800 font-medium">{{ row.product }}</span>
       </template>
       <template #month_to_date="{ row }">
-        <span class="text-grey-800 font-mono text-xs">{{ formatCount(row.month_to_date) }}</span>
+        <span class="text-grey-800 font-mono">{{ formatCount(row.month_to_date) }}</span>
       </template>
       <template #last_30_days="{ row }">
-        <span class="text-grey-700 font-mono text-xs">{{ formatCount(row.last_30_days) }}</span>
+        <span class="text-grey-700 font-mono">{{ formatCount(row.last_30_days) }}</span>
       </template>
       <!-- A row of the table itself, so the totals stand under their columns. -->
       <template #footer>
         <tr class="border-grey-200 border-t">
           <td class="text-grey-700 px-3 py-2 font-medium">Total</td>
-          <td class="text-grey-800 px-3 py-2 font-mono text-xs">
+          <td class="text-grey-800 px-3 py-2 font-mono">
             {{ formatCount(total.month_to_date) }}
           </td>
-          <td class="text-grey-800 px-3 py-2 font-mono text-xs">
+          <td class="text-grey-800 px-3 py-2 font-mono">
             {{ formatCount(total.last_30_days) }}
           </td>
         </tr>

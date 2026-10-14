@@ -25,6 +25,12 @@ export interface UseListResource<T> {
   rows: Ref<T[]>
   loading: Ref<boolean>
   error: Ref<boolean>
+  /**
+   * True once the list has been read. `error` only says whether the message is
+   * on screen, and that can be closed; after a failed first load there is
+   * still nothing to show or to count.
+   */
+  loaded: Ref<boolean>
   search: Ref<string>
   record: Ref<T | null>
   filteredRows: ComputedRef<T[]>
@@ -46,6 +52,7 @@ export function useListResource<T>(options: UseListResourceOptions<T>): UseListR
   const rows = ref([]) as Ref<T[]>
   const loading = ref(true)
   const error = ref(false)
+  const loaded = ref(false)
   const search = ref('')
   const record = ref(null) as Ref<T | null>
 
@@ -63,6 +70,7 @@ export function useListResource<T>(options: UseListResourceOptions<T>): UseListR
       loading.value = true
       error.value = false
       rows.value = await options.fetch()
+      loaded.value = true
     } catch {
       error.value = true
     } finally {
@@ -114,6 +122,7 @@ export function useListResource<T>(options: UseListResourceOptions<T>): UseListR
     rows,
     loading,
     error,
+    loaded,
     search,
     record,
     filteredRows,
