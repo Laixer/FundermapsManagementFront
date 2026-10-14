@@ -13,6 +13,15 @@ export function renderUserName(user: IUser): string {
   return ''
 }
 
+/**
+ * An e-mail address cut before its "@" (the "@" goes with the domain), so a
+ * narrow column can break it there rather than inside a word.
+ */
+export function splitEmail(email: string): [string, string] {
+  const at = email.lastIndexOf('@')
+  return at > 0 ? [email.slice(0, at), email.slice(at)] : [email, '']
+}
+
 const FIXED_ROLE_LABELS = new Map([
   ['reader', 'Reader'],
   ['writer', 'Writer'],

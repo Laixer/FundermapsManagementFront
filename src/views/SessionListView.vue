@@ -287,7 +287,15 @@ const handleForceLogout = async function () {
             <dt class="text-grey-700">Session ID</dt>
             <dd><MonoBadge :value="record.id" /></dd>
             <dt class="text-grey-700">User</dt>
-            <dd class="text-grey-800 break-all">{{ renderUserCell(record.user_id) }}</dd>
+            <dd>
+              <div class="text-grey-800 wrap-anywhere">{{ userCell(record.user_id).title }}</div>
+              <div
+                v-if="userCell(record.user_id).email"
+                class="text-xs text-grey-700 wrap-anywhere"
+              >
+                {{ userCell(record.user_id).email }}
+              </div>
+            </dd>
             <dt class="text-grey-700">Valid for</dt>
             <dd class="font-mono text-xs text-grey-800">{{ formatValidFor(record.expires_at, now) }}</dd>
             <dt class="text-grey-700">IP address</dt>

@@ -85,11 +85,6 @@ const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '
             </td>
           </tr>
         </template>
-        <tr v-else-if="!rows.length">
-          <td :colspan="columns.length" class="px-3 py-4 text-center text-grey-700">
-            {{ emptyMessage }}
-          </td>
-        </tr>
         <tr
           v-for="(row, idx) in rows"
           v-else
@@ -117,5 +112,10 @@ const skeletonWidth = (c: Column): string => (c.align === 'right' || c.width ? '
         <slot name="footer" />
       </tfoot>
     </table>
+    <!-- Below the table, not in a cell spanning it: such a cell also counts the
+         columns a narrow table hides, and the extra columns squeezed the headers. -->
+    <p v-if="!loading && !rows.length" class="px-3 py-4 text-center text-sm text-grey-700">
+      {{ emptyMessage }}
+    </p>
   </div>
 </template>
