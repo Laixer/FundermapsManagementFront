@@ -82,6 +82,15 @@ const renderUserCell = function (userId: string): string {
   return name ? `${name} <${u.email}>` : u.email
 }
 
+// The list cell as in the Users list: the name with the address beneath it in
+// small type; without a name the address alone (or the id of an unknown user).
+const userCell = function (userId: string): { title: string; email: string | null } {
+  const u = userMap.value.get(userId)
+  if (!u) return { title: userId, email: null }
+  const name = renderUserName(u)
+  return name ? { title: name, email: u.email } : { title: u.email, email: null }
+}
+
 const {
   rows,
   loading,
@@ -237,7 +246,10 @@ const handleForceLogout = async function () {
       @select="handleSelect"
     >
       <template #user_id="{ row }">
-        <span class="text-grey-800 wrap-anywhere">{{ renderUserCell(row.user_id) }}</span>
+        <div class="text-grey-800 wrap-anywhere">{{ userCell(row.user_id).title }}</div>
+        <div v-if="userCell(row.user_id).email" class="text-xs text-grey-700 wrap-anywhere">
+          {{ userCell(row.user_id).email }}
+        </div>
       </template>
       <template #client="{ row }">
         <span class="text-grey-700">{{ describeClient(row.user_agent) }}</span>
@@ -291,7 +303,7 @@ const handleForceLogout = async function () {
             <h6 class="mb-1 text-xs font-semibold uppercase tracking-wide text-grey-700">
               User agent
             </h6>
-            <p class="break-all text-sm text-grey-800">{{ record.user_agent }}</p>
+            <p class="break-words text-sm text-grey-800">{{ record.user_agent }}</p>
           </div>
         </template>
         <div

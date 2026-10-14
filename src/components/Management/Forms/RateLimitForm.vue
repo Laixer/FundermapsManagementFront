@@ -61,10 +61,16 @@ const validationSchema = z
     keyRef: z.string().min(1, 'Select an API key.'),
     product: z.string().min(1, 'Select a product.'),
     period: z.string().min(1, 'Select a period.'),
-    limit_count: z.coerce
-      .number({ message: 'Enter a number.' })
-      .int('Whole numbers only.')
-      .min(0, 'Must be 0 or more.'),
+    // An empty field (or one the browser cannot read as a number) arrives as '',
+    // which Number() would turn into 0 ("0 blocks all calls"). The browser no
+    // longer stops it (the form has novalidate), so this does.
+    limit_count: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.coerce
+        .number({ message: 'Enter a number.' })
+        .int('Whole numbers only.')
+        .min(0, 'Must be 0 or more.'),
+    ),
   })
   .strict()
 

@@ -21,7 +21,7 @@ const emit = defineEmits<{
 // Org list for the dropdown. The leading empty option is the unselected
 // sentinel — it keeps the native <select> in sync with the empty default
 // and lets the required `organization_id` validation fire.
-const organisationOptions = ref<SelectOption[]>([{ value: '', label: 'Select an organisation…' }])
+const organisationOptions = ref<SelectOption[]>([{ value: '', label: 'Select…' }])
 
 const organisationRoleOptions: SelectOption[] = [
   { value: 'reader', label: 'Reader' },
@@ -33,7 +33,7 @@ const organisationRoleOptions: SelectOption[] = [
 onMounted(async () => {
   const organisations = await getAllOrganisations()
   organisationOptions.value = [
-    { value: '', label: 'Select an organisation…' },
+    { value: '', label: 'Select…' },
     ...organisations.map((org) => ({ value: org.id, label: org.name })),
   ]
 })
@@ -51,7 +51,12 @@ const initialFormData = ref({
 })
 const validationSchema = z
   .object({
-    email: z.string().min(1, 'Email is required.'),
+    // The browser's own check of type="email" (the form has novalidate), so
+    // exactly the same addresses get through.
+    email: z
+      .string()
+      .min(1, 'Email is required.')
+      .regex(z.regexes.html5Email, 'Please enter a valid email address.'),
     password: z.string().min(1, 'Password is required.'),
     given_name: z.string(),
     family_name: z.string(),

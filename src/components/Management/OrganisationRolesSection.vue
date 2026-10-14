@@ -99,7 +99,12 @@ const resourceLabel = function (resource: string) {
 const permissionSummary = function (permission: IPermissionMap) {
   const entries = Object.keys(metadata.value?.resources ?? {})
     .filter((resource) => (permission[resource] ?? []).length > 0)
-    .map((resource) => `${resourceLabel(resource)}: ${permission[resource]!.join(', ')}`)
+    // "app" has the one action "access": "App access", not "App access: access".
+    .map((resource) =>
+      resource === 'app'
+        ? resourceLabel(resource)
+        : `${resourceLabel(resource)}: ${permission[resource]!.join(', ')}`,
+    )
   return entries.length > 0 ? entries : ['—']
 }
 
