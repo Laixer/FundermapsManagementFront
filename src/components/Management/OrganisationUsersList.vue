@@ -115,7 +115,7 @@ const handleRoleChange = async function (row: IOrgUser, newRole: string) {
       </template>
       <!-- The address may break, so the role keeps the room it needs to be read. -->
       <template #email="{ row }">
-        <span class="break-all">{{ row.email }}</span>
+        <span class="wrap-anywhere">{{ row.email }}</span>
       </template>
       <template #organization_role="{ row }">
         <Select

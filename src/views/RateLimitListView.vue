@@ -65,10 +65,11 @@ const keyCell = (r: { source: string; api_key_id: string }) => {
 
 // The list shows the columns it has room for, so that it never scrolls
 // sideways: the date and then the window, which the panel shows too, are left
-// out while the table is narrower than they need.
+// out while the table is narrower than they need. Organisation gets all the room
+// the others leave: Dutch organisation names are made of long words.
 const columns = [
   { field: 'organization', title: 'Organisation' },
-  { field: 'key', title: 'API key' },
+  { field: 'key', title: 'API key', width: '7.5rem' },
   { field: 'product', title: 'Product', width: '7.25rem' },
   { field: 'period', title: 'Window', width: '5.5rem', class: '@max-[38rem]:hidden' },
   { field: 'limit_count', title: 'Limit', width: '6rem', align: 'right' as const },
@@ -162,7 +163,7 @@ const handleDelete = async function () {
   const r = record.value
   if (
     !confirm(
-      `Remove the ${r.product} limit for "${orgLabel(r)}" (key ${keyLabel(r)})? The key becomes unlimited for this product.`,
+      `Remove the ${r.product} limit of key "${keyLabel(r)}" for "${orgLabel(r)}"? The key becomes unlimited for this product.`,
     )
   )
     return
@@ -234,7 +235,8 @@ const handleDelete = async function () {
       @select="handleSelect"
     >
       <template #organization="{ row }">
-        <span class="text-grey-800 break-words">{{ orgLabel(row) }}</span>
+        <!-- Dutch names: a word too long for the column breaks at a syllable, with a hyphen. -->
+        <span lang="nl" class="text-grey-800 break-words hyphens-auto">{{ orgLabel(row) }}</span>
       </template>
       <template #key="{ row }">
         <span class="text-grey-700 break-words" :title="keyCell(row).title">

@@ -20,7 +20,11 @@ const formData = ref({
 })
 const validationSchema = z
   .object({
-    email: z.email('Please enter a valid email address.'),
+    // Plus the browser's own check of type="email" (the form has novalidate),
+    // so exactly the same addresses get through.
+    email: z
+      .email('Please enter a valid email address.')
+      .regex(z.regexes.html5Email, 'Please enter a valid email address.'),
     given_name: z.string(),
     family_name: z.string(),
     phone_number: z.string(),

@@ -97,10 +97,13 @@ export default function <T extends ZodType>(
   // Function to get the error message for a specific form field, can be used to get errors for nested objects using dot notation path.
   const getError = (path: string) => get(errors.value, `${path.replaceAll('.', ',')}.0.message`)
 
-  // Function to check whether a specific field has cleared or failed validation
+  // Function to check whether a specific field has cleared or failed validation. An empty field
+  // that passed (an optional one) gets neither: a green tick would say it was filled in.
   const getStatus = (path: string) => {
     if (hasRun.value === false) return 'none'
-    return get(errors.value, `${path.replaceAll('.', ',')}.0.message`) ? 'error' : 'success'
+    if (get(errors.value, `${path.replaceAll('.', ',')}.0.message`)) return 'error'
+    const value = get(toValue(data), path)
+    return value === undefined || value === null || value === '' ? 'none' : 'success'
   }
 
   // Function to deactivate and reset validation

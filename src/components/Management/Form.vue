@@ -102,8 +102,11 @@ const handleReset = function handleReset() {
       </div>
     </div>
 
+    <!-- novalidate: the form's own messages, not the browser's bubble. Each schema
+         makes every check the browser made (required, type="email", type="number"). -->
     <form
       v-if="!completed"
+      novalidate
       :class="inline ? 'mt-4 flex items-start' : 'mt-4 space-y-4'"
       @submit.prevent="handleSubmit"
     >
