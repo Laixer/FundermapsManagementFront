@@ -3,7 +3,7 @@ import { ref, watch, type Ref } from 'vue'
 
 import Table from '@/components/Common/Table.vue'
 import type { IUser } from '@/services/fundermaps/interfaces/IUser.ts'
-import { organisationRoleLabel, renderUserName } from '@/utils/user'
+import { organisationRoleLabel, renderUserName, splitEmail } from '@/utils/user'
 import type { IOrg } from '@/services/fundermaps/endpoints/management/organisation.ts'
 
 import {
@@ -113,9 +113,10 @@ const handleRoleChange = async function (row: IOrgUser, newRole: string) {
       <template #name="{ row }">
         <span class="font-medium text-grey-800">{{ renderUserName(row) || '—' }}</span>
       </template>
-      <!-- The address may break, so the role keeps the room it needs to be read. -->
+      <!-- Where the column is too narrow, the address breaks before its "@" and nowhere else:
+           the column takes at least the longer half, the name column gives way. -->
       <template #email="{ row }">
-        <span class="wrap-anywhere">{{ row.email }}</span>
+        <span>{{ splitEmail(row.email)[0] }}<wbr />{{ splitEmail(row.email)[1] }}</span>
       </template>
       <template #organization_role="{ row }">
         <Select
