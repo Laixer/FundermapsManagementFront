@@ -10,6 +10,7 @@ import SessionListView from '@/views/SessionListView.vue'
 import UserListView from '@/views/UserListView.vue'
 import RateLimitListView from '@/views/RateLimitListView.vue'
 import ContractorListView from '@/views/ContractorListView.vue'
+import UsageView from '@/views/UsageView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import Login from '@/views/auth/Login.vue'
 import NoAccess from '@/views/auth/403.vue'
@@ -83,6 +84,13 @@ const router = createRouter({
       name: 'contractors',
       path: '/contractor/:id?',
       component: ContractorListView,
+    },
+    // Usage across all customers (2026-10-23): was Grafana's two usage boards.
+    {
+      name: 'usage',
+      path: '/usage',
+      component: UsageView,
+      meta: { title: 'Usage' },
     },
 
     // Anything else: an old bookmark or a mistyped address. Last, so every
