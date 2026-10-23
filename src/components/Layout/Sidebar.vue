@@ -13,6 +13,7 @@ import OrganisationsIcon from '@assets/svg/icons/organisations.svg?component'
 import MapsetsIcon from '@assets/svg/icons/mapsets.svg?component'
 import RateLimitsIcon from '@assets/svg/icons/switch.svg?component'
 import ContractorsIcon from '@assets/svg/icons/fundermaps/tools.svg?component'
+import UsageIcon from '@assets/svg/icons/target.svg?component'
 
 interface NavItem {
   name: string
@@ -44,6 +45,11 @@ const navGroups: NavGroup[] = [
       { name: 'rate-limits', label: 'Rate limits', icon: RateLimitsIcon },
       { name: 'contractors', label: 'Contractors', icon: ContractorsIcon },
     ],
+  },
+  {
+    // What customers consume (2026-10-23): the product tracker is the billing record.
+    label: 'Billing',
+    items: [{ name: 'usage', label: 'Usage', icon: UsageIcon }],
   },
 ]
 
