@@ -2,9 +2,8 @@ export interface IMapset {
   id: string
   name: string
   slug: string
-  style: string
   layers: string[]
-  metadata: object // JSON blob TODO: Mapbox options
+  metadata: object // JSON blob: the map center ({ center: [lon, lat] })
   public: boolean
   consent: string | null
   note: string
