@@ -1,5 +1,9 @@
 # FundermapsManagementFront
 
+> **Retired on 2026-10-29.** The admin portal moved into **FunderMapsStudio** as Beheer (studio.funderdata.nl/admin,
+> 2026-10-26). admin.fundermaps.com redirects there, and the app `fundermaps-admin-prod` is deleted. This repo is archived
+> and kept for reference.
+
 Admin-only Vue 3 management portal for the FunderMaps platform — manages users,
 organisations and mapsets. Access is restricted to users with the `administrator`
 role (enforced via a router guard). Authentication is the session cookie the
